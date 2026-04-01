@@ -3,54 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Isla-Sync Corcuera Login</title>
+    <title>Login</title>
 
-    <!-- CSS -->
     <link rel="stylesheet" href="login.css">
 
-    <!-- Font Awesome (Modern Icons) -->
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
 <div class="container">
 
-    <!-- Top Image -->
-    <div class="hero"></div>
+    <!-- Background -->
+    <div class="hero">
 
-    <!-- Content Card -->
-    <div class="card">
+        <!-- Overlay -->
+        <div class="overlay">
 
-        <!-- Logo -->
-        <div class="logo">
-            <img src="assets/isla-lgo.png" alt="Logo">
-        </div>
+            <!-- Logo -->
+            <img src="assets/isla-lgo.png" class="logo">
 
-        <h1>Isla-Sync Corcuera</h1>
-        <p class="subtitle">Your unified island portal</p>
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to sync with Corcuera</p>
 
-        <p class="select-text">SELECT YOUR USER TYPE</p>
-
-        <!-- Resident -->
-        <div class="option active">
-            <div class="icon blue">
-                <i class="fa-solid fa-house"></i>
+            <!-- Email -->
+            <div class="input-group">
+                <label>EMAIL OR USERNAME</label>
+                <div class="input-box">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="text" placeholder="Enter your email">
+                </div>
             </div>
-            <div>
-                <h3>Resident User</h3>
-                <p>Access local services and news</p>
-            </div>
-        </div>
 
-        <!-- Admin -->
-        <div class="option">
-            <div class="icon gray">
-                <i class="fa-solid fa-user-shield"></i>
+            <!-- Password -->
+            <div class="input-group">
+                <label>PASSWORD</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" placeholder="••••••••">
+                    <i class="fa-regular fa-eye toggle"></i>
+                </div>
             </div>
-            <div>
-                <h3>Admin User</h3>
-                <p>Manage island operations</p>
+
+            <div class="forgot">Forgot Password?</div>
+
+            <!-- Button -->
+            <button class="btn">Log In</button>
+
+            <!-- Divider -->
+            <div class="divider">OR CONTINUE WITH</div>
+
+            <!-- Social -->
+            <div class="social">
+                <div class="social-btn"><i class="fa-brands fa-google"></i></div>
+                <div class="social-btn"><i class="fa-brands fa-facebook-f"></i></div>
+                <div class="social-btn"><i class="fa-solid fa-envelope"></i></div>
             </div>
+
+            <!-- Signup -->
+            <p class="signup">
+                Don’t have an account? <a href="sign-up.html">Sign Up</a>
+            </p>
+
         </div>
 
     </div>
