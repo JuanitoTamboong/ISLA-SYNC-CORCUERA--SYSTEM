@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Isla-Sync Corcuera</title>
 
     <link rel="stylesheet" href="login.css">
 
@@ -31,7 +31,7 @@
                 <label>EMAIL OR USERNAME</label>
                 <div class="input-box">
                     <i class="fa-regular fa-envelope"></i>
-                    <input type="text" placeholder="Enter your email">
+                    <input type="text" id="emailInput" placeholder="Enter your email">
                 </div>
             </div>
 
@@ -40,15 +40,15 @@
                 <label>PASSWORD</label>
                 <div class="input-box">
                     <i class="fa-solid fa-lock"></i>
-                    <input type="password" placeholder="••••••••">
-                    <i class="fa-regular fa-eye toggle"></i>
+                    <input type="password" id="passwordInput" placeholder="Enter your password">
+                    <i class="fa-regular fa-eye toggle" id="togglePassword"></i>
                 </div>
             </div>
 
-            <div class="forgot">Forgot Password?</div>
+            <div class="forgot" id="forgotPassword">Forgot Password?</div>
 
             <!-- Button -->
-            <button class="btn">Log In</button>
+            <button class="btn" id="loginButton">Log In</button>
 
             <!-- Divider -->
             <div class="divider">OR CONTINUE WITH</div>
@@ -71,5 +71,9 @@
 
 </div>
 
+<!-- Load Supabase SDK first -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+<!-- Then load login script -->
+<script src="login.js"></script>
 </body>
 </html>

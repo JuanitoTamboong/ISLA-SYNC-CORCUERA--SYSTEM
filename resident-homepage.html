@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resident Homepage</title>
+<title>Resident Homepage - Isla-Sync Corcuera</title>
 <link rel="stylesheet" href="resident-homepage.css">
 
 <!-- Icons -->
@@ -11,6 +11,9 @@
 
 <!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 </head>
 
 <body>
@@ -20,11 +23,11 @@
     <!-- HEADER -->
     <div class="header">
         <div>
-            <p class="greeting">Good Morning,</p>
-            <h2>Juan Dela Cruz</h2>
+            <p class="greeting" id="greetingText">Good Morning,</p>
+            <h2 id="userName">Loading...</h2>
         </div>
 
-        <div class="profile">
+        <div class="profile" id="profileBtn">
             <i class="fa-regular fa-user"></i>
             <span class="notif-dot"></span>
         </div>
@@ -65,21 +68,21 @@
         </div>
 
         <div class="services">
-            <div class="service">
+            <div class="service" onclick="reportIssue()">
                 <div class="icon orange">
                     <i class="fa fa-triangle-exclamation"></i>
                 </div>
                 <p>Report Issue</p>
             </div>
 
-            <div class="service">
+            <div class="service" onclick="viewNews()">
                 <div class="icon blue">
                     <i class="fa fa-newspaper"></i>
                 </div>
                 <p>Latest News</p>
             </div>
 
-            <div class="service">
+            <div class="service" onclick="viewTouristSpots()">
                 <div class="icon green">
                     <i class="fa fa-map-location-dot"></i>
                 </div>
@@ -95,7 +98,7 @@
             <a href="#">View Feed</a>
         </div>
 
-        <div class="updates">
+        <div class="updates" id="communityUpdates">
             <div class="update-card">
                 <div class="update-icon">
                     <i class="fa fa-bullhorn"></i>
@@ -111,15 +114,14 @@
 
 </div>
 
-<!-- 🔥 BOTTOM NAV -->
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-
-    <div class="nav-item active">
+    <div class="nav-item active" onclick="navigateTo('home')">
         <i class="fa fa-home"></i>
         <span>Home</span>
     </div>
 
-    <div class="nav-item">
+    <div class="nav-item" onclick="navigateTo('map')">
         <i class="fa fa-map"></i>
         <span>Map</span>
     </div>
@@ -128,17 +130,17 @@
         <img src="assets/isla-logo.png" alt="">
     </div>
 
-    <div class="nav-item">
+    <div class="nav-item" onclick="navigateTo('notifications')">
         <i class="fa fa-bell"></i>
         <span>Notifications</span>
     </div>
 
-    <div class="nav-item">
+    <div class="nav-item" onclick="navigateTo('settings')">
         <i class="fa fa-gear"></i>
         <span>Settings</span>
     </div>
-
 </div>
 
+<script src="resident-homepage.js"></script>
 </body>
 </html>

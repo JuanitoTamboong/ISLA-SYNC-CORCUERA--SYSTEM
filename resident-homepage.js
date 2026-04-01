@@ -1,0 +1,374 @@
+// Wait for DOM and Supabase to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if Supabase is loaded
+    if (typeof supabase === 'undefined') {
+        console.error('Supabase SDK not loaded');
+        showNotification('Error: Supabase SDK failed to load. Please refresh the page.', 'error');
+        return;
+    }
+    
+    // Supabase configuration
+    const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds'
+    
+    // Initialize Supabase client
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    
+    console.log('Resident homepage loaded');
+    
+    // Check if user is logged in
+    const currentUser = localStorage.getItem('currentUser')
+    
+    if (!currentUser) {
+        console.log('No user found, redirecting to login');
+        window.location.href = 'login.html'
+        return
+    }
+    
+    let user = JSON.parse(currentUser)
+    
+    // Verify user is a resident
+    if (user.userType !== 'resident') {
+        console.log('User is not a resident, redirecting to admin page');
+        window.location.href = 'admin-dashboard.html'
+        return
+    }
+    
+    // Verify session with Supabase
+    async function verifySession() {
+        try {
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession()
+            
+            if (sessionError || !session) {
+                console.log('Session expired or invalid');
+                localStorage.removeItem('currentUser')
+                window.location.href = 'login.html'
+                return false
+            }
+            
+            if (session.user.id !== user.id) {
+                console.log('User ID mismatch');
+                localStorage.removeItem('currentUser')
+                window.location.href = 'login.html'
+                return false
+            }
+            
+            return true
+        } catch (error) {
+            console.error('Session verification error:', error);
+            return false
+        }
+    }
+    
+    // Load user data from Supabase
+    async function loadUserData() {
+        try {
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .maybeSingle()
+            
+            if (profileError) {
+                console.error('Error fetching profile:', profileError)
+                updateUserInterface(user)
+                return
+            }
+            
+            if (profile) {
+                user = {
+                    ...user,
+                    fullName: profile.full_name,
+                    email: profile.email,
+                    userType: profile.user_type,
+                    is_active: profile.is_active
+                }
+                localStorage.setItem('currentUser', JSON.stringify(user))
+                
+                if (!profile.is_active) {
+                    showNotification('Your account has been deactivated.', 'error')
+                    setTimeout(() => logout(), 2000)
+                    return
+                }
+                
+                updateUserInterface(user)
+                updateGreeting()
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error)
+            updateUserInterface(user)
+        }
+    }
+    
+    // Run verification and load data
+    verifySession().then(isValid => {
+        if (isValid) {
+            loadUserData()
+        }
+    })
+    
+    // Update user interface
+    function updateUserInterface(user) {
+        const userNameElement = document.getElementById('userName')
+        if (userNameElement) {
+            userNameElement.textContent = user.fullName
+        }
+    }
+    
+    // Update greeting based on time
+    function updateGreeting() {
+        const greetingElement = document.getElementById('greetingText')
+        if (!greetingElement) return
+        
+        const hour = new Date().getHours()
+        let greeting = ''
+        
+        if (hour < 12) greeting = 'Good Morning,'
+        else if (hour < 18) greeting = 'Good Afternoon,'
+        else greeting = 'Good Evening,'
+        
+        greetingElement.textContent = greeting
+    }
+    
+    // Profile menu
+    const profileBtn = document.getElementById('profileBtn')
+    if (profileBtn) {
+        profileBtn.addEventListener('click', showProfileMenu)
+    }
+    
+    function showProfileMenu() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'))
+        
+        const modal = document.createElement('div')
+        modal.className = 'profile-modal'
+        modal.innerHTML = `
+            <div class="profile-modal-content">
+                <div class="profile-header">
+                    <i class="fa-regular fa-user-circle"></i>
+                    <h3>${currentUser.fullName}</h3>
+                    <p>${currentUser.email}</p>
+                </div>
+                <div class="profile-actions">
+                    <button onclick="window.viewProfile()" class="profile-action-btn">
+                        <i class="fa-regular fa-user"></i> View Profile
+                    </button>
+                    <button onclick="window.changePassword()" class="profile-action-btn">
+                        <i class="fa-solid fa-key"></i> Change Password
+                    </button>
+                    <button onclick="window.logout()" class="profile-action-btn logout-btn">
+                        <i class="fa-solid fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        `
+        
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `
+        
+        const content = modal.querySelector('.profile-modal-content')
+        content.style.cssText = `
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            animation: slideUp 0.3s ease-out;
+        `
+        
+        document.body.appendChild(modal)
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove()
+        })
+    }
+    
+    // View profile
+    window.viewProfile = function() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'))
+        showNotification(`Name: ${currentUser.fullName}\nEmail: ${currentUser.email}`, 'info')
+        closeModal()
+    }
+    
+    // Change password
+    window.changePassword = async function() {
+        const currentPassword = prompt('Enter your current password:')
+        if (!currentPassword) return
+        
+        const newPassword = prompt('Enter your new password (min 6 characters):')
+        if (!newPassword || newPassword.length < 6) {
+            showNotification('Password must be at least 6 characters', 'error')
+            return
+        }
+        
+        const confirmPassword = prompt('Confirm your new password:')
+        if (newPassword !== confirmPassword) {
+            showNotification('Passwords do not match', 'error')
+            return
+        }
+        
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'))
+            const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+                email: currentUser.email,
+                password: currentPassword
+            })
+            
+            if (signInError) {
+                showNotification('Current password is incorrect', 'error')
+                return
+            }
+            
+            const { error } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            })
+            
+            if (error) {
+                showNotification(error.message, 'error')
+            } else {
+                showNotification('Password updated successfully!', 'success')
+            }
+        } catch (error) {
+            showNotification('Error updating password', 'error')
+        }
+        
+        closeModal()
+    }
+    
+    // Logout
+    window.logout = async function() {
+        try {
+            localStorage.removeItem('currentUser')
+            await supabaseClient.auth.signOut()
+            showNotification('Logged out successfully', 'success')
+            setTimeout(() => {
+                window.location.href = 'login.html'
+            }, 1000)
+        } catch (error) {
+            console.error('Logout error:', error)
+            showNotification('Error logging out', 'error')
+        }
+    }
+    
+    function closeModal() {
+        const modal = document.querySelector('.profile-modal')
+        if (modal) modal.remove()
+    }
+    
+    // Navigation
+    window.navigateTo = function(page) {
+        switch(page) {
+            case 'home':
+                window.location.href = 'resident-homepage.html'
+                break
+            case 'map':
+                showNotification('Map feature coming soon!', 'info')
+                break
+            case 'notifications':
+                showNotification('No new notifications', 'info')
+                break
+            case 'settings':
+                showProfileMenu()
+                break
+        }
+    }
+    
+    // Services
+    window.reportIssue = () => showNotification('Report Issue feature coming soon!', 'info')
+    window.viewNews = () => showNotification('Latest news feature coming soon!', 'info')
+    window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
+    
+    // Notification function
+    function showNotification(message, type = 'info') {
+        const existingNotification = document.querySelector('.notification')
+        if (existingNotification) existingNotification.remove()
+        
+        const notification = document.createElement('div')
+        notification.className = `notification ${type}`
+        notification.innerHTML = `
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+            <span>${message}</span>
+        `
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-family: 'Poppins', sans-serif;
+            max-width: 90%;
+            word-break: break-word;
+            white-space: pre-line;
+        `
+        
+        document.body.appendChild(notification)
+        
+        setTimeout(() => {
+            if (notification && notification.parentNode) notification.remove()
+        }, 4000)
+    }
+    
+    // Add styles
+    const style = document.createElement('style')
+    style.textContent = `
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .profile-action-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 8px;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .profile-action-btn:hover { background: #e0e0e0; }
+        .logout-btn { background: #fee2e2; color: #ef4444; }
+        .logout-btn:hover { background: #fecaca; }
+        .profile-header {
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 15px;
+        }
+        .profile-header i {
+            font-size: 60px;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        .profile-header h3 {
+            margin: 5px 0;
+            color: #1f2937;
+        }
+        .profile-header p {
+            color: #6b7280;
+            font-size: 12px;
+        }
+    `
+    document.head.appendChild(style)
+})
