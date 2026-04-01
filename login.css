@@ -16,7 +16,7 @@ body {
 /* Container */
 .container {
     width: 360px;
-    border-radius: 16px;
+
     overflow: hidden;
 }
 
