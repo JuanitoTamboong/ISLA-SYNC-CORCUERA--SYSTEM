@@ -10,31 +10,38 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
 }
 
 /* Container */
 .container {
     width: 360px;
-
     overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Background image */
 .hero {
-    height: 640px;
+    flex: 1;
+    min-height: 640px;
     background: url('assets/7.jpg') no-repeat center/cover;
     position: relative;
 }
 
 /* Dark overlay */
 .overlay {
+    position: absolute;
+    inset: 0;
     background: linear-gradient(
         to bottom,
         rgba(0,0,0,0.4),
         rgba(0,0,0,0.7)
     );
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding: 30px 20px;
     color: white;
 }

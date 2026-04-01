@@ -10,7 +10,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
 }
 
 /* Container */
@@ -18,17 +18,22 @@ body {
     width: 360px;
     background: white;
     overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Top Image */
 .hero {
-    height: 260px;
+    flex: 1;
+    min-height: 260px;
     background: url('assets/generate\ background\ of\ corquera\ romblon\ \(1\).jpg') no-repeat center/cover;
 }
 
 /* Card */
 .card {
     position: relative;
+    flex: 1;
     padding: 70px 20px 25px;
     text-align: center;
     background: #f4f6f9;
