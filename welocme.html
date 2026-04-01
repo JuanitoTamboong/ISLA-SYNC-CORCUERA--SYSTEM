@@ -32,7 +32,7 @@
         <p class="select-text">SELECT YOUR USER TYPE</p>
 
         <!-- Resident -->
-        <div class="option active">
+        <div class="option active" onclick="navigateTo('resident')">
             <div class="icon blue">
                 <i class="fa-solid fa-house"></i>
             </div>
@@ -43,7 +43,7 @@
         </div>
 
         <!-- Admin -->
-        <div class="option">
+        <div class="option" onclick="navigateTo('admin')">
             <div class="icon gray">
                 <i class="fa-solid fa-user-shield"></i>
             </div>
@@ -56,6 +56,16 @@
     </div>
 
 </div>
+
+<script>
+    function navigateTo(userType) {
+        if (userType === 'resident') {
+            window.location.href = 'login.html';
+        } else if (userType === 'admin') {
+            window.location.href = 'admin-login.html';
+        }
+    }
+</script>
 
 </body>
 </html>
