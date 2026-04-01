@@ -1,0 +1,132 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: url('assets/generate\ background\ of\ corquera\ romblon.jpg') no-repeat center/cover;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Blue gradient overlay */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 120, 200, 0.25) 0%,
+        rgba(0, 90, 160, 0.35) 40%,
+        rgba(0, 60, 120, 0.55) 70%,
+        rgba(0, 40, 90, 0.75) 100%
+    );
+    z-index: 1;
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Logo */
+.logo {
+    margin-bottom:auto;
+}
+
+.logo img {
+    height: 150px;
+    width: 100%;
+    object-fit: contain;
+}
+
+/* Titles */
+.title-main {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 2px;
+    margin-bottom: 0.2rem;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+
+.title-sub {
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 1.2rem;
+}
+
+/* Tagline */
+.tagline-1,
+.tagline-2 {
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.85);
+}
+
+.tagline-1 {
+    margin-bottom: 2px;
+}
+
+.tagline-2 {
+    margin-bottom: 2rem;
+}
+
+/* Button */
+.sync-button {
+    width: 100%;
+    background: #2F80ED;
+    border: none;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s ease;
+    box-shadow: 0 10px 25px rgba(47,128,237,0.4);
+}
+
+.sync-button:hover {
+    background: #1c6ddf;
+    transform: translateY(-2px);
+}
+
+.sync-button span {
+    transition: 0.2s;
+}
+
+.sync-button:hover span {
+    transform: translateX(6px);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .title-main {
+        font-size: 2.2rem;
+    }
+
+    .title-sub {
+        font-size: 1.8rem;
+    }
+
+    .logo img {
+        max-width: 100%;
+    }
+
+    .sync-button {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+    }
+}
