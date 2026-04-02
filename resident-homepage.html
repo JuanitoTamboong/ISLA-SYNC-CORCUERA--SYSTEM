@@ -26,9 +26,15 @@
             <p class="greeting" id="greetingText">Good Morning,</p>
             <h2 id="userName">Loading...</h2>
         </div>
+
+        <!-- PROFILE ICON -->
+        <div class="profile" onclick="viewProfile()">
+            <i class="fa fa-user"></i>
+            <div class="notif-dot"></div>
+        </div>
     </div>
 
-    <!-- SEARCH -->
+    <!-- SEARCH BOX (ADDED) -->
     <div class="search-box">
         <i class="fa fa-search"></i>
         <input type="text" placeholder="Search places, news, or reports...">
@@ -43,16 +49,14 @@
         </div>
     </div>
 
-    <!-- WEATHER -->
+    <!-- WEATHER - Will be dynamically updated by weather.js -->
     <div class="weather">
-        <h1>29°C</h1>
-
+        <h1>--°C</h1>
         <div class="weather-center">
-            <p>Corcuera, Romblon</p>
-            <span>Partly Cloudy</span>
+            <p>Loading...</p>
+            <span>--</span>
         </div>
-
-        <i class="fa-solid fa-cloud-sun"></i>
+        <i class="fas fa-cloud-sun"></i>
     </div>
 
     <!-- QUICK SERVICES -->
@@ -98,7 +102,6 @@
                 <div class="update-icon">
                     <i class="fa fa-bullhorn"></i>
                 </div>
-
                 <div class="update-text">
                     <p class="title">Official Announcement</p>
                     <span>New tourism program launching soon.</span>
@@ -136,6 +139,7 @@
     </div>
 </div>
 
+<script src="weather.js"></script>
 <script src="resident-homepage.js"></script>
 </body>
 </html>

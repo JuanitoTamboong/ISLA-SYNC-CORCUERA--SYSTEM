@@ -98,9 +98,10 @@ body {
     bottom: 15px;
     left: 15px;
     color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
-/* WEATHER */
+/* WEATHER - Enhanced */
 .weather {
     margin-top: 20px;
     background: linear-gradient(135deg, #3b82f6, #60a5fa);
@@ -110,14 +111,83 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    flex-wrap: wrap;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .weather h1 {
     font-size: 34px;
+    font-weight: 600;
+}
+
+.weather-center {
+    text-align: center;
+    flex: 1;
+}
+
+.weather-center p {
+    font-weight: 500;
+    margin-bottom: 5px;
+    font-size: 14px;
 }
 
 .weather-center span {
     font-size: 13px;
+    opacity: 0.95;
+    display: block;
+}
+
+.weather i {
+    font-size: 48px;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Weather Details - NEW */
+.weather-details {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.weather-detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.weather-detail-item i {
+    font-size: 20px;
+    margin-bottom: 0;
+}
+
+.weather-detail-item span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.weather-detail-item small {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+/* Loading Animation */
+.weather.loading {
+    opacity: 0.7;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
 }
 
 /* SECTION */
@@ -135,6 +205,11 @@ body {
     font-size: 13px;
     color: #2563eb;
     text-decoration: none;
+    font-weight: 500;
+}
+
+.section-header a:hover {
+    text-decoration: underline;
 }
 
 /* SERVICES */
@@ -142,11 +217,18 @@ body {
     display: flex;
     justify-content: space-between;
     margin-top: 15px;
+    gap: 10px;
 }
 
 .service {
     width: 30%;
     text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.service:hover {
+    transform: translateY(-2px);
 }
 
 .icon {
@@ -158,6 +240,11 @@ body {
     justify-content: center;
     margin: auto;
     margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.service:hover .icon {
+    transform: scale(1.05);
 }
 
 .orange { background: #fde68a; color: #f97316; }
@@ -166,6 +253,7 @@ body {
 
 .service p {
     font-size: 13px;
+    font-weight: 500;
 }
 
 /* COMMUNITY */
@@ -176,6 +264,13 @@ body {
     display: flex;
     align-items: center;
     margin-top: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.update-card:hover {
+    background: #d1d5db;
+    transform: translateX(5px);
 }
 
 .update-icon {
@@ -200,6 +295,7 @@ body {
     color: #6b7280;
 }
 
+/* BOTTOM NAVIGATION */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -213,6 +309,8 @@ body {
     justify-content: space-around;
     align-items: center;
     border-radius: 20px 20px 0 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
 }
 
 .nav-item {
@@ -230,11 +328,17 @@ body {
     color: #2563eb;
 }
 
-/* CENTER LOGO FIX */
+.nav-item:hover:not(.center-logo) {
+    color: #2563eb;
+}
+
+/* CENTER LOGO */
 .center-logo {
     position: relative;
     top: -20px;
     left: 5%;
+    cursor: pointer;
+    
 }
 
 .center-logo img {
@@ -244,4 +348,55 @@ body {
     background: white;
     padding: 6px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    transition: transform 0.2s ease;
+}
+
+.center-logo img:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px 12px 100px;
+    }
+    
+    .weather h1 {
+        font-size: 28px;
+    }
+    
+    .weather i {
+        font-size: 40px;
+    }
+    
+    .icon {
+        width: 55px;
+        height: 55px;
+    }
+    
+    .weather-detail-item span {
+        font-size: 12px;
+    }
+    
+    .weather-detail-item i {
+        font-size: 18px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e5e7eb;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
 }
