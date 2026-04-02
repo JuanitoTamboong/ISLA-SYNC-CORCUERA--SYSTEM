@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings</title>
+
+<link rel="stylesheet" href="setting.css">
+
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Supabase SDK - Fixed -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <i class="fa fa-chevron-left"></i>
+        <h2>Settings</h2>
+    </div>
+
+    <!-- PROFILE -->
+    <p class="section-title">PROFILE</p>
+    <div class="card profile-card">
+        <div class="profile-left">
+            <div class="avatar"><i class="fa-regular fa-user"></i></div>
+            <div>
+                <h4 id="profileName">Loading...</h4>
+                <p id="profileEmail">Loading...</p>
+            </div>
+        </div>
+        <i class="fa fa-chevron-right"></i>
+    </div>
+
+    <!-- PREFERENCES -->
+    <p class="section-title">PREFERENCES</p>
+    <div class="card">
+        <div class="item">
+            <div class="item-left">
+                <div class="icon red"><i class="fa fa-bell"></i></div>
+                <span>Push Notifications</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="item">
+            <div class="item-left">
+                <div class="icon gray"><i class="fa fa-lock"></i></div>
+                <span>Privacy & Security</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+
+        <div class="item">
+            <div class="item-left">
+                <div class="icon purple"><i class="fa fa-moon"></i></div>
+                <span>Appearance</span>
+            </div>
+            <div class="right-text">System <i class="fa fa-chevron-right"></i></div>
+        </div>
+    </div>
+
+    <!-- SAFETY -->
+    <p class="section-title">SAFETY</p>
+    <div class="card">
+        <div class="item">
+            <div class="item-left">
+                <div class="icon red"><i class="fa fa-asterisk"></i></div>
+                <span>Emergency Hotlines</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+    </div>
+
+    <!-- INFO -->
+    <p class="section-title">INFORMATION</p>
+    <div class="card">
+        <div class="item">
+            <div class="item-left">
+                <div class="icon blue"><i class="fa fa-info"></i></div>
+                <span>About Isla-Sync-Corcuera</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+
+        <div class="item">
+            <div class="item-left">
+                <div class="icon green"><i class="fa fa-question"></i></div>
+                <span>Help & Support</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+    </div>
+
+    <!-- LOGOUT -->
+    <button class="logout">Log Out</button>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='resident-homepage.html'">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item">
+        <i class="fa fa-bell"></i>
+        <span>Notifications</span>
+    </div>
+    <div class="nav-item active">
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
+
+<script src="setting.js"></script>
+</body>
+</html>
