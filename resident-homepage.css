@@ -314,6 +314,7 @@ body {
 }
 
 .nav-item {
+    cursor: pointer;
     text-align: center;
     font-size: 11px;
     color: #6b7280;

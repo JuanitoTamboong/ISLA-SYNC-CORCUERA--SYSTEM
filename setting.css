@@ -189,6 +189,7 @@ input:checked + .slider:before {
     text-align: center;
     font-size: 11px;
     color: #6b7280;
+    cursor: pointer;
 }
 
 .nav-item i {
