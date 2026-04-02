@@ -1,11 +1,8 @@
-# Task: Remove map feature alert and notif placeholders
+# Fix Navbar in Settings to Match Resident Homepage
 
-## Steps to complete:
-- [x] Step 1: Update resident-homepage.js - Replace placeholder notifications with direct navigation to map.html and notif.html
-- [x] Step 2: Update setting.html - Add onclick handlers to Map and Notifications nav items
-- [x] Step 3: Update setting.js - Add navigateTo function for consistency
-- [x] Step 4: Verify navigation works without alerts (tested: clicking Map/Notifications in bottom nav now directly loads map.html/notif.html without any placeholder notifications)
-- [x] Step 5: Mark complete
-
-**Task completed successfully!**
+## Steps:
+- [x] 1. Analyze files and create plan (done)
+- [x] 2. Edit setting.css to add box-shadow, z-index to .bottom-nav and hover effect to .nav-item
+- [x] 3. Test the changes
+- [x] 4. Complete task
 

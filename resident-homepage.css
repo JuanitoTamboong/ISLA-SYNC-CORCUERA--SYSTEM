@@ -5,7 +5,7 @@
 }
 
 body {
-    background: #e5e7eb;
+    background: #ffffff;
     font-family: 'Poppins', sans-serif;
 }
 
@@ -337,7 +337,6 @@ body {
     position: relative;
     top: -20px;
     left: 5%;
-    cursor: pointer;
     
 }
 
@@ -348,13 +347,8 @@ body {
     background: white;
     padding: 6px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-    transition: transform 0.2s ease;
-}
 
-.center-logo img:hover {
-    transform: scale(1.05);
 }
-
 /* Responsive Design */
 @media (max-width: 480px) {
     .container {
