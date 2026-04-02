@@ -100,11 +100,11 @@ body {
     justify-content: center;
 }
 
-.red { background: #fee2e2; color: #ef4444; }
-.gray { background: #e5e7eb; color: #6b7280; }
-.purple { background: #ede9fe; color: #7c3aed; }
-.blue { background: #dbeafe; color: #2563eb; }
-.green { background: #dcfce7; color: #16a34a; }
+.red { background: #ec1515; color: #ffffff; }
+.gray { background: #6b7280; color: #ffffff; }
+.purple { background: #7c3aed; color: #ffffff; }
+.blue { background: #2563eb; color: #ffffff; }
+.green { background: #16a34a; color: #ffffff; }
 
 .right-text {
     font-size: 12px;
@@ -161,7 +161,7 @@ input:checked + .slider:before {
     padding: 12px;
     border: none;
     border-radius: 12px;
-    background: #e5e7eb;
+    background: #ffffff;
     color: #ef4444;
     font-weight: 600;
 }
