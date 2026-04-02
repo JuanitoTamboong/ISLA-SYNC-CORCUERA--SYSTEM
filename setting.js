@@ -45,24 +45,47 @@ document.addEventListener('DOMContentLoaded', function() {
     
     loadUserData()
     
+    // Logout function - define BEFORE attaching event listener
+    window.logout = async function() {
+        try {
+            // Show confirmation
+            const confirmed = confirm('Are you sure you want to log out?')
+            if (!confirmed) return
+            
+            // Clear all auth data
+            localStorage.removeItem('currentUser')
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('userSession')
+            
+            // Sign out from Supabase
+            await supabaseClient.auth.signOut()
+            
+            showNotification('Logged out successfully', 'success')
+            
+            // Force redirect to login
+            setTimeout(() => {
+                window.location.href = 'login.html'
+            }, 500)
+        } catch (error) {
+            console.error('Logout error:', error)
+            // Even if logout fails, redirect to login
+            setTimeout(() => {
+                window.location.href = 'login.html'
+            }, 500)
+        }
+    }
+    
     // Back button
     document.querySelector('.header i').addEventListener('click', () => {
         window.location.href = 'resident-homepage.html'
     })
     
-    // Logout button
-    document.querySelector('.logout').addEventListener('click', window.logout)
-    
-    window.logout = async function() {
-        try {
-            localStorage.removeItem('currentUser')
-            await supabaseClient.auth.signOut()
-            showNotification('Logged out successfully', 'success')
-            setTimeout(() => window.location.href = 'login.html', 1000)
-        } catch (error) {
-            showNotification('Logout error', 'error')
-        }
-    }
+    // Logout button - attach AFTER function is defined
+    document.querySelector('.logout').addEventListener('click', function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+        window.logout()
+    })
     
     // Notification (shared)
     function showNotification(message, type = 'info') {
