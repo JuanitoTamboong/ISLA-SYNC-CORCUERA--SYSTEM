@@ -27,15 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('All elements found');
     
     // Toggle password visibility
-    const togglePassword = document.querySelector('.toggle')
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password'
-            passwordInput.setAttribute('type', type)
-            togglePassword.classList.toggle('fa-eye')
-            togglePassword.classList.toggle('fa-eye-slash')
-        })
-    }
+    document.querySelectorAll('.toggle').forEach(toggle => {
+        const passwordInput = toggle.previousElementSibling;
+        if (passwordInput && passwordInput.tagName === 'INPUT') {
+            toggle.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                toggle.classList.toggle('fa-eye');
+                toggle.classList.toggle('fa-eye-slash');
+            });
+        }
+    });
     
     // Signup button click handler
     signupButton.addEventListener('click', async (e) => {
