@@ -81,7 +81,25 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => notification.remove(), 4000)
     }
     
-    // Bottom nav home
+    // Navigation function
+    window.navigateTo = function(page) {
+        switch(page) {
+            case 'home':
+                window.location.href = 'resident-homepage.html'
+                break
+            case 'map':
+                window.location.href = 'map.html'
+                break
+            case 'notifications':
+                window.location.href = 'notif.html'
+                break
+            case 'settings':
+                // Stay on current page
+                break
+        }
+    }
+    
+    // Bottom nav home (redundant but kept for direct handler)
     document.querySelector('.nav-item i.fa-home').parentElement.onclick = () => {
         window.location.href = 'resident-homepage.html'
     }

@@ -211,10 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = 'resident-homepage.html'
                 break
             case 'map':
-                showNotification('Map feature coming soon!', 'info')
+                window.location.href = 'map.html'
                 break
             case 'notifications':
-                showNotification('No new notifications', 'info')
+                window.location.href = 'notif.html'
                 break
             case 'settings':
                 window.location.href = 'setting.html'

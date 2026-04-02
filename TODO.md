@@ -1,12 +1,11 @@
-# Task: Fix settings navigation in resident-homepage and remove duplicate profile
+# Task: Remove map feature alert and notif placeholders
 
-## Plan Steps:
-- [x] Step 1: Edit resident-homepage.js - Fix navigateTo('settings'), remove profile menu logic
-- [x] Step 2: Edit resident-homepage.html - Remove profile button from header
+## Steps to complete:
+- [x] Step 1: Update resident-homepage.js - Replace placeholder notifications with direct navigation to map.html and notif.html
+- [x] Step 2: Update setting.html - Add onclick handlers to Map and Notifications nav items
+- [x] Step 3: Update setting.js - Add navigateTo function for consistency
+- [x] Step 4: Verify navigation works without alerts (tested: clicking Map/Notifications in bottom nav now directly loads map.html/notif.html without any placeholder notifications)
+- [x] Step 5: Mark complete
 
-Current: Step 3 - Create setting.js
-- [x] Step 3: Create setting.js - Add Supabase logic, dynamic profile, logout, navigation
-- [ ] Step 4: Test navigation and functionality
-- [ ] Step 5: Complete task
+**Task completed successfully!**
 
-Current: Starting Step 1
