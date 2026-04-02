@@ -107,6 +107,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })
     
+    // Banner image shuffle for Explore Simara Island
+    const bannerImages = [
+        'assets/generate background image of corquera romblon.jpg',
+        'assets/generate background image of corquera romblon (1).jpg',
+        'assets/generate background image of corquera romblon (2).jpg',
+        'assets/generate background image of corquera romblon sea-7.jpg',
+        'assets/generate background of corquera romblon.jpg',
+        'assets/generate background of corquera romblon (1).jpg',
+        'assets/generate background of corquera romblon (2).jpg',
+        'assets/7.jpg',
+        'assets/sea.jpg',
+
+    ];
+    
+    let currentImageIndex = 0;
+    
+    function shuffleBanner() {
+        const bannerImg = document.querySelector('.banner img');
+        if (bannerImg) {
+            bannerImg.src = bannerImages[currentImageIndex];
+            currentImageIndex = (currentImageIndex + 1) % bannerImages.length;
+        }
+    }
+    
+    // Start shuffling after 2s delay, every 4s
+    setTimeout(() => {
+        shuffleBanner(); // Initial set
+        setInterval(shuffleBanner, 4000);
+    }, 2000);
+    
     // Update user interface
     function updateUserInterface(user) {
         const userNameElement = document.getElementById('userName')
