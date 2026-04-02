@@ -59,36 +59,94 @@ class WeatherService {
         }
     }
 
-    parseWeatherData(data) {
+parseWeatherData(data) {
         const weatherMain = data.weather[0].main;
         const weatherDescription = data.weather[0].description;
         const iconCode = data.weather[0].icon;
         const temp = Math.round(data.main.temp);
         
+        // Local PH time calculations (UTC + timezone)
+        const localNow = new Date((data.dt + data.timezone) * 1000);
+        const sunriseTime = new Date((data.sys.sunrise + data.timezone) * 1000);
+        const sunsetTime = new Date((data.sys.sunset + data.timezone) * 1000);
+        
+        console.log('Local now:', localNow.toLocaleString('en-PH'), 'Sunset:', sunsetTime.toLocaleString('en-PH'));
+        
+        // Check if sunset (30min window)
+        const sunsetWindow = 30 * 60 * 1000; // 30 min
+        if (localNow >= new Date(sunsetTime.getTime() - sunsetWindow) && localNow <= new Date(sunsetTime.getTime() + sunsetWindow)) {
+            return {
+                temperature: temp,
+                condition: 'Beautiful Sunset 🌅',
+                location: 'Corcuera, Romblon',
+                icon: 'fa-sunset',
+                humidity: data.main.humidity,
+                windSpeed: Math.round(data.wind.speed * 3.6),
+                feelsLike: Math.round(data.main.feels_like),
+                lastUpdated: localNow.toLocaleTimeString('en-PH')
+            };
+        }
+        
+        // Check sunrise similarly
+        if (localNow >= new Date(sunriseTime.getTime() - sunsetWindow) && localNow <= new Date(sunriseTime.getTime() + sunsetWindow)) {
+            return {
+                temperature: temp,
+                condition: 'Beautiful Sunrise 🌅',
+                location: 'Corcuera, Romblon',
+                icon: 'fa-sunrise',
+                humidity: data.main.humidity,
+                windSpeed: Math.round(data.wind.speed * 3.6),
+                feelsLike: Math.round(data.main.feels_like),
+                lastUpdated: localNow.toLocaleTimeString('en-PH')
+            };
+        }
+        
         // Philippine-specific condition formatting
         let condition = weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1);
+
         
         if (temp >= 32 && weatherMain === 'Clear') {
             condition = 'Very Hot! 🔥 ' + condition;
         } else if (temp >= 30 && weatherMain === 'Clear') {
             condition = 'Hot & Sunny 🌞';
         } else if (temp >= 28 && weatherMain === 'Clouds') {
-            condition = 'Warm & Cloudy ☁️';
+            // Refine clouds based on cloud cover %
+            const cloudCover = data.clouds.all;
+            if (cloudCover > 70) {
+                condition = 'Mostly Cloudy ☁️';
+            } else if (cloudCover > 30) {
+                condition = 'Partly Cloudy ⛅';
+            } else {
+                condition = 'Few Clouds ☀️☁️';
+            }
+            if (temp >= 28) condition = 'Warm ' + condition;
         } else if (weatherMain === 'Rain') {
             condition = 'Rainy Day 🌧️ ' + condition;
         } else if (weatherMain === 'Thunderstorm') {
             condition = 'Thunderstorm ⚡ ' + condition;
         }
         
+        const timeToSunset = Math.round((sunsetTime - localNow) / 60000); // min
+        const isEvening = localNow.getHours() >= 18;
+        let refinedIcon = this.getWeatherIcon(iconCode);
+        if (weatherMain === 'Clouds') {
+            if (data.clouds.all < 30) refinedIcon = 'fa-cloud-sun';
+            else if (data.clouds.all < 70) refinedIcon = 'fa-cloud-sun';
+            else refinedIcon = 'fa-cloud';
+        }
+        
         return {
             temperature: temp,
             condition: condition,
             location: 'Corcuera, Romblon',
-            icon: this.getWeatherIcon(iconCode),
+            icon: refinedIcon,
             humidity: data.main.humidity,
             windSpeed: Math.round(data.wind.speed * 3.6),
             feelsLike: Math.round(data.main.feels_like),
-            lastUpdated: new Date().toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila' })
+            lastUpdated: localNow.toLocaleTimeString('en-PH'),
+            cloudCover: data.clouds.all,
+            timeToSunset: timeToSunset,
+            sunsetTime: sunsetTime.toLocaleTimeString('en-PH')
         };
     }
 
@@ -178,19 +236,28 @@ class WeatherService {
         if (detailsElement) {
             detailsElement.innerHTML = `
                 <div class="weather-detail-item">
-                    <i class="fas fa-tint"></i>
-                    <span>${weatherData.humidity}%</span>
+                    <i class="fas fa-tint"></i> <span>${weatherData.humidity}%</span>
                     <small>Humidity</small>
                 </div>
                 <div class="weather-detail-item">
-                    <i class="fas fa-temperature-high"></i>
+                    <i class="fas fa-cloud"></i>
+                    <span>${weatherData.cloudCover || '?'}%</span>
+                    <small>Cloud Cover</small>
+                </div>
+                <div class="weather-detail-item">
+                    <i class="fas fa-thermometer-half"></i>
                     <span>${weatherData.feelsLike}°C</span>
-                    <small>Feels like</small>
+                    <small>Feels</small>
                 </div>
                 <div class="weather-detail-item">
                     <i class="fas fa-wind"></i>
                     <span>${weatherData.windSpeed} km/h</span>
                     <small>Wind</small>
+                </div>
+                <div class="weather-detail-item">
+                    <i class="fas fa-sunset"></i>
+                    <span>${weatherData.timeToSunset > 0 ? weatherData.timeToSunset + 'min' : 'Soon!'}</span>
+                    <small>Sunset</small>
                 </div>
             `;
         }
