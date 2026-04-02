@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const newUserName = localStorage.getItem('newUserName')
     
     if (newUserEmail) {
-        showNotification(`Welcome ${newUserName}! Please login.`, 'success')
+showNotification('Account ready! Please login with your credentials.', 'success')
         if (emailInput) emailInput.value = newUserEmail
         localStorage.removeItem('newUserEmail')
         localStorage.removeItem('newUserName')

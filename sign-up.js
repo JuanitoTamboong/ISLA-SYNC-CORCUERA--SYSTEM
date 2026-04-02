@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('User created successfully!');
                 
                 // Show success message
-                showNotification('Account created successfully! Redirecting to login...', 'success')
+showNotification('Account created successfully! Please check your email to verify your account. Redirecting to login...', 'success')
                 
                 // Store user info in localStorage for welcome message
                 localStorage.setItem('newUserEmail', email)
