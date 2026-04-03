@@ -1,38 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Verified</title>
+    <title>Email Verified!</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: #f0f2f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .box {
+        .container {
             text-align: center;
             background: white;
             padding: 40px;
             border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        .check {
-            font-size: 64px;
-            color: #4CAF50;
-        }
+        .loading { font-size: 50px; color: #667eea; }
+        .success { font-size: 64px; color: #4CAF50; }
+        .error { font-size: 64px; color: #f44336; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <div class="check">✅</div>
-        <h2>Email Verified!</h2>
-        <p>You can close this window now.</p>
+    <div class="container" id="container">
+        <div id="loading">
+            <div class="loading">⏳</div>
+            <h2>Verifying your email...</h2>
+        </div>
     </div>
+
     <script>
-        // Auto close after 2 seconds
-        setTimeout(() => window.close(), 2000);
+        const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
+        
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        async function verify() {
+            const hash = window.location.hash;
+            const token = hash.split('access_token=')[1]?.split('&')[0];
+            
+            if (!token) {
+                showError('No verification token found');
+                return;
+            }
+            
+            const { error } = await supabase.auth.verifyOtp({
+                token_hash: token,
+                type: 'signup'
+            });
+            
+            if (error) {
+                showError(error.message);
+            } else {
+                showSuccess();
+            }
+        }
+        
+        function showSuccess() {
+            document.getElementById('loading').innerHTML = `
+                <div class="success">✅</div>
+                <h2>Email Verified Successfully!</h2>
+                <p>You can close this window now.</p>
+            `;
+            setTimeout(() => window.close(), 2000);
+        }
+        
+        function showError(msg) {
+            document.getElementById('loading').innerHTML = `
+                <div class="error">❌</div>
+                <h2>Verification Failed</h2>
+                <p>${msg}</p>
+                <p>Please sign up again.</p>
+            `;
+        }
+        
+        verify();
     </script>
 </body>
 </html>
