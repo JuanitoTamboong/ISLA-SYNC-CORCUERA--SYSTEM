@@ -1,35 +1,266 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Email Verified!</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Email Verification | Isla Sync</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
         }
+
+        /* Animated background bubbles */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
         .container {
             text-align: center;
             background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 90%;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
         }
-        .loading { font-size: 50px; color: #667eea; }
-        .success { font-size: 64px; color: #4CAF50; }
-        .error { font-size: 64px; color: #f44336; }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Logo/Icon Styles */
+        .icon-wrapper {
+            margin-bottom: 25px;
+        }
+
+        .loading-icon {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+
+        .loading-icon::after {
+            content: '⟳';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: white;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .success-icon, .error-icon {
+            font-size: 80px;
+            animation: bounce 0.5s ease-out;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .success-icon {
+            color: #10b981;
+        }
+
+        .error-icon {
+            color: #ef4444;
+        }
+
+        h2 {
+            color: #1f2937;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: #6b7280;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .message-box {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .message-box p {
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button.secondary {
+            background: #6b7280;
+        }
+
+        button.secondary:hover {
+            background: #4b5563;
+        }
+
+        .auto-close {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 100%;
+            animation: shrink 3s linear forwards;
+        }
+
+        @keyframes shrink {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            h2 {
+                font-size: 22px;
+            }
+            .success-icon, .error-icon {
+                font-size: 60px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container" id="container">
-        <div id="loading">
-            <div class="loading">⏳</div>
-            <h2>Verifying your email...</h2>
+        <div id="loadingView">
+            <div class="icon-wrapper">
+                <div class="loading-icon"></div>
+            </div>
+            <h2>Verifying Your Email</h2>
+            <p>Please wait while we confirm your email address...</p>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="successView" class="hidden">
+            <div class="icon-wrapper">
+                <div class="success-icon">✓</div>
+            </div>
+            <h2>Email Verified!</h2>
+            <p>Your email has been successfully confirmed.</p>
+            <div class="message-box">
+                <p>✨ You can now access all features of Isla Sync Corcuera System.</p>
+            </div>
+            <button onclick="closeWindow()">Close Window</button>
+            <button onclick="goToLogin()" class="secondary">Go to Login</button>
+            <div class="auto-close" id="autoCloseMsg">Closing in 3 seconds...</div>
+        </div>
+
+        <div id="errorView" class="hidden">
+            <div class="icon-wrapper">
+                <div class="error-icon">✗</div>
+            </div>
+            <h2>Verification Failed</h2>
+            <p id="errorMessage">Unable to verify your email.</p>
+            <div class="message-box">
+                <p>⚠️ The verification link may be expired or already used.</p>
+            </div>
+            <button onclick="closeWindow()">Close Window</button>
+            <button onclick="goToSignup()" class="secondary">Sign Up Again</button>
+        </div>
+
+        <div class="footer">
+            <p>Isla Sync Corcuera System © 2026</p>
         </div>
     </div>
 
@@ -38,49 +269,82 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
         
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let autoCloseTimeout;
         
         async function verify() {
             const hash = window.location.hash;
             const token = hash.split('access_token=')[1]?.split('&')[0];
             
-            console.log('Token found:', token ? 'Yes' : 'No');
+            console.log('Verification started...');
             
             if (!token) {
-                showError('No verification token found');
+                showError('No verification token found. Please check your email link.');
                 return;
             }
             
-            const { error } = await supabase.auth.verifyOtp({
-                token_hash: token,
-                type: 'signup'
-            });
-            
-            if (error) {
-                console.error('Error:', error);
-                showError(error.message);
-            } else {
-                showSuccess();
+            try {
+                const { error } = await supabase.auth.verifyOtp({
+                    token_hash: token,
+                    type: 'signup'
+                });
+                
+                if (error) {
+                    console.error('Verification error:', error);
+                    showError(error.message || 'Verification failed. The link may be expired.');
+                } else {
+                    showSuccess();
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                showError('An unexpected error occurred. Please try again.');
             }
         }
         
         function showSuccess() {
-            document.getElementById('loading').innerHTML = `
-                <div class="success">✅</div>
-                <h2>Email Verified Successfully!</h2>
-                <p>You can close this window now.</p>
-            `;
-            setTimeout(() => window.close(), 2000);
+            document.getElementById('loadingView').classList.add('hidden');
+            document.getElementById('successView').classList.remove('hidden');
+            
+            let countdown = 3;
+            const autoCloseMsg = document.getElementById('autoCloseMsg');
+            
+            autoCloseTimeout = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    autoCloseMsg.textContent = `Closing in ${countdown} seconds...`;
+                } else {
+                    clearInterval(autoCloseTimeout);
+                    window.close();
+                }
+            }, 1000);
         }
         
         function showError(msg) {
-            document.getElementById('loading').innerHTML = `
-                <div class="error">❌</div>
-                <h2>Verification Failed</h2>
-                <p>${msg}</p>
-                <p>Please sign up again.</p>
-            `;
+            document.getElementById('loadingView').classList.add('hidden');
+            document.getElementById('errorView').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = msg;
+            
+            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
         }
         
+        function closeWindow() {
+            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
+            window.close();
+            setTimeout(() => {
+                alert('You can close this tab/window manually.');
+            }, 100);
+        }
+        
+        function goToLogin() {
+            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
+            window.location.href = 'login.html';
+        }
+        
+        function goToSignup() {
+            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
+            window.location.href = 'signup.html';
+        }
+        
+        // Start verification when page loads
         verify();
     </script>
 </body>
