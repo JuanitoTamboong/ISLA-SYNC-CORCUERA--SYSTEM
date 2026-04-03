@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Email Verification | Isla Sync</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -24,7 +23,6 @@
             overflow: hidden;
         }
 
-        /* Animated background bubbles */
         body::before {
             content: '';
             position: absolute;
@@ -63,7 +61,6 @@
             }
         }
 
-        /* Logo/Icon Styles */
         .icon-wrapper {
             margin-bottom: 25px;
         }
@@ -196,7 +193,6 @@
             display: none;
         }
 
-        /* Footer */
         .footer {
             margin-top: 25px;
             padding-top: 20px;
@@ -205,7 +201,6 @@
             color: #9ca3af;
         }
 
-        /* Responsive */
         @media (max-width: 480px) {
             .container {
                 padding: 30px 20px;
@@ -256,7 +251,6 @@
                 <p>⚠️ The verification link may be expired or already used.</p>
             </div>
             <button onclick="closeWindow()">Close Window</button>
-            <button onclick="goToSignup()" class="secondary">Sign Up Again</button>
         </div>
 
         <div class="footer">
@@ -264,88 +258,90 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
-        
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let autoCloseTimeout;
-        
-        async function verify() {
-            const hash = window.location.hash;
-            const token = hash.split('access_token=')[1]?.split('&')[0];
+        // FIXED: Load supabase first then run verification
+        (function() {
+            const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
             
-            console.log('Verification started...');
+            // Create supabase client using window.supabase
+            const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            let autoCloseTimeout;
             
-            if (!token) {
-                showError('No verification token found. Please check your email link.');
-                return;
-            }
-            
-            try {
-                const { error } = await supabase.auth.verifyOtp({
-                    token_hash: token,
-                    type: 'signup'
-                });
+            async function verify() {
+                const hash = window.location.hash;
+                const token = hash.split('access_token=')[1]?.split('&')[0];
                 
-                if (error) {
-                    console.error('Verification error:', error);
-                    showError(error.message || 'Verification failed. The link may be expired.');
-                } else {
-                    showSuccess();
+                console.log('Verification started...');
+                console.log('Token found:', token ? 'Yes' : 'No');
+                
+                if (!token) {
+                    showError('No verification token found. Please check your email link.');
+                    return;
                 }
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                showError('An unexpected error occurred. Please try again.');
+                
+                try {
+                    const { error } = await supabaseClient.auth.verifyOtp({
+                        token_hash: token,
+                        type: 'signup'
+                    });
+                    
+                    if (error) {
+                        console.error('Verification error:', error);
+                        showError(error.message || 'Verification failed. The link may be expired.');
+                    } else {
+                        showSuccess();
+                    }
+                } catch (err) {
+                    console.error('Unexpected error:', err);
+                    showError('An unexpected error occurred. Please try again.');
+                }
             }
-        }
-        
-        function showSuccess() {
-            document.getElementById('loadingView').classList.add('hidden');
-            document.getElementById('successView').classList.remove('hidden');
             
-            let countdown = 3;
-            const autoCloseMsg = document.getElementById('autoCloseMsg');
+            function showSuccess() {
+                document.getElementById('loadingView').classList.add('hidden');
+                document.getElementById('successView').classList.remove('hidden');
+                
+                let countdown = 3;
+                const autoCloseMsg = document.getElementById('autoCloseMsg');
+                
+                autoCloseTimeout = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        autoCloseMsg.textContent = `Closing in ${countdown} seconds...`;
+                    } else {
+                        clearInterval(autoCloseTimeout);
+                        window.close();
+                    }
+                }, 1000);
+            }
             
-            autoCloseTimeout = setInterval(() => {
-                countdown--;
-                if (countdown > 0) {
-                    autoCloseMsg.textContent = `Closing in ${countdown} seconds...`;
-                } else {
-                    clearInterval(autoCloseTimeout);
-                    window.close();
-                }
-            }, 1000);
-        }
-        
-        function showError(msg) {
-            document.getElementById('loadingView').classList.add('hidden');
-            document.getElementById('errorView').classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = msg;
+            function showError(msg) {
+                document.getElementById('loadingView').classList.add('hidden');
+                document.getElementById('errorView').classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = msg;
+                
+                if (autoCloseTimeout) clearInterval(autoCloseTimeout);
+            }
             
-            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
-        }
-        
-        function closeWindow() {
-            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
-            window.close();
-            setTimeout(() => {
-                alert('You can close this tab/window manually.');
-            }, 100);
-        }
-        
-        function goToLogin() {
-            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
-            window.location.href = 'login.html';
-        }
-        
-        function goToSignup() {
-            if (autoCloseTimeout) clearInterval(autoCloseTimeout);
-            window.location.href = 'signup.html';
-        }
-        
-        // Start verification when page loads
-        verify();
+            // Make functions global for button onclick
+            window.closeWindow = function() {
+                if (autoCloseTimeout) clearInterval(autoCloseTimeout);
+                window.close();
+                setTimeout(() => {
+                    alert('You can close this tab/window manually.');
+                }, 100);
+            };
+            
+            window.goToLogin = function() {
+                if (autoCloseTimeout) clearInterval(autoCloseTimeout);
+                window.location.href = 'login.html';
+            };
+            
+            // Start verification when page loads
+            verify();
+        })();
     </script>
 </body>
 </html>
