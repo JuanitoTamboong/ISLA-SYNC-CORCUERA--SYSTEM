@@ -43,6 +43,8 @@
             const hash = window.location.hash;
             const token = hash.split('access_token=')[1]?.split('&')[0];
             
+            console.log('Token found:', token ? 'Yes' : 'No');
+            
             if (!token) {
                 showError('No verification token found');
                 return;
@@ -54,6 +56,7 @@
             });
             
             if (error) {
+                console.error('Error:', error);
                 showError(error.message);
             } else {
                 showSuccess();
