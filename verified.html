@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Email Verification | Isla Sync</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified | Isla Sync</title>
     <style>
         * {
             margin: 0;
@@ -23,11 +23,12 @@
             overflow: hidden;
         }
 
+        /* Animated background */
         body::before {
             content: '';
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: 200%;
+            height: 200%;
             background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
             animation: pulse 4s ease-in-out infinite;
         }
@@ -37,13 +38,39 @@
             50% { opacity: 0.6; transform: scale(1.1); }
         }
 
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
         .container {
             text-align: center;
             background: white;
-            padding: 50px 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 450px;
+            padding: 60px 50px;
+            border-radius: 30px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
             width: 90%;
             z-index: 1;
             animation: slideUp 0.6s ease-out;
@@ -53,7 +80,7 @@
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(40px);
             }
             to {
                 opacity: 1;
@@ -61,287 +88,229 @@
             }
         }
 
-        .icon-wrapper {
-            margin-bottom: 25px;
+        /* Animated checkmark */
+        .checkmark-wrapper {
+            margin-bottom: 30px;
         }
 
-        .loading-icon {
-            display: inline-block;
-            width: 80px;
-            height: 80px;
+        .checkmark-circle {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            animation: spin 1s linear infinite;
-            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease-out, glow 2s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
         }
 
-        .loading-icon::after {
-            content: '⟳';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 40px;
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            }
+            50% {
+                box-shadow: 0 15px 40px rgba(16, 185, 129, 0.5);
+            }
+        }
+
+        .checkmark {
+            font-size: 55px;
             color: white;
+            font-weight: bold;
+            animation: checkBounce 0.6s ease-out 0.3s both;
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        @keyframes checkBounce {
+            0% {
+                transform: scale(0);
+            }
+            80% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
-        .success-icon, .error-icon {
-            font-size: 80px;
-            animation: bounce 0.5s ease-out;
-        }
-
-        @keyframes bounce {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        .success-icon {
-            color: #10b981;
-        }
-
-        .error-icon {
-            color: #ef4444;
-        }
-
-        h2 {
+        h1 {
             color: #1f2937;
-            font-size: 26px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        p {
-            color: #6b7280;
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 20px;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
         }
 
         .message-box {
-            background: #f3f4f6;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 25px 0;
+            border: 1px solid #bbf7d0;
         }
 
         .message-box p {
+            color: #166534;
+            font-size: 15px;
+            line-height: 1.6;
             margin-bottom: 0;
-            font-size: 14px;
         }
 
-        button {
+        .message-box .small-text {
+            font-size: 13px;
+            color: #15803d;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .info-text {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+
+        .close-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 28px;
+            padding: 14px 35px;
             border-radius: 50px;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            margin: 8px;
+            margin-top: 10px;
             transition: all 0.3s ease;
-            font-family: inherit;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
-        button:hover {
+        .close-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
         }
 
-        button.secondary {
-            background: #6b7280;
-        }
-
-        button.secondary:hover {
-            background: #4b5563;
+        .close-btn:active {
+            transform: translateY(0);
         }
 
         .auto-close {
-            font-size: 12px;
+            font-size: 13px;
             color: #9ca3af;
             margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 3px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            margin-top: 20px;
-            overflow: hidden;
+        .countdown {
+            font-weight: 600;
+            color: #667eea;
+            background: #f3f4f6;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            width: 100%;
-            animation: shrink 3s linear forwards;
-        }
-
-        @keyframes shrink {
-            from { width: 100%; }
-            to { width: 0%; }
-        }
-
-        .hidden {
-            display: none;
+        .progress-ring {
+            width: 30px;
+            height: 30px;
         }
 
         .footer {
-            margin-top: 25px;
+            margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #e5e7eb;
             font-size: 11px;
             color: #9ca3af;
         }
 
+        /* Responsive */
         @media (max-width: 480px) {
             .container {
-                padding: 30px 20px;
+                padding: 40px 25px;
             }
-            h2 {
-                font-size: 22px;
+            h1 {
+                font-size: 26px;
             }
-            .success-icon, .error-icon {
-                font-size: 60px;
+            .checkmark-circle {
+                width: 80px;
+                height: 80px;
+            }
+            .checkmark {
+                font-size: 45px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container" id="container">
-        <div id="loadingView">
-            <div class="icon-wrapper">
-                <div class="loading-icon"></div>
-            </div>
-            <h2>Verifying Your Email</h2>
-            <p>Please wait while we confirm your email address...</p>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
+    <div class="container">
+        <div class="checkmark-wrapper">
+            <div class="checkmark-circle">
+                <div class="checkmark">✓</div>
             </div>
         </div>
-
-        <div id="successView" class="hidden">
-            <div class="icon-wrapper">
-                <div class="success-icon">✓</div>
-            </div>
-            <h2>Email Verified!</h2>
-            <p>Your email has been successfully confirmed.</p>
-            <div class="message-box">
-                <p>✨ You can now access all features of Isla Sync Corcuera System.</p>
-            </div>
-            <button onclick="closeWindow()">Close Window</button>
-            <button onclick="goToLogin()" class="secondary">Go to Login</button>
-            <div class="auto-close" id="autoCloseMsg">Closing in 3 seconds...</div>
+        
+        <h1>Email Verified!</h1>
+        
+        <div class="message-box">
+            <p>✨ Your email has been successfully confirmed ✨</p>
+            <span class="small-text">You can now access all features of Isla Sync Corcuera System</span>
         </div>
-
-        <div id="errorView" class="hidden">
-            <div class="icon-wrapper">
-                <div class="error-icon">✗</div>
-            </div>
-            <h2>Verification Failed</h2>
-            <p id="errorMessage">Unable to verify your email.</p>
-            <div class="message-box">
-                <p>⚠️ The verification link may be expired or already used.</p>
-            </div>
-            <button onclick="closeWindow()">Close Window</button>
+        
+        <p class="info-text">Thank you for verifying your account. You're all set!</p>
+        
+        <button class="close-btn" onclick="closeWindow()">Close Window</button>
+        
+        <div class="auto-close">
+            <span>This window will close automatically in</span>
+            <span class="countdown" id="countdown">3</span>
+            <span>seconds</span>
         </div>
-
+        
         <div class="footer">
             <p>Isla Sync Corcuera System © 2026</p>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // FIXED: Load supabase first then run verification
-        (function() {
-            const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
-            
-            // Create supabase client using window.supabase
-            const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            let autoCloseTimeout;
-            
-            async function verify() {
-                const hash = window.location.hash;
-                const token = hash.split('access_token=')[1]?.split('&')[0];
-                
-                console.log('Verification started...');
-                console.log('Token found:', token ? 'Yes' : 'No');
-                
-                if (!token) {
-                    showError('No verification token found. Please check your email link.');
-                    return;
-                }
-                
-                try {
-                    const { error } = await supabaseClient.auth.verifyOtp({
-                        token_hash: token,
-                        type: 'signup'
-                    });
-                    
-                    if (error) {
-                        console.error('Verification error:', error);
-                        showError(error.message || 'Verification failed. The link may be expired.');
-                    } else {
-                        showSuccess();
-                    }
-                } catch (err) {
-                    console.error('Unexpected error:', err);
-                    showError('An unexpected error occurred. Please try again.');
-                }
+        function closeWindow() {
+            window.close();
+            // Fallback if window.close() doesn't work
+            setTimeout(() => {
+                alert('You can close this tab/window manually.');
+            }, 100);
+        }
+        
+        // Auto close countdown
+        let countdown = 3;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            if (countdownElement) {
+                countdownElement.textContent = countdown;
             }
             
-            function showSuccess() {
-                document.getElementById('loadingView').classList.add('hidden');
-                document.getElementById('successView').classList.remove('hidden');
-                
-                let countdown = 3;
-                const autoCloseMsg = document.getElementById('autoCloseMsg');
-                
-                autoCloseTimeout = setInterval(() => {
-                    countdown--;
-                    if (countdown > 0) {
-                        autoCloseMsg.textContent = `Closing in ${countdown} seconds...`;
-                    } else {
-                        clearInterval(autoCloseTimeout);
-                        window.close();
-                    }
-                }, 1000);
+            if (countdown <= 0) {
+                clearInterval(timer);
+                closeWindow();
             }
-            
-            function showError(msg) {
-                document.getElementById('loadingView').classList.add('hidden');
-                document.getElementById('errorView').classList.remove('hidden');
-                document.getElementById('errorMessage').textContent = msg;
-                
-                if (autoCloseTimeout) clearInterval(autoCloseTimeout);
-            }
-            
-            // Make functions global for button onclick
-            window.closeWindow = function() {
-                if (autoCloseTimeout) clearInterval(autoCloseTimeout);
-                window.close();
-                setTimeout(() => {
-                    alert('You can close this tab/window manually.');
-                }, 100);
-            };
-            
-            window.goToLogin = function() {
-                if (autoCloseTimeout) clearInterval(autoCloseTimeout);
-                window.location.href = 'login.html';
-            };
-            
-            // Start verification when page loads
-            verify();
-        })();
+        }, 1000);
     </script>
 </body>
 </html>
