@@ -23,7 +23,6 @@
             overflow: hidden;
         }
 
-        /* Animated background */
         body::before {
             content: '';
             position: absolute;
@@ -62,7 +61,6 @@
             }
         }
 
-        /* Animated checkmark */
         .checkmark-wrapper {
             margin-bottom: 30px;
         }
@@ -208,6 +206,26 @@
             color: #9ca3af;
         }
 
+        .loading {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 40px 25px;
@@ -226,7 +244,13 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="verifyingState">
+        <div class="loading"></div>
+        <h2 style="margin-top: 20px; color: #667eea;">Verifying your email...</h2>
+        <p style="color: #6b7280; margin-top: 10px;">Please wait while we confirm your email address.</p>
+    </div>
+
+    <div class="container" id="successState" style="display: none;">
         <div class="checkmark-wrapper">
             <div class="checkmark-circle">
                 <div class="checkmark">✓</div>
@@ -255,30 +279,128 @@
         </div>
     </div>
 
+    <div class="container" id="errorState" style="display: none;">
+        <div class="checkmark-wrapper">
+            <div class="checkmark-circle" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                <div class="checkmark" style="font-size: 50px;">!</div>
+            </div>
+        </div>
+        
+        <h1>Verification Failed</h1>
+        
+        <div class="message-box" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-color: #fecaca;">
+            <p style="color: #991b1b;">⚠️ Unable to verify your email</p>
+            <span class="small-text" style="color: #991b1b;" id="errorMessage">The verification link may have expired or is invalid.</span>
+        </div>
+        
+        <button class="close-btn" onclick="closeWindow()">Close Window</button>
+        
+        <div class="footer">
+            <p>Isla Sync Corcuera System © 2026 | Bridging Corcuera, Connecting Hearts</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        function closeWindow() {
-            window.close();
-            // Fallback if window.close() doesn't work
-            setTimeout(() => {
-                alert('You can close this tab/window manually.');
-            }, 100);
-        }
-        
-        // Auto close countdown
-        let countdown = 3;
-        const countdownElement = document.getElementById('countdown');
-        
-        const timer = setInterval(() => {
-            countdown--;
-            if (countdownElement) {
-                countdownElement.textContent = countdown;
-            }
+        (function() {
+            // Supabase configuration
+            const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
             
-            if (countdown <= 0) {
-                clearInterval(timer);
-                closeWindow();
+            // Create supabase client
+            const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+
+            const verifyingState = document.getElementById('verifyingState');
+            const successState = document.getElementById('successState');
+            const errorState = document.getElementById('errorState');
+
+            async function processVerification() {
+                // Get the token from URL hash
+                const hash = window.location.hash;
+                
+                if (!hash || !hash.includes('access_token')) {
+                    showError('No verification token found. Please check your email link.');
+                    return;
+                }
+
+                try {
+                    // Parse the token from URL
+                    const params = new URLSearchParams(hash.substring(1));
+                    const accessToken = params.get('access_token');
+                    const refreshToken = params.get('refresh_token');
+                    
+                    if (!accessToken) {
+                        showError('Invalid verification link. Missing token.');
+                        return;
+                    }
+                    
+                    // Set the session manually to verify email
+                    const { data, error } = await _supabase.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken || ''
+                    });
+                    
+                    if (error) {
+                        console.error('Session error:', error);
+                        showError(error.message);
+                        return;
+                    }
+                    
+                    if (data.session) {
+                        // Email is now verified!
+                        verifyingState.style.display = 'none';
+                        successState.style.display = 'block';
+                        
+                        // Auto close countdown
+                        let countdown = 3;
+                        const countdownElement = document.getElementById('countdown');
+                        
+                        const timer = setInterval(() => {
+                            countdown--;
+                            if (countdownElement) {
+                                countdownElement.textContent = countdown;
+                            }
+                            
+                            if (countdown <= 0) {
+                                clearInterval(timer);
+                                closeWindow();
+                            }
+                        }, 1000);
+                    } else {
+                        showError('Unable to verify email. The link may have expired.');
+                    }
+                } catch (error) {
+                    console.error('Verification error:', error);
+                    showError(error.message || 'Verification failed. Please try again.');
+                }
             }
-        }, 1000);
+
+            function showError(message) {
+                verifyingState.style.display = 'none';
+                errorState.style.display = 'block';
+                const errorMessageEl = document.getElementById('errorMessage');
+                if (errorMessageEl) {
+                    errorMessageEl.textContent = message;
+                }
+            }
+
+            function closeWindow() {
+                window.close();
+                // Fallback if window.close() doesn't work
+                setTimeout(() => {
+                    alert('Verification complete! You can now log in to your account.');
+                }, 100);
+            }
+
+            // Start verification when page loads
+            processVerification();
+        })();
     </script>
 </body>
 </html>
