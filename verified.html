@@ -38,32 +38,6 @@
             50% { opacity: 0.6; transform: scale(1.1); }
         }
 
-        /* Floating particles */
-        .particle {
-            position: absolute;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: float linear infinite;
-        }
-
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
         .container {
             text-align: center;
             background: white;
@@ -226,11 +200,6 @@
             font-size: 13px;
         }
 
-        .progress-ring {
-            width: 30px;
-            height: 30px;
-        }
-
         .footer {
             margin-top: 30px;
             padding-top: 20px;
@@ -239,7 +208,6 @@
             color: #9ca3af;
         }
 
-        /* Responsive */
         @media (max-width: 480px) {
             .container {
                 padding: 40px 25px;
@@ -283,7 +251,7 @@
         </div>
         
         <div class="footer">
-            <p>Isla Sync Corcuera System © 2026</p>
+            <p>Isla Sync Corcuera System © 2026 | Bridging Corcuera, Connecting Hearts</p>
         </div>
     </div>
 
