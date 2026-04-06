@@ -179,25 +179,6 @@
             transform: translateY(0);
         }
 
-        .auto-close {
-            font-size: 13px;
-            color: #9ca3af;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .countdown {
-            font-weight: 600;
-            color: #667eea;
-            background: #f3f4f6;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
-
         .footer {
             margin-top: 30px;
             padding-top: 20px;
@@ -220,10 +201,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .hidden {
-            display: none;
         }
 
         @media (max-width: 480px) {
@@ -266,13 +243,7 @@
         
         <p class="info-text">Thank you for verifying your account. You're all set!</p>
         
-        <button class="close-btn" onclick="redirectToLogin()">Go to Login</button>
-        
-        <div class="auto-close">
-            <span>Redirecting to login in</span>
-            <span class="countdown" id="countdown">5</span>
-            <span>seconds</span>
-        </div>
+        <button class="close-btn" onclick="closeWindow()">Close</button>
         
         <div class="footer">
             <p>Isla Sync Corcuera System © 2026 | Bridging Corcuera, Connecting Hearts</p>
@@ -293,21 +264,21 @@
             <span class="small-text" style="color: #991b1b;" id="errorMessage">The verification link may have expired or is invalid.</span>
         </div>
         
-        <button class="close-btn" onclick="redirectToSignup()">Back to Sign Up</button>
+        <button class="close-btn" onclick="closeWindow()">Close</button>
         
         <div class="footer">
             <p>Isla Sync Corcuera System © 2026 | Bridging Corcuera, Connecting Hearts</p>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
+    <script type="module">
         // Supabase configuration
         const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
         
-        // Create supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        // Import and initialize Supabase
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.39.0');
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
                 autoRefreshToken: true,
                 persistSession: true,
@@ -320,30 +291,9 @@
         const errorState = document.getElementById('errorState');
 
         async function processVerification() {
-            // Get the full URL and extract the token
-            const hash = window.location.hash;
-            
-            if (!hash || !hash.includes('access_token')) {
-                showError('No verification token found. Please check your email link.');
-                return;
-            }
-
             try {
-                // Parse the token from URL
-                const params = new URLSearchParams(hash.substring(1));
-                const accessToken = params.get('access_token');
-                const refreshToken = params.get('refresh_token');
-                
-                if (!accessToken) {
-                    showError('Invalid verification link. Missing token.');
-                    return;
-                }
-                
-                // Set the session manually to verify email
-                const { data, error } = await supabase.auth.setSession({
-                    access_token: accessToken,
-                    refresh_token: refreshToken || ''
-                });
+                // Get the session from the URL
+                const { data: { session }, error } = await supabase.auth.getSession();
                 
                 if (error) {
                     console.error('Session error:', error);
@@ -351,28 +301,28 @@
                     return;
                 }
                 
-                if (data.session) {
-                    // Email is now verified!
-                    verifyingState.style.display = 'none';
-                    successState.style.display = 'block';
+                if (session) {
+                    // Check if email is confirmed
+                    const user = session.user;
                     
-                    // Auto redirect countdown
-                    let countdown = 5;
-                    const countdownElement = document.getElementById('countdown');
-                    
-                    const timer = setInterval(() => {
-                        countdown--;
-                        if (countdownElement) {
-                            countdownElement.textContent = countdown;
-                        }
-                        
-                        if (countdown <= 0) {
-                            clearInterval(timer);
-                            redirectToLogin();
-                        }
-                    }, 1000);
+                    if (user.email_confirmed_at) {
+                        // Email is verified!
+                        verifyingState.style.display = 'none';
+                        successState.style.display = 'block';
+                    } else {
+                        showError('Email not confirmed yet. Please check your email for the verification link.');
+                    }
                 } else {
-                    showError('Unable to verify email. The link may have expired.');
+                    // Check URL for error parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const errorCode = urlParams.get('error');
+                    const errorDesc = urlParams.get('error_description');
+                    
+                    if (errorCode || errorDesc) {
+                        showError(errorDesc || 'Verification failed. The link may be invalid or expired.');
+                    } else {
+                        showError('No verification session found. The link may have expired.');
+                    }
                 }
             } catch (error) {
                 console.error('Verification error:', error);
@@ -389,13 +339,14 @@
             }
         }
 
-        function redirectToLogin() {
-            window.location.href = 'https://isla-sync-corcuera-system.vercel.app/login.html';
-        }
-
-        function redirectToSignup() {
-            window.location.href = 'https://isla-sync-corcuera-system.vercel.app/signup.html';
-        }
+        // Close window function
+        window.closeWindow = function() {
+            window.close();
+            // If window.close() doesn't work (due to browser restrictions), show a message
+            setTimeout(() => {
+                alert('Please close this tab/window manually.');
+            }, 100);
+        };
 
         // Start verification when page loads
         processVerification();
