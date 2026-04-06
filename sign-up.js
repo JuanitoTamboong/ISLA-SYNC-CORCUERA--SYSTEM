@@ -1,4 +1,4 @@
-// Import Supabase client - CORRECT WAY
+// Import Supabase client
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
 
 // Supabase configuration
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             console.log('Creating user in Supabase...');
             
-            // Create user with Supabase Auth
+            // Create user with Supabase Auth - FIXED WITH REDIRECT URL
             const { data, error } = await supabase.auth.signUp({
                 email: email,
                 password: password,
@@ -115,7 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     data: {
                         full_name: fullName,
                         user_type: 'resident'
-                    }
+                    },
+                    emailRedirectTo: 'https://isla-sync-corcuera-system.vercel.app/verify-email.html'  // KEY FIX!
                 }
             })
             
@@ -133,9 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.user) {
                 console.log('User created successfully!');
+                console.log('Verification email sent to:', email);
                 
                 // Show success message
-showNotification('Account created successfully! Please check your email to verify your account. Redirecting to login...', 'success')
+                showNotification('Account created successfully! Please check your email to verify your account. Redirecting to login...', 'success')
                 
                 // Store user info in localStorage for welcome message
                 localStorage.setItem('newUserEmail', email)
@@ -194,11 +196,11 @@ showNotification('Account created successfully! Please check your email to verif
         
         document.body.appendChild(notification)
         
-        // Remove notification after 3 seconds
+        // Remove notification after 4 seconds
         setTimeout(() => {
             if (notification && notification.parentNode) {
                 notification.remove()
             }
-        }, 3000)
+        }, 4000)
     }
 })
