@@ -77,7 +77,7 @@ parseWeatherData(data) {
         if (localNow >= new Date(sunsetTime.getTime() - sunsetWindow) && localNow <= new Date(sunsetTime.getTime() + sunsetWindow)) {
             return {
                 temperature: temp,
-                condition: 'Beautiful Sunset 🌅',
+                condition: 'Beautiful Sunset',
                 location: 'Corcuera, Romblon',
                 icon: 'fa-sunset',
                 humidity: data.main.humidity,
@@ -91,7 +91,7 @@ parseWeatherData(data) {
         if (localNow >= new Date(sunriseTime.getTime() - sunsetWindow) && localNow <= new Date(sunriseTime.getTime() + sunsetWindow)) {
             return {
                 temperature: temp,
-                condition: 'Beautiful Sunrise 🌅',
+                condition: 'Beautiful Sunrise',
                 location: 'Corcuera, Romblon',
                 icon: 'fa-sunrise',
                 humidity: data.main.humidity,
@@ -106,22 +106,22 @@ parseWeatherData(data) {
 
         
         if (temp >= 32 && weatherMain === 'Clear') {
-            condition = 'Very Hot! 🔥 ' + condition;
+            condition = 'Very Hot! ' + condition;
         } else if (temp >= 30 && weatherMain === 'Clear') {
-            condition = 'Hot & Sunny 🌞';
+            condition = 'Hot & Sunny';
         } else if (temp >= 28 && weatherMain === 'Clouds') {
             // Refine clouds based on cloud cover %
             const cloudCover = data.clouds.all;
             if (cloudCover > 70) {
-                condition = 'Mostly Cloudy ☁️';
+                condition = 'Mostly Cloudy';
             } else if (cloudCover > 30) {
-                condition = 'Partly Cloudy ⛅';
+                condition = 'Partly Cloudy';
             } else {
-                condition = 'Few Clouds ☀️☁️';
+                condition = 'Few Clouds';
             }
             if (temp >= 28) condition = 'Warm ' + condition;
         } else if (weatherMain === 'Rain') {
-            condition = 'Rainy Day 🌧️ ' + condition;
+            condition = 'Rainy Day ' + condition;
         } else if (weatherMain === 'Thunderstorm') {
             condition = 'Thunderstorm ⚡ ' + condition;
         }
@@ -168,7 +168,7 @@ parseWeatherData(data) {
         
         return {
             temperature: 31,
-            condition: 'Hot & Sunny 🌞',
+            condition: 'Hot & Sunny',
             location: 'Corcuera, Romblon',
             icon: 'fa-sun',
             humidity: 72,

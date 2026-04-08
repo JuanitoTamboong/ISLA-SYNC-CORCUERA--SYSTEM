@@ -1,22 +1,6 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+@import "shared.css";
 
-body {
-    background: #ffffff;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* CONTAINER */
-.container {
-    max-width: 420px;
-    margin: auto;
-    background: #f1f5f9;
-    padding: 20px 15px 100px;
-    min-height: 100vh;
-}
+/* Page-specific homepage styles */
 
 /* HEADER */
 .header {
