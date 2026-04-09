@@ -24,36 +24,7 @@ let currentMarkers = [];
 let currentRoute = null;
 let userLocation = null;
 let currentCategory = 0;
-
-// REAL places on Simara Island
-const REAL_SIMARA_PLACES = {
-    discovery: [
-        { name: "Simara Island Lighthouse", lat: 12.8092, lon: 122.0512, type: "lighthouse", description: "Historic lighthouse guiding ships through Romblon waters" },
-        { name: "Corcuera Municipal Hall", lat: 12.8055, lon: 122.0474, type: "government", description: "Town hall of Corcuera" },
-        { name: "St. Vincent Ferrer Church", lat: 12.8060, lon: 122.0480, type: "church", description: "Historic Catholic church in Corcuera" },
-        { name: "Simara Island Viewpoint", lat: 12.8100, lon: 122.0520, type: "viewpoint", description: "Panoramic view of the island" }
-    ],
-    nature: [
-        { name: "Busay Falls", lat: 12.8080, lon: 122.0450, type: "waterfall", description: "Beautiful waterfall on Simara Island" },
-        { name: "Taclobo Beach", lat: 12.8020, lon: 122.0500, type: "beach", description: "White sand beach with clear waters" },
-        { name: "Simara Rock Formation", lat: 12.8110, lon: 122.0530, type: "nature", description: "Unique rock formations along the coast" },
-        { name: "Mangrove Forest", lat: 12.8040, lon: 122.0460, type: "nature", description: "Protected mangrove ecosystem" },
-        { name: "Hidden Cove Beach", lat: 12.8075, lon: 122.0495, type: "beach", description: "Secluded beach perfect for swimming" }
-    ],
-    dining: [
-        { name: "Simara Seafood Grill", lat: 12.8060, lon: 122.0475, type: "restaurant", description: "Fresh seafood and local cuisine" },
-        { name: "Island View Cafe", lat: 12.8050, lon: 122.0480, type: "cafe", description: "Coffee shop with island views" },
-        { name: "Corcuera Eatery", lat: 12.8045, lon: 122.0470, type: "restaurant", description: "Local Filipino dishes" },
-        { name: "Beachfront Bar & Grill", lat: 12.8030, lon: 122.0490, type: "bar", description: "Beachside dining and drinks" },
-        { name: "Taclobo Beach Resort Restaurant", lat: 12.8025, lon: 122.0505, type: "restaurant", description: "Dining with beach view" }
-    ],
-    resort: [
-        { name: "Simara Island Resort", lat: 12.8070, lon: 122.0500, type: "resort", description: "Beachfront resort with cottages" },
-        { name: "Corcuera Beach Resort", lat: 12.8025, lon: 122.0495, type: "resort", description: "Family-friendly beach resort" },
-        { name: "Island View Lodge", lat: 12.8065, lon: 122.0485, type: "hotel", description: "Affordable accommodation with sea view" },
-        { name: "Sunset Beach Cottages", lat: 12.8035, lon: 122.0505, type: "resort", description: "Private cottages on the beach" }
-    ]
-};
+let placesData = null;
 
 // Beautiful custom marker icons for each category
 const MARKER_ICONS = {
@@ -89,6 +60,23 @@ const MARKER_ICONS = {
     })
 };
 
+// Icon mapping for place types (used when no image is provided)
+const PLACE_ICONS = {
+    lighthouse: '<i class="fa fa-lightbulb-o" style="font-size: 48px; color: #667eea;"></i>',
+    government: '<i class="fa fa-university" style="font-size: 48px; color: #667eea;"></i>',
+    church: '<i class="fa fa-church" style="font-size: 48px; color: #667eea;"></i>',
+    viewpoint: '<i class="fa fa-eye" style="font-size: 48px; color: #667eea;"></i>',
+    waterfall: '<i class="fa fa-tint" style="font-size: 48px; color: #11998e;"></i>',
+    beach: '<i class="fa fa-umbrella-beach" style="font-size: 48px; color: #11998e;"></i>',
+    nature: '<i class="fa fa-leaf" style="font-size: 48px; color: #11998e;"></i>',
+    restaurant: '<i class="fa fa-cutlery" style="font-size: 48px; color: #f093fb;"></i>',
+    cafe: '<i class="fa fa-coffee" style="font-size: 48px; color: #f093fb;"></i>',
+    bar: '<i class="fa fa-glass" style="font-size: 48px; color: #f093fb;"></i>',
+    resort: '<i class="fa fa-building-o" style="font-size: 48px; color: #fa709a;"></i>',
+    hotel: '<i class="fa fa-bed" style="font-size: 48px; color: #fa709a;"></i>',
+    default: '<i class="fa fa-map-marker" style="font-size: 48px; color: #2f7c84;"></i>'
+};
+
 // Category to icon type mapping
 const CATEGORY_ICON_TYPE = {
     'discovery': 'discovery',
@@ -97,41 +85,59 @@ const CATEGORY_ICON_TYPE = {
     'resort': 'resort'
 };
 
-// Beautiful map tile options (choose your favorite)
+// Beautiful map tile options
 const MAP_TILES = {
-    // Option 1: CartoDB Voyager (Clean, modern look)
     voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    // Option 2: CartoDB Positron (Light, minimal)
-    positron: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    // Option 3: OpenStreetMap Hot (Warm colors)
-    hot: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-    // Option 4: Stamen Terrain (Shows terrain features)
-    terrain: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.jpg'
+    positron: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
 };
 
-// Images for different place types
-const PLACE_IMAGES = {
-    lighthouse: "https://images.unsplash.com/photo-1507473885765-e6b057e04d4f?w=400&h=300&fit=crop",
-    government: "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=400&h=300&fit=crop",
-    church: "https://images.unsplash.com/photo-1438032005730-c779502df39b?w=400&h=300&fit=crop",
-    viewpoint: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
-    waterfall: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400&h=300&fit=crop",
-    beach: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
-    nature: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop",
-    restaurant: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop",
-    cafe: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=300&fit=crop",
-    bar: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=300&fit=crop",
-    resort: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-    hotel: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop"
-};
+// Load places from JSON file
+async function loadPlacesFromJSON() {
+    try {
+        const response = await fetch('places.json');
+        const data = await response.json();
+        placesData = data.places;
+        console.log('Places loaded successfully!', placesData);
+        return placesData;
+    } catch (error) {
+        console.error('Error loading places.json:', error);
+        return getFallbackPlaces();
+    }
+}
 
-document.addEventListener('DOMContentLoaded', function() {
+// Fallback data in case JSON fails to load
+function getFallbackPlaces() {
+    return {
+        discovery: [
+            { name: "Simara Island Lighthouse", lat: 12.8092, lon: 122.0512, type: "lighthouse", description: "Historic lighthouse", rating: 4.8 },
+            { name: "Corcuera Municipal Hall", lat: 12.8055, lon: 122.0474, type: "government", description: "Town hall", rating: 4.5 }
+        ],
+        nature: [
+            { name: "Taclobo Beach", lat: 12.8020, lon: 122.0500, type: "beach", description: "White sand beach", rating: 4.8 }
+        ],
+        dining: [
+            { name: "Simara Seafood Grill", lat: 12.8060, lon: 122.0475, type: "restaurant", description: "Fresh seafood", rating: 4.6 }
+        ],
+        resort: [
+            { name: "Simara Island Resort", lat: 12.8070, lon: 122.0500, type: "resort", description: "Beachfront resort", rating: 4.9 }
+        ]
+    };
+}
+
+// Get icon HTML for a place type (used when no image)
+function getPlaceIcon(type) {
+    return PLACE_ICONS[type] || PLACE_ICONS.default;
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
     if (typeof L === 'undefined') {
         console.error('Leaflet not loaded');
         return;
     }
 
-    // Create beautiful map with custom tile layer
+    // Load places from JSON first
+    await loadPlacesFromJSON();
+
     map = L.map('map', {
         zoomControl: true,
         fadeAnimation: true,
@@ -139,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
         markerZoomAnimation: true
     }).setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
     
-    // Use beautiful CartoDB Voyager tiles (clean and modern)
     L.tileLayer(MAP_TILES.voyager, {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
@@ -147,58 +152,23 @@ document.addEventListener('DOMContentLoaded', function() {
         minZoom: 3
     }).addTo(map);
     
-    // Add subtle zoom control styling
     map.zoomControl.setPosition('bottomright');
     
-    // Add scale bar
     L.control.scale({
         metric: true,
         imperial: false,
         position: 'bottomleft'
     }).addTo(map);
     
-    // Add beautiful custom control for map info
-    var infoControl = L.Control.extend({
-        options: { position: 'topright' },
-        onAdd: function() {
-            var div = L.DomUtil.create('div', 'map-info');
-            div.innerHTML = '<div style="background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 30px; color: white; font-size: 12px; font-weight: 500;"><i class="fa fa-island"></i> Simara Island, Romblon</div>';
-            return div;
-        }
-    });
-    new infoControl().addTo(map);
-    
-    // Add Corcuera town marker with custom pulsing effect
-    var pulsingIcon = L.divIcon({
-        html: '<div style="position: relative;"><div style="background: #2f7c84; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 0 rgba(47,124,132,0.7); animation: pulse 1.5s infinite;"></div></div>',
-        iconSize: [20, 20],
-        className: 'pulse-marker'
-    });
-    
-    L.marker([SIMARA_COORDS.lat, SIMARA_COORDS.lon], { icon: pulsingIcon })
-        .bindPopup('<b>🏘️ Corcuera Town Center</b><br>Simara Island, Romblon')
-        .addTo(map);
-    
     // Add animation styles
     var style = document.createElement('style');
     style.textContent = `
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(47,124,132,0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(47,124,132,0); }
-            100% { box-shadow: 0 0 0 0 rgba(47,124,132,0); }
-        }
         .custom-marker {
             transition: transform 0.2s ease;
+            cursor: pointer;
         }
         .custom-marker:hover {
             transform: scale(1.1);
-        }
-        .leaflet-popup-content-wrapper {
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        }
-        .leaflet-popup-tip {
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         }
         .leaflet-control-zoom a {
             background: white;
@@ -206,18 +176,18 @@ document.addEventListener('DOMContentLoaded', function() {
             margin: 5px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .route-info {
-            animation: slideIn 0.3s ease;
+        .place-icon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 16px;
+            text-align: center;
         }
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        .place-icon-container i {
+            margin-bottom: 10px;
         }
     `;
     document.head.appendChild(style);
@@ -238,10 +208,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadPlacesByCategory(category) {
+    if (!placesData) return;
+    
     currentCategory = category;
     clearMarkers();
     
-    var places = REAL_SIMARA_PLACES[category];
+    var places = placesData[category];
     
     if (places && places.length > 0) {
         var markersData = [];
@@ -254,8 +226,9 @@ function loadPlacesByCategory(category) {
                 distanceText = dist.toFixed(1) + ' km from your location';
             }
             
-            var rating = (Math.random() * 1.5 + 3.5).toFixed(1);
-            var imageUrl = PLACE_IMAGES[place.type] || PLACE_IMAGES.beach;
+            var rating = place.rating || (Math.random() * 1.5 + 3.5).toFixed(1);
+            // Use image if provided, otherwise use null (will show icon)
+            var imageUrl = place.image || null;
             
             markersData.push({
                 coords: [place.lat, place.lon],
@@ -275,12 +248,16 @@ function loadPlacesByCategory(category) {
 }
 
 function searchSimaraPlaces(searchText) {
+    if (!placesData) return [];
+    
     var searchLower = searchText.toLowerCase();
     var allResults = [];
     var categories = ['discovery', 'nature', 'dining', 'resort'];
     
     for (var c = 0; c < categories.length; c++) {
-        var places = REAL_SIMARA_PLACES[categories[c]];
+        var places = placesData[categories[c]];
+        if (!places) continue;
+        
         for (var i = 0; i < places.length; i++) {
             var place = places[i];
             if (place.name.toLowerCase().indexOf(searchLower) !== -1 || 
@@ -292,8 +269,8 @@ function searchSimaraPlaces(searchText) {
                     distanceText = dist.toFixed(1) + ' km from your location';
                 }
                 
-                var rating = (Math.random() * 1.5 + 3.5).toFixed(1);
-                var imageUrl = PLACE_IMAGES[place.type] || PLACE_IMAGES.beach;
+                var rating = place.rating || (Math.random() * 1.5 + 3.5).toFixed(1);
+                var imageUrl = place.image || null;
                 
                 allResults.push({
                     coords: [place.lat, place.lon],
@@ -312,44 +289,22 @@ function searchSimaraPlaces(searchText) {
     return allResults;
 }
 
-// ============ BEAUTIFUL MAP MARKERS WITH POPUPS ============
+// ============ MARKERS WITH NO POPUP - ONLY BOTTOM CARD ============
 function addMarkersToMap(places) {
     currentMarkers = [];
     
     for (var i = 0; i < places.length; i++) {
         var place = places[i];
-        var safeTitle = place.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        var safeDesc = (place.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         
-        // Get appropriate icon based on category
         var iconType = CATEGORY_ICON_TYPE[place.category] || 'default';
         var markerIcon = MARKER_ICONS[iconType] || MARKER_ICONS.default;
         
-        var popupContent = '<div style="min-width:280px;padding:0;border-radius:16px;overflow:hidden;">' +
-            '<img src="' + place.img + '" style="width:100%;height:140px;object-fit:cover;">' +
-            '<div style="padding:15px;">' +
-            '<h4 style="color:#2d6f77;margin:0 0 8px 0;font-size:18px;font-weight:600;">' + place.title + '</h4>' +
-            '<p style="font-size:12px;color:#6b7280;margin:0 0 10px 0;line-height:1.4;">' + safeDesc + '</p>' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
-            '<span style="background:#22c55e20;color:#22c55e;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;"><i class="fa fa-circle" style="font-size:8px;margin-right:5px;"></i> OPEN NOW</span>' +
-            '<span style="background:#f59e0b20;color:#f59e0b;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;"><i class="fa fa-star"></i> ' + place.rating + '</span>' +
-            '</div>' +
-            '<div style="background:#f3f4f6;padding:8px 12px;border-radius:12px;margin-bottom:12px;">' +
-            '<i class="fa fa-location-dot" style="color:#2f7c84;margin-right:8px;"></i>' +
-            '<span style="font-size:12px;color:#374151;">' + place.distance + '</span>' +
-            '</div>' +
-            '<button class="popup-dir-btn" data-lat="' + place.coords[0] + '" data-lng="' + place.coords[1] + '" data-title="' + safeTitle + '" style="width:100%;padding:12px;background:linear-gradient(135deg, #2f7c84 0%, #1a555a 100%);color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:14px;transition:transform 0.2s;">' +
-            '<i class="fa fa-directions" style="margin-right:8px;"></i> Get Directions' +
-            '</button>' +
-            '</div>' +
-            '</div>';
-        
         var marker = L.marker(place.coords, { icon: markerIcon })
-            .bindPopup(popupContent, {
-                maxWidth: 320,
-                minWidth: 280,
-                className: 'beautiful-popup'
-            });
+            .on('click', function(p) {
+                return function() {
+                    showLocationCard(p);
+                };
+            }(place));
         
         marker.addTo(map);
         currentMarkers.push(marker);
@@ -363,10 +318,77 @@ function addMarkersToMap(places) {
     }
 }
 
-function clearMarkers() {
-    if (map) {
-        map.closePopup();
+// ============ BOTTOM LOCATION CARD ============
+function showLocationCard(place) {
+    var locationCard = document.getElementById('locationCard');
+    if (!locationCard) return;
+    
+    document.getElementById('cardTitle').textContent = place.title;
+    
+    // Show image if available, otherwise show icon
+    var cardImg = document.getElementById('cardImg');
+    if (place.img && place.img !== '') {
+        cardImg.src = place.img;
+        cardImg.style.display = 'block';
+        cardImg.style.height = '120px';
+        // Remove any icon container if exists
+        var iconContainer = cardImg.parentNode.querySelector('.icon-placeholder');
+        if (iconContainer) iconContainer.remove();
+    } else {
+        // Hide image and show icon instead
+        cardImg.style.display = 'none';
+        // Check if icon container already exists
+        var existingIcon = cardImg.parentNode.querySelector('.icon-placeholder');
+        if (!existingIcon) {
+            var iconDiv = document.createElement('div');
+            iconDiv.className = 'icon-placeholder';
+            iconDiv.style.cssText = `
+                width: 100%;
+                height: 120px;
+                background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 16px 16px 0 0;
+            `;
+            iconDiv.innerHTML = getPlaceIcon(place.type);
+            cardImg.parentNode.insertBefore(iconDiv, cardImg);
+        }
     }
+    
+    var hour = new Date().getHours();
+    var isOpen = hour >= 8 && hour <= 20;
+    var statusEl = document.getElementById('cardStatus');
+    statusEl.textContent = isOpen ? 'OPEN NOW' : 'CLOSED';
+    statusEl.style.color = isOpen ? '#22c55e' : '#ef4444';
+    
+    document.getElementById('cardRating').innerHTML = '<i class="fa-solid fa-star"></i> ' + place.rating;
+    document.getElementById('cardDistance').innerHTML = '<i class="fa-solid fa-location-dot"></i> ' + place.distance;
+    
+    var cardDirectionsBtn = document.getElementById('cardDirections');
+    cardDirectionsBtn.dataset.lat = place.coords[0];
+    cardDirectionsBtn.dataset.lng = place.coords[1];
+    cardDirectionsBtn.dataset.title = place.title;
+    
+    locationCard.dataset.currentTitle = place.title;
+    
+    locationCard.style.display = 'flex';
+    locationCard.style.animation = 'slideUp 0.3s ease';
+    
+    if (!document.querySelector('#slideUpStyle')) {
+        var animStyle = document.createElement('style');
+        animStyle.id = 'slideUpStyle';
+        animStyle.textContent = `
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(animStyle);
+    }
+}
+
+function clearMarkers() {
     for (var i = 0; i < currentMarkers.length; i++) {
         map.removeLayer(currentMarkers[i]);
     }
@@ -384,14 +406,40 @@ function hideLoading() {
 }
 
 function showNoResultsMessage() {
-    var tempPopup = L.popup()
-        .setLatLng([SIMARA_COORDS.lat, SIMARA_COORDS.lon])
-        .setContent('<div style="padding:15px;text-align:center;"><i class="fa fa-map-marker-alt" style="font-size:24px;color:#2f7c84;margin-bottom:10px;"></i><br>📍 No places found<br>Try another category</div>')
-        .openOn(map);
-    
-    setTimeout(function() {
-        map.closePopup();
-    }, 3000);
+    var locationCard = document.getElementById('locationCard');
+    if (locationCard) {
+        document.getElementById('cardTitle').textContent = 'No places found';
+        document.getElementById('cardImg').src = '';
+        document.getElementById('cardImg').style.display = 'none';
+        
+        var existingIcon = document.getElementById('cardImg').parentNode.querySelector('.icon-placeholder');
+        if (!existingIcon) {
+            var iconDiv = document.createElement('div');
+            iconDiv.className = 'icon-placeholder';
+            iconDiv.style.cssText = `
+                width: 100%;
+                height: 120px;
+                background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 16px 16px 0 0;
+            `;
+            iconDiv.innerHTML = '<i class="fa fa-map-marker" style="font-size: 48px; color: #94a3b8;"></i>';
+            document.getElementById('cardImg').parentNode.insertBefore(iconDiv, document.getElementById('cardImg'));
+        }
+        
+        document.getElementById('cardStatus').textContent = 'TRY ANOTHER';
+        document.getElementById('cardRating').innerHTML = '<i class="fa-solid fa-star"></i> 0.0';
+        document.getElementById('cardDistance').innerHTML = '<i class="fa-solid fa-location-dot"></i> No results';
+        locationCard.style.display = 'flex';
+        
+        setTimeout(function() {
+            if (document.getElementById('cardTitle').textContent === 'No places found') {
+                locationCard.style.display = 'none';
+            }
+        }, 3000);
+    }
 }
 
 // ============ SEARCH ============
@@ -411,6 +459,9 @@ function setupSearch() {
                 if (results.length > 0) {
                     clearMarkers();
                     addMarkersToMap(results);
+                    if (results[0]) {
+                        showLocationCard(results[0]);
+                    }
                 } else {
                     showNoResultsMessage();
                 }
@@ -429,6 +480,9 @@ function setupSearch() {
                 if (results.length > 0) {
                     clearMarkers();
                     addMarkersToMap(results);
+                    if (results[0]) {
+                        showLocationCard(results[0]);
+                    }
                 } else {
                     showNoResultsMessage();
                 }
@@ -449,6 +503,8 @@ function setupTabs() {
                     tabs[j].classList.remove('active');
                 }
                 this.classList.add('active');
+                var card = document.getElementById('locationCard');
+                if (card) card.style.display = 'none';
                 loadPlacesByCategory(categories[index]);
             });
         })(i);
@@ -457,20 +513,20 @@ function setupTabs() {
 
 // ============ DIRECTIONS ============
 function setupDirectionsHandler() {
-    document.addEventListener('click', function(e) {
-        if (e.target.classList && e.target.classList.contains('popup-dir-btn')) {
-            e.stopPropagation();
-            var lat = parseFloat(e.target.dataset.lat);
-            var lng = parseFloat(e.target.dataset.lng);
-            var title = e.target.dataset.title || 'Destination';
+    var cardDirectionsBtn = document.getElementById('cardDirections');
+    if (cardDirectionsBtn) {
+        cardDirectionsBtn.addEventListener('click', function() {
+            var lat = parseFloat(this.dataset.lat);
+            var lng = parseFloat(this.dataset.lng);
+            var title = this.dataset.title || 'Destination';
             
             if (!isNaN(lat) && !isNaN(lng)) {
                 var startLat = userLocation ? userLocation.lat : SIMARA_COORDS.lat;
                 var startLng = userLocation ? userLocation.lon : SIMARA_COORDS.lon;
                 showDirections(startLat, startLng, lat, lng, title);
             }
-        }
-    });
+        });
+    }
 }
 
 function showDirections(startLat, startLng, endLat, endLng, title) {
@@ -482,8 +538,6 @@ function showDirections(startLat, startLng, endLat, endLng, title) {
         map.removeControl(window.currentRouteInfo);
         window.currentRouteInfo = null;
     }
-    
-    map.closePopup();
     
     try {
         currentRoute = L.Routing.control({
@@ -572,9 +626,8 @@ function getUserLocation() {
                     lon: position.coords.longitude
                 };
                 
-                // Beautiful user location marker with pulse effect
                 var userIcon = L.divIcon({
-                    html: '<div style="position: relative;"><div style="background: #4CAF50; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 0 rgba(76,175,80,0.7); animation: pulse 1.5s infinite;"></div><div style="background: rgba(76,175,80,0.2); width: 40px; height: 40px; border-radius: 50%; position: absolute; top: -10px; left: -10px; animation: ripple 2s infinite;"></div></div>',
+                    html: '<div style="position: relative;"><div style="background: #4CAF50; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 0 rgba(76,175,80,0.7); animation: pulse 1.5s infinite;"></div></div>',
                     iconSize: [20, 20],
                     className: 'user-marker'
                 });
@@ -582,16 +635,6 @@ function getUserLocation() {
                 L.marker([userLocation.lat, userLocation.lon], { icon: userIcon })
                     .bindPopup('<b>📍 Your Location</b>')
                     .addTo(map);
-                
-                // Add ripple animation
-                var rippleStyle = document.createElement('style');
-                rippleStyle.textContent = `
-                    @keyframes ripple {
-                        0% { transform: scale(1); opacity: 0.6; }
-                        100% { transform: scale(2); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(rippleStyle);
                 
                 loadPlacesByCategory(currentCategory);
             },
@@ -605,6 +648,91 @@ function getUserLocation() {
     }
 }
 
+var pulseStyle = document.createElement('style');
+pulseStyle.textContent = `
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(76,175,80,0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(76,175,80,0); }
+        100% { box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+    }
+`;
+document.head.appendChild(pulseStyle);
+
+// ============ SHARE & FAVORITE BUTTONS ============
+document.addEventListener('DOMContentLoaded', function() {
+    var shareBtn = document.querySelector('.share');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            var title = document.getElementById('cardTitle')?.textContent || 'Simara Island';
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: 'Check out ' + title + ' on Simara Island, Corcuera, Romblon!',
+                    url: window.location.href
+                }).catch(function(e) { console.log('Sharing cancelled'); });
+            } else {
+                navigator.clipboard.writeText(title + ' - Simara Island, Corcuera, Romblon');
+                alert('Link copied to clipboard!');
+            }
+        });
+    }
+    
+    var heartBtn = document.querySelector('.fa-heart');
+    if (heartBtn) {
+        heartBtn.addEventListener('click', function(e) {
+            e.target.classList.toggle('fas');
+            e.target.classList.toggle('far');
+            
+            var title = document.getElementById('cardTitle')?.textContent;
+            if (title) {
+                var favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+                if (e.target.classList.contains('fas')) {
+                    if (!favorites.includes(title)) {
+                        favorites.push(title);
+                        showToast('Added ' + title + ' to favorites!');
+                    }
+                } else {
+                    favorites = favorites.filter(function(f) { return f !== title; });
+                    showToast('Removed ' + title + ' from favorites');
+                }
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+            }
+        });
+    }
+});
+
+function showToast(message) {
+    var toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 180px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        z-index: 2000;
+        font-size: 13px;
+        animation: fadeInOut 2s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 2000);
+}
+
+var toastStyle = document.createElement('style');
+toastStyle.textContent = `
+    @keyframes fadeInOut {
+        0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+`;
+document.head.appendChild(toastStyle);
+
 // ============ HELPER FUNCTIONS ============
 function calculateDistance(lat1, lon1, lat2, lon2) {
     var R = 6371;
@@ -615,4 +743,4 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
               Math.sin(dLon/2) * Math.sin(dLon/2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
-} 
+}
