@@ -296,10 +296,15 @@ function addMarkersToMap(places) {
     for (var i = 0; i < places.length; i++) {
         var place = places[i];
         
-        var iconType = CATEGORY_ICON_TYPE[place.category] || 'default';
-        var markerIcon = MARKER_ICONS[iconType] || MARKER_ICONS.default;
+
+        var markerIcon = place.img ? L.divIcon({
+            html: `<img src="${place.img}" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">`,
+            iconSize: [40, 40],
+            className: 'place-image-marker custom-marker'
+        }) : (MARKER_ICONS[iconType] || MARKER_ICONS.default);
         
         var marker = L.marker(place.coords, { icon: markerIcon })
+
             .on('click', function(p) {
                 return function() {
                     showLocationCard(p);
