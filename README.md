@@ -146,6 +146,3 @@ webView.getSettings().setUseWideViewPort(true);
 
 **App ready for Google Play Store submission!**
 
----
-
-*Built with ❤️ for Corcuera by BLACKBOXAI*

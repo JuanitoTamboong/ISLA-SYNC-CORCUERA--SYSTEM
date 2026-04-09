@@ -1,13 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications - Isla-Sync Corcuera</title>
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="resident-homepage.css"> <!-- Reuse homepage styles for updates -->
+
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <center>
-        <h1>WAYAAA PAAAaa</h1>
-    </center>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <i class="fa fa-chevron-left" onclick="window.history.back()"></i>
+        <h2>Notifications</h2>
+        <div class="notif-badge">3</div>
+    </div>
+
+    <!-- CLEAR ALL -->
+    <div class="clear-all">
+        <button>Clear All</button>
+    </div>
+
+    <!-- NOTIFICATIONS LIST -->
+    <div class="notifications-list">
+
+        <div class="notification unread">
+            <div class="notif-icon blue">
+                <i class="fa fa-bullhorn"></i>
+            </div>
+            <div class="notif-content">
+                <p class="title">Official Announcement</p>
+                <p class="message">New tourism program launching this weekend at Simara Beach!</p>
+                <span class="time">2h ago</span>
+            </div>
+        </div>
+
+        <div class="notification">
+            <div class="notif-icon green">
+                <i class="fa fa-check-circle"></i>
+            </div>
+            <div class="notif-content">
+                <p class="title">Issue Resolved</p>
+                <p class="message">Your reported pothole on Main Road has been fixed by the team.</p>
+                <span class="time">1 day ago</span>
+            </div>
+        </div>
+
+        <div class="notification unread">
+            <div class="notif-icon orange">
+                <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <div class="notif-content">
+                <p class="title">Weather Alert</p>
+                <p class="message">Light rain expected tonight. Stay safe!</p>
+                <span class="time">Just now</span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="navigateTo('home')">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('map')">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="assets/isla-logo.png" alt="Isla Sync Logo">
+    </div>
+    <div class="nav-item active">
+        <i class="fa fa-bell"></i>
+        <span>Notifications</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('settings')">
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
+
+<script>
+window.navigateTo = function(page) {
+    const navMap = {
+        'home': 'resident-homepage.html',
+        'map': 'map.html',
+        'settings': 'setting.html'
+    };
+    if (navMap[page]) window.location.href = navMap[page];
+};
+</script>
+
 </body>
 </html>

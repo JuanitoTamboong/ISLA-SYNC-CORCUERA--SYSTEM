@@ -1,13 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map - Isla-Sync Corcuera</title>
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="map.css">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet Geosearch CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.11.1/dist/geosearch.css" />
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <center>
-        <h1>WAYAAA PAAA</h1>
-    </center>
+
+<div class="container">
+
+    <!-- TOP -->
+    <div class="top">
+        <div class="weather">
+            <i class="fa-solid fa-sun"></i>
+            <div>
+                <p>CORCUERA NOW</p>
+                <h2>29°C Sunny</h2>
+            </div>
+        </div>
+
+        <div class="notif">
+            <i class="fa-regular fa-bell"></i>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search">
+        <input type="text" placeholder="Search Simara Island..." id="mapSearch">
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="active" data-category="discovery">Discovery</button>
+        <button data-category="nature">Nature</button>
+        <button data-category="dining">Dining</button>
+        <button data-category="resort">Resort</button>
+    </div>
+
+    <!-- MAP -->
+    <div class="map">
+        <div id="map"></div>
+    </div>
+
+    <!-- DYNAMIC LOCATION CARD - hidden by default -->
+    <div class="card" id="locationCard" style="display: none;">
+        <img src="assets/sea.jpg" alt="Location image" id="cardImg">
+
+        <div class="content">
+            <div class="title">
+                <h3 id="cardTitle">Simara Island Lighthouse</h3>
+                <i class="fa-regular fa-heart" title="Favorite"></i>
+            </div>
+
+            <div class="meta">
+                <span class="open" id="cardStatus">OPEN NOW</span>
+                <span id="cardRating"><i class="fa-solid fa-star"></i> 4.8</span>
+            </div>
+
+            <p class="distance" id="cardDistance">
+                <i class="fa-solid fa-location-dot"></i>
+                1.2 km from your location
+            </p>
+
+            <div class="actions">
+                <button class="btn dir-btn" id="cardDirections">Get Directions</button>
+                <button class="share" title="Share" aria-label="Share location"><i class="fa-solid fa-share-nodes"></i></button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="navigateTo('home')">
+        <i class="fa fa-home" aria-hidden="true"></i>
+        <span>Home</span>
+    </div>
+
+    <div class="nav-item active" onclick="navigateTo('map')">
+        <i class="fa fa-map" aria-hidden="true"></i>
+        <span>Map</span>
+    </div>
+
+    <div class="nav-item center-logo">
+        <img src="assets/isla-logo.png" alt="Isla Sync Logo">
+    </div>
+
+    <div class="nav-item" onclick="navigateTo('notifications')">
+        <i class="fa fa-bell" aria-hidden="true"></i>
+        <span>Notifications</span>
+    </div>
+
+    <div class="nav-item" onclick="navigateTo('settings')">
+        <i class="fa fa-gear" aria-hidden="true"></i>
+        <span>Settings</span>
+    </div>
+</div>
+
+<!-- Leaflet & Plugins JS (critical order) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-geosearch@3.11.1/dist/geosearch.umd.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<script src="map.js"></script>
 </body>
 </html>
