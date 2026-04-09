@@ -20,11 +20,42 @@
 }
 
 .weather p {
-    font-size: 10px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
-.weather h2 {
-    font-size: 16px;
+.weather-center {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+}
+
+.weather h1.temp {
+    font-size: 16px !important;
+    margin: 0;
+    font-weight: 600;
+    line-height: 1.1;
+    color: #2d6f77;
+}
+
+.weather-center span {
+    font-size: 11px;
+    color: #2d6f77;
+    font-weight: 400;
+    margin-top: -1px;
+}
+
+.weather-details {
+    display: none !important;
+}
+
+.weather.loading i {
+    opacity: 0.7;
+}
+
+.weather.loading h1.temp {
+    font-size: 15px;
 }
 
 .notif {
