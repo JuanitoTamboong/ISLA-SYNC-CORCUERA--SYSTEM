@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pick Location - Isla-Sync Corcuera</title>
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="get-directions.css">
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- TOP CONTROLS -->
+    <div class="top-bar">
+        <div class="back-btn">
+            <i class="fa-solid fa-chevron-left"></i>
+        </div>
+        <div class="title">Pick Location</div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+        <input type="text" placeholder="Search for address or landmark...">
+    </div>
+
+    <!-- MAP -->
+    <div class="map">
+        <!-- Pin -->
+        <div class="pin">
+            <div class="dot"></div>
+        </div>
+
+        <!-- GPS Button -->
+        <div class="gps-btn">
+            <i class="fa-solid fa-location-crosshairs"></i>
+        </div>
+
+        <!-- Map -->
+        <div id="map"></div>
+    </div>
+
+    <!-- LOCATION INFO -->
+    <div class="location-section">
+        <div class="location-info">
+            <div class="icon">
+                <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div>
+                <p class="label">SELECTED LOCATION</p>
+                <h3>San Jose, Corcuera</h3>
+                <span>Romblon, Philippines</span>
+            </div>
+        </div>
+        <button class="confirm-btn">Confirm Location</button>
+    </div>
+
+</div>
+
+</body>
+</html>
+
