@@ -1,12 +1,26 @@
-
-/* Card-style map enhancements - works with shared .map */
-
 /* TOP BAR - header style like other pages */
 .top-bar {
     display: flex;
     align-items: center;
     gap: 15px;
     margin: 15px 0;
+}
+
+@media (max-width: 480px) {
+    .top-bar {
+        gap: 10px;
+        margin: 12px 0;
+    }
+    
+    .back-btn {
+        width: 34px;
+        height: 34px;
+    }
+    
+    .title {
+        font-size: 13px;
+        padding: 7px 16px;
+    }
 }
 
 .back-btn {
@@ -46,6 +60,18 @@
     font-size: 14px;
 }
 
+@media (max-width: 480px) {
+    .search-box {
+        margin-bottom: 16px;
+    }
+    
+    .search-box input {
+        padding: 12px 16px;
+        font-size: 13px;
+        border-radius: 22px;
+    }
+}
+
 /* =========================
    PIN
 ========================= */
@@ -72,6 +98,18 @@
     border-radius: 50%;
 }
 
+@media (max-width: 480px) {
+    .pin {
+        width: 38px;
+        height: 38px;
+    }
+    
+    .pin .dot {
+        width: 9px;
+        height: 9px;
+    }
+}
+
 /* =========================
    GPS BUTTON
 ========================= */
@@ -90,13 +128,30 @@
     z-index: 1000;
 }
 
+@media (max-width: 480px) {
+    .gps-btn {
+        width: 48px;
+        height: 48px;
+        right: 16px;
+        bottom: 16px;
+    }
+}
+
 .map {
     position: relative;
-    height: 60vh;
+    height: clamp(350px, 50vh, 500px);
     margin: 20px 0;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 480px) {
+    .map {
+        height: clamp(350px, 45vh, 450px);
+        margin: 16px 0;
+        border-radius: 18px;
+    }
 }
 
 /* LOCATION SECTION - standard content style */
@@ -108,10 +163,25 @@
     box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
 
+@media (max-width: 480px) {
+    .location-section {
+        padding: 20px 16px;
+        margin-top: 16px;
+        border-radius: 20px;
+    }
+}
+
 .location-section .location-info {
     display: flex;
     gap: 12px;
     margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+    .location-section .location-info {
+        gap: 10px;
+        margin-bottom: 16px;
+    }
 }
 
 /* LOCATION INFO */
@@ -132,6 +202,18 @@
     color: #2563eb;
 }
 
+@media (max-width: 480px) {
+    .location-info {
+        margin-bottom: 60px;
+    }
+    
+    .location-info .icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+}
+
 .label {
     font-size: 11px;
     letter-spacing: 1px;
@@ -141,6 +223,12 @@
 .location-info h3 {
     font-size: 16px;
     font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .location-info h3 {
+        font-size: 15px;
+    }
 }
 
 .location-info span {
@@ -161,6 +249,14 @@
     box-shadow: 0 10px 25px rgba(37,99,235,0.35);
 }
 
+@media (max-width: 480px) {
+    .confirm-btn {
+        padding: 14px;
+        font-size: 14px;
+        border-radius: 14px;
+    }
+}
+
 /* MAP DIV */
 #map {
     width: 100%;
@@ -176,4 +272,3 @@
 .route-summary button {
     font-weight: 500;
 }
-
