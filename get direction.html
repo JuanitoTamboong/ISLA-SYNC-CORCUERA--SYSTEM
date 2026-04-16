@@ -3,11 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pick Location - Isla-Sync Corcuera</title>
+<title>Get Directions - Isla-Sync Corcuera</title>
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="get-directions.css">
 <!-- Icons -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet Routing CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 <!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -17,10 +21,10 @@
 
     <!-- TOP CONTROLS -->
     <div class="top-bar">
-        <div class="back-btn">
+<div class="back-btn" onclick="window.location.href='map.html'">
             <i class="fa-solid fa-chevron-left"></i>
         </div>
-        <div class="title">Pick Location</div>
+        <div class="title">Get Directions</div>
     </div>
 
     <!-- Search -->
@@ -61,6 +65,10 @@
 
 </div>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="get-directions.js"></script>
 </body>
 </html>
 

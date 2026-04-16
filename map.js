@@ -528,7 +528,16 @@ function setupDirectionsHandler() {
             if (!isNaN(lat) && !isNaN(lng)) {
                 var startLat = userLocation ? userLocation.lat : SIMARA_COORDS.lat;
                 var startLng = userLocation ? userLocation.lon : SIMARA_COORDS.lon;
-                showDirections(startLat, startLng, lat, lng, title);
+                
+                // Navigate to dedicated directions page
+                const params = new URLSearchParams({
+                    destLat: lat,
+                    destLng: lng,
+                    title: title,
+                    startLat: startLat,
+                    startLng: startLng
+                });
+                window.location.href = 'get direction.html?' + params.toString();
             }
         });
     }
