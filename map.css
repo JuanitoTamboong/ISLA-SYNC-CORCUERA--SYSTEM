@@ -1,10 +1,4 @@
 @import "shared.css";
-.container {
-    background: #f8fafc;
-    padding: 20px 15px 100px; 
-    min-height: 100vh;
-}
-
 /* TOP */
 .top {
     display: flex;

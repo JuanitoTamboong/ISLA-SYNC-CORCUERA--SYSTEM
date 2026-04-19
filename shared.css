@@ -18,7 +18,7 @@ body {
 .container {
     max-width: 420px;
     margin: auto;
-    background-color: #ffffff;
+    background: #f8fafc;
     padding: 20px 15px 100px;
     min-height: 100vh;
     position: relative;
@@ -79,20 +79,6 @@ body {
     box-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
 
-/* MAP UTILITIES */
-.map {
-    position: relative;
-    height: clamp(400px, 45vh, 480px); /* Consistent responsive height */
-    margin: 20px 0;
-    border-radius: 20px;
-    overflow: hidden;
-}
-
-#map {
-    height: 100%;
-    width: 100%;
-    border-radius: 20px;
-}
 
 /* Responsive */
 @media (max-width: 480px) {
