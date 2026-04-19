@@ -52,11 +52,11 @@ body {
 }
 
 .nav-item.active {
-    color: #2f7c84; /* Teal theme */
+    color: #2563eb; /* Blue theme */
 }
 
 .nav-item:hover:not(.center-logo) {
-    color: #2f7c84;
+    color: #2563eb;
 }
 
 .center-logo {
@@ -113,7 +113,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #2f7c84;
+    background: #2563eb;
     border-radius: 5px;
 }
 

@@ -16,7 +16,6 @@ body {
 /* Container */
 .container {
     width: 360px;
-    background: #fff;
     overflow: hidden;
 }
 

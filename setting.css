@@ -1,6 +1,8 @@
 @import "shared.css";
-.container { 
-    background: #e7edf4;
+.container {
+     background: #e7edf4;
+    padding: 20px 15px 100px;
+    min-height: 100vh;
 }
 
 .header {
@@ -91,7 +93,7 @@
 .gray { background: #6b7280; color: #ffffff; }
 .purple { background: #7c3aed; color: #ffffff; }
 .blue { background: #2563eb; color: #ffffff; }
-.green { background: #16a34a; color: #ffffff; }
+.green { background: #dbeafe; color: #2563eb; }
 
 .right-text {
     font-size: 12px;

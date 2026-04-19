@@ -1,27 +1,14 @@
-# Get Directions Fix - Implementation Plan
+# Fix Notification Active Color (Green → Blue)
 
-## Status: [IN PROGRESS] 
+## Plan Steps:
+1. [x] Gathered/analyzed files: notif-news.css, setting.css, shared.css, notif.html, notif.js
+2. [x] Created plan and got user approval (blue #2563eb theme)
+3. [x] Edit shared.css: Change nav-item.active color from teal #2f7c84 to blue #2563eb (also hover/scrollbar)
+4. [x] Edit notif-news.css: Update .tag.green to blue theme (bg #dbeafe, color #2563eb)
+5. [x] Edit setting.css: Update .green icon class to blue theme (bg #dbeafe, color #2563eb)
+6. [x] Update TODO.md: Mark complete
+7. [] Test: Refresh notif.html, verify active nav/filter/tags blue, no green active colors
+8. [] Complete task
 
-### Step 1: [✅ COMPLETE] Create get-directions.js
-- New file with URL param parsing, Leaflet map init, route display using L.Routing.control
-- Reuse styles/tiles from map.js
-
-### Step 2: [✅ COMPLETE] Edit get direction.html
-- Update title to "Get Directions"
-- Add back button onclick="history.back()"
-- Add <script src="get-directions.js">
-- Prepare for dynamic content
-
-### Step 3: [✅ COMPLETE] Edit map.js
-- Change cardDirections click handler to navigate with URL params (destLat, destLng, title, startLat, startLng)
-
-### Step 4: [PENDING] Edit get-directions.css
-- Add styles for route summary display
-
-### Step 5: [PENDING] Test
-- Open map.html, click place marker → Get Directions → verify navigation and route display
-- Check mobile geolocation
-
-**Status: COMPLETE** 
-Test: Open map.html in browser, select a place (e.g. lighthouse), click "Get Directions". Verifies navigation to get direction.html with route displayed properly (from your location to destination).
+**Current Progress**: Starting edits
 

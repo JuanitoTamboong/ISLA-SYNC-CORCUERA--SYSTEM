@@ -1,6 +1,6 @@
 @import "shared.css";
 .container {
-    background: linear-gradient(#b9cacc, #dfe8ea);
+    background: #f8fafc;
     padding: 20px 15px 100px;
     min-height: 100vh;
 }

@@ -1,7 +1,9 @@
 @import "shared.css";
-
-/* Page-specific homepage styles */
-
+.container {
+    background: #f8fafc;
+    padding: 20px 15px 100px;
+    min-height: 100vh;
+}
 /* HEADER */
 .header {
     display: flex;
