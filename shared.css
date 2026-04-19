@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100vh;
+    overflow-x: hidden;
+}
+
 body {
     background: #ffffff;
     font-family: 'Poppins', sans-serif;
@@ -77,7 +82,7 @@ body {
 /* MAP UTILITIES */
 .map {
     position: relative;
-    height: clamp(400px, 50vh, 500px); /* Responsive */
+    height: clamp(400px, 45vh, 480px); /* Consistent responsive height */
     margin: 20px 0;
     border-radius: 20px;
     overflow: hidden;

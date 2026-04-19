@@ -1,7 +1,7 @@
 @import "shared.css";
 .container {
     background: #f8fafc;
-    padding: 20px 15px 100px;
+    padding: 20px 15px 100px; 
     min-height: 100vh;
 }
 
@@ -126,7 +126,7 @@
 /* MAP */
 .map {
     position: relative;
-    height: 460px;
+    height: clamp(400px, 45vh, 480px);
     margin: 20px 0;
 }
 
@@ -260,58 +260,7 @@
     background: #d4e2e5;
 }
 
-/* BOTTOM NAVIGATION */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-width: 420px;
-    margin: auto;
-    height: 70px;
-    background: white;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-}
 
-.nav-item {
-    cursor: pointer;
-    text-align: center;
-    font-size: 11px;
-    color: #6b7280;
-}
-
-.nav-item i {
-    display: block;
-    font-size: 18px;
-}
-
-.nav-item.active {
-    color: #2563eb;
-}
-
-.nav-item:hover:not(.center-logo) {
-    color: #2563eb;
-}
-
-.center-logo {
-    position: relative;
-    top: -20px;
-}
-
-.center-logo img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: white;
-    padding: 6px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    object-fit: contain;
-}
 
 /* Responsive */
 @media (max-width: 480px) {
