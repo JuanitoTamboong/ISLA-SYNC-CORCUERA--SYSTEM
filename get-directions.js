@@ -1,16 +1,16 @@
-// get-directions.js - Fixed version
+// get-directions.js - REAL ROUTES ONLY (No Straight Line)
 const SIMARA_COORDS = { lat: 12.8055, lon: 122.0474 };
 
 let map;
-let currentRoute = null;
+let routeLine = null;
 let routeSummary = null;
+let animationInProgress = false;
 
 const MAP_TILES = {
     voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Parse URL params first
     const params = new URLSearchParams(window.location.search);
     const destLat = parseFloat(params.get('destLat')) || SIMARA_COORDS.lat;
     const destLng = parseFloat(params.get('destLng')) || SIMARA_COORDS.lon;
@@ -19,40 +19,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const startLng = parseFloat(params.get('startLng')) || SIMARA_COORDS.lon;
 
     // Update UI
-    const titleEl = document.querySelector('.top-bar .title');
-    if (titleEl) titleEl.textContent = `Directions to ${title}`;
-    const h3El = document.querySelector('.location-section h3');
-    if (h3El) h3El.textContent = title;
+    document.querySelector('.top-bar .title').textContent = `Directions to ${title}`;
+    document.querySelector('.location-section h3').textContent = title;
 
-    // Confirm button - no longer used for clear
+    // Confirm button
     const confirmBtn = document.querySelector('.confirm-btn');
-    if (confirmBtn) {
-confirmBtn.textContent = 'Confirm Location';
-        confirmBtn.disabled = true;
-    }
+    confirmBtn.textContent = 'Draw Route';
+    confirmBtn.onclick = () => animateRouteToDestination(startLat, startLng, destLat, destLng, title);
 
-    // Back
-    const backBtn = document.querySelector('.back-btn');
-    if (backBtn) backBtn.onclick = () => history.back();
+    // Back button
+    document.querySelector('.back-btn').onclick = () => history.back();
 
-    // GPS
-    const gpsBtn = document.querySelector('.gps-btn');
-    if (gpsBtn) gpsBtn.onclick = getCurrentLocation;
+    // GPS button
+    document.querySelector('.gps-btn').onclick = getCurrentLocation;
 
-    // Wait for Leaflet, init map
+    // Init map
     const initMapDelayed = () => {
         if (typeof L === 'undefined') {
             setTimeout(initMapDelayed, 100);
             return;
         }
-        createMapAndRoute(startLat, startLng, destLat, destLng, title);
+        createMap(startLat, startLng, destLat, destLng, title);
     };
     initMapDelayed();
 });
 
-function createMapAndRoute(startLat, startLng, destLat, destLng, title) {
-    // Map
-    map = L.map('map').setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
+function createMap(startLat, startLng, destLat, destLng, title) {
+    map = L.map('map').setView([startLat, startLng], 14);
     
     L.tileLayer(MAP_TILES.voyager, {
         attribution: '© OSM © CARTO',
@@ -61,41 +54,185 @@ function createMapAndRoute(startLat, startLng, destLat, destLng, title) {
 
     L.control.scale({metric: true}).addTo(map);
 
-    // Route
-    if (L.Routing && L.Routing.control) {
-        currentRoute = L.Routing.control({
-            waypoints: [L.latLng(startLat, startLng), L.latLng(destLat, destLng)],
-            show: false,
-            addWaypoints: false,
-            routeWhileDragging: true,
-            draggableWaypoints: false,
-            fitSelectedRoutes: true,
-            createMarker: function() { return null; },
-            lineOptions: {
-                styles: [{color: '#2f7c84', weight: 6}]
-            }
-        }).addTo(map);
+    // Start marker (red)
+    L.marker([startLat, startLng], {
+        icon: L.divIcon({
+            className: 'pin',
+            html: '<div class="pin"><div class="dot"></div></div>',
+            iconSize: [42, 42],
+            iconAnchor: [21, 21]
+        })
+    }).addTo(map).bindPopup('Start');
 
-        currentRoute.on('routesfound', function(e) {
-            const route = e.routes[0];
-            const distance = (route.summary.totalDistance / 1000).toFixed(1);
-            const time = Math.round(route.summary.totalTime / 60);
-            addRouteSummary(title, distance + ' km', time + ' min');
-        });
+    // Destination marker (green)
+    L.marker([destLat, destLng], {
+        icon: L.divIcon({
+            className: 'pin',
+            html: '<div class="pin" style="background: #10b981;"><div class="dot"></div></div>',
+            iconSize: [42, 42],
+            iconAnchor: [21, 21]
+        })
+    }).addTo(map).bindPopup(title);
+
+    map.fitBounds([[startLat, startLng], [destLat, destLng]], { padding: [50, 50] });
+}
+
+function animateRouteToDestination(startLat, startLng, destLat, destLng, title) {
+    if (animationInProgress) return;
+    
+    animationInProgress = true;
+    const confirmBtn = document.querySelector('.confirm-btn');
+    confirmBtn.textContent = 'Finding Route...';
+    confirmBtn.disabled = true;
+
+    // Use multiple OSRM endpoints for reliability
+    const routingServices = [
+        `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${destLng},${destLat}?overview=full&alternatives=false&steps=false`,
+        `http://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${destLng},${destLat}?overview=full&alternatives=false&steps=false`,
+        `https://routing.openstreetmap.de/routed-car/route/v1/driving/${startLng},${startLat};${destLng},${destLat}?overview=full&alternatives=false`
+    ];
+
+    fetchRoute(routingServices, 0, startLat, startLng, destLat, destLng, title);
+}
+
+function fetchRoute(services, index, startLat, startLng, destLat, destLng, title) {
+    if (index >= services.length) {
+        // No route found - show error
+        showNoRouteError(title);
+        return;
     }
+
+    fetch(services[index])
+        .then(response => {
+            if (!response.ok) throw new Error('Failed');
+            return response.json();
+        })
+        .then(data => {
+            if (data.routes && data.routes[0] && data.routes[0].geometry) {
+                // SUCCESS!
+                const route = data.routes[0];
+                const coordinates = decodePolyline(data.routes[0].geometry);
+                const distance = (route.distance / 1000).toFixed(1);
+                const time = Math.round(route.duration / 60);
+                
+                animateLine(coordinates, title, distance + ' km', time + ' min');
+            } else {
+                throw new Error('No route');
+            }
+        })
+        .catch(() => {
+            // Try next service
+            fetchRoute(services, index + 1, startLat, startLng, destLat, destLng, title);
+        });
+}
+
+function decodePolyline(encoded) {
+    const points = [];
+    let index = 0, lat = 0, lng = 0;
+    
+    while (index < encoded.length) {
+        let b, shift = 0, result = 0;
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+        
+        shift = result = 0;
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+        
+        points.push([lat * 1e-5, lng * 1e-5]);
+    }
+    return points;
+}
+
+function animateLine(coordinates, title, distance, time) {
+    if (routeLine) map.removeLayer(routeLine);
+    
+    routeLine = L.polyline(coordinates, {
+        color: '#3b82f6',
+        weight: 6,
+        opacity: 0
+    }).addTo(map);
+
+    const latlngs = routeLine.getLatLngs();
+    let i = 0;
+    
+    const animate = () => {
+        if (i < latlngs.length) {
+            routeLine.setLatLngs(latlngs.slice(0, i + 1));
+            routeLine.setStyle({ 
+                opacity: Math.min(0.4 + (i / latlngs.length) * 0.6, 1),
+                weight: 5 + (i / latlngs.length) * 4
+            });
+            i++;
+            setTimeout(animate, 20); // Smooth 20ms animation
+        } else {
+            // Complete with glow effect
+            routeLine.setStyle({
+                opacity: 1,
+                weight: 9,
+                color: '#2563eb'
+            });
+            
+            addRouteSummary(title, distance, time);
+            animationComplete();
+        }
+    };
+    animate();
+}
+
+function showNoRouteError(title) {
+    animationInProgress = false;
+    const confirmBtn = document.querySelector('.confirm-btn');
+    confirmBtn.textContent = 'No Route Found';
+    confirmBtn.style.background = 'linear-gradient(to right, #ef4444, #dc2626)';
+    
+    // Show error summary
+    if (routeSummary) map.removeControl(routeSummary);
+    const ErrorControl = L.Control.extend({
+        options: { position: 'topleft' },
+        onAdd: function() {
+            const div = L.DomUtil.create('div');
+            div.innerHTML = `
+                <div style="background: rgba(255,255,255,0.95); padding: 16px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(239,68,68,0.3); backdrop-filter: blur(15px); min-width: 220px; text-align: center;">
+                    <div style="color: #dc2626; font-weight: 700; font-size: 15px; margin-bottom: 8px;">${title}</div>
+                    <div style="color: #64748b; font-size: 13px;">No route data available</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">Try GPS or different location</div>
+                </div>
+            `;
+            return div;
+        }
+    });
+    routeSummary = new ErrorControl();
+    routeSummary.addTo(map);
+    
+    setTimeout(() => {
+        confirmBtn.textContent = 'Try Again';
+        confirmBtn.style.background = 'linear-gradient(to right, #3b82f6, #2563eb)';
+        confirmBtn.disabled = false;
+    }, 3000);
 }
 
 function addRouteSummary(title, distance, time) {
+    if (routeSummary) map.removeControl(routeSummary);
+    
     const RouteControl = L.Control.extend({
         options: { position: 'topleft' },
         onAdd: function() {
             const div = L.DomUtil.create('div');
             div.innerHTML = `
-                <div style="background: rgba(255,255,255,0.95); padding: 12px 16px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); backdrop-filter: blur(10px); min-width: 180px; font-family: Poppins, sans-serif;">
-                    <div style="font-weight: 600; color: #1e293b; margin-bottom: 4px;">${title}</div>
-                    <div style="color: #64748b; font-size: 13px;">
-                        <i class="fa fa-road" style="margin-right: 4px;"></i>${distance} | 
-                        <i class="fa fa-clock" style="margin-right: 4px;"></i>${time}
+                <div style="background: rgba(255,255,255,0.97); padding: 16px 20px; border-radius: 20px; box-shadow: 0 12px 35px rgba(0,0,0,0.15); backdrop-filter: blur(20px); min-width: 200px; border: 2px solid rgba(59,130,246,0.3);">
+                    <div style="font-weight: 700; color: #1e293b; margin-bottom: 10px; font-size: 15px;">${title}</div>
+                    <div style="color: #2563eb; font-size: 14px; font-weight: 600;">
+                        <i class="fa fa-road" style="margin-right: 8px;"></i>${distance} | 
+                        <i class="fa fa-clock" style="margin-right: 8px;"></i>${time}
                     </div>
                 </div>
             `;
@@ -106,16 +243,27 @@ function addRouteSummary(title, distance, time) {
     routeSummary.addTo(map);
 }
 
+function animationComplete() {
+    animationInProgress = false;
+    const confirmBtn = document.querySelector('.confirm-btn');
+    confirmBtn.textContent = 'Route Confirmed ✓';
+    setTimeout(() => {
+        confirmBtn.textContent = 'Draw Again';
+        confirmBtn.disabled = false;
+    }, 2000);
+}
+
 function getCurrentLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
             const newStart = [pos.coords.latitude, pos.coords.longitude];
-            if (currentRoute) {
-                currentRoute.setWaypoints([L.latLng(newStart[0], newStart[1]), currentRoute.getWaypoints()[1]]);
-            }
+            if (routeLine) map.removeLayer(routeLine);
+            if (routeSummary) map.removeControl(routeSummary);
+            
+            createMap(newStart[0], newStart[1], 
+                     parseFloat(new URLSearchParams(window.location.search).get('destLat')) || SIMARA_COORDS.lat,
+                     parseFloat(new URLSearchParams(window.location.search).get('destLng')) || SIMARA_COORDS.lon,
+                     decodeURIComponent(new URLSearchParams(window.location.search).get('title') || 'Destination'));
         });
     }
 }
-
-
-
