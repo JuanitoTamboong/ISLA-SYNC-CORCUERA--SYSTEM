@@ -4,7 +4,9 @@ const SIMARA_COORDS = { lat: 12.8055, lon: 122.0474 };
 let map;
 let routeLine = null;
 let routeSummary = null;
+let peopleMarker = null;
 let animationInProgress = false;
+let routeAnimationInterval = null;
 
 const MAP_TILES = {
     voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
@@ -45,6 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function createMap(startLat, startLng, destLat, destLng, title) {
+    // Clear existing layers
+    if (map) map.remove();
+    
     map = L.map('map').setView([startLat, startLng], 14);
     
     L.tileLayer(MAP_TILES.voyager, {
@@ -59,18 +64,20 @@ function createMap(startLat, startLng, destLat, destLng, title) {
         icon: L.divIcon({
             className: 'pin',
             html: '<div class="pin"><div class="dot"></div></div>',
-            iconSize: [42, 42],
-            iconAnchor: [21, 21]
+            iconSize: [48, 56],
+            iconAnchor: [24, 52],
+            className: ''
         })
     }).addTo(map).bindPopup('Start');
 
     // Destination marker (green)
     L.marker([destLat, destLng], {
         icon: L.divIcon({
-            className: 'pin',
-            html: '<div class="pin" style="background: #10b981;"><div class="dot"></div></div>',
-            iconSize: [42, 42],
-            iconAnchor: [21, 21]
+            className: 'pin green',
+            html: '<div class="pin green"><div class="dot"></div></div>',
+            iconSize: [48, 56],
+            iconAnchor: [24, 52],
+            className: ''
         })
     }).addTo(map).bindPopup(title);
 
@@ -85,6 +92,10 @@ function animateRouteToDestination(startLat, startLng, destLat, destLng, title) 
     confirmBtn.textContent = 'Finding Route...';
     confirmBtn.disabled = true;
 
+    // Clear previous markers
+    if (peopleMarker) map.removeLayer(peopleMarker);
+    if (routeAnimationInterval) clearInterval(routeAnimationInterval);
+
     // Use multiple OSRM endpoints for reliability
     const routingServices = [
         `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${destLng},${destLat}?overview=full&alternatives=false&steps=false`,
@@ -97,7 +108,6 @@ function animateRouteToDestination(startLat, startLng, destLat, destLng, title) 
 
 function fetchRoute(services, index, startLat, startLng, destLat, destLng, title) {
     if (index >= services.length) {
-        // No route found - show error
         showNoRouteError(title);
         return;
     }
@@ -109,7 +119,6 @@ function fetchRoute(services, index, startLat, startLng, destLat, destLng, title
         })
         .then(data => {
             if (data.routes && data.routes[0] && data.routes[0].geometry) {
-                // SUCCESS!
                 const route = data.routes[0];
                 const coordinates = decodePolyline(data.routes[0].geometry);
                 const distance = (route.distance / 1000).toFixed(1);
@@ -121,7 +130,6 @@ function fetchRoute(services, index, startLat, startLng, destLat, destLng, title
             }
         })
         .catch(() => {
-            // Try next service
             fetchRoute(services, index + 1, startLat, startLng, destLat, destLng, title);
         });
 }
@@ -172,9 +180,9 @@ function animateLine(coordinates, title, distance, time) {
                 weight: 5 + (i / latlngs.length) * 4
             });
             i++;
-            setTimeout(animate, 20); // Smooth 20ms animation
+            setTimeout(animate, 20);
         } else {
-            // Complete with glow effect
+            // Route complete - start people animation
             routeLine.setStyle({
                 opacity: 1,
                 weight: 9,
@@ -182,14 +190,82 @@ function animateLine(coordinates, title, distance, time) {
             });
             
             addRouteSummary(title, distance, time);
-            animationComplete();
+            animatePeopleAlongRoute(coordinates);
         }
     };
     animate();
 }
 
+function animatePeopleAlongRoute(coordinates) {
+    // Remove previous people marker
+    if (peopleMarker) map.removeLayer(peopleMarker);
+    
+    // Create people marker at start
+    peopleMarker = L.marker(coordinates[0], {
+        icon: L.divIcon({
+            className: 'people-icon',
+            html: '<div class="people-icon"></div>',
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+            className: ''
+        })
+    }).addTo(map);
+
+    let progress = 0;
+    const totalPoints = coordinates.length;
+    
+    routeAnimationInterval = setInterval(() => {
+        progress += 0.02; // Speed control
+        
+        if (progress >= 1) {
+            progress = 1;
+            clearInterval(routeAnimationInterval);
+            routeAnimationInterval = null;
+            // Celebration effect at destination
+            peopleMarker.setIcon(L.divIcon({
+                className: 'people-icon',
+                html: '<div class="people-icon" style="background: linear-gradient(135deg, #10b981, #059669); animation: bounce 0.8s infinite alternate;">👤</div>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
+                className: ''
+            }));
+            animationComplete();
+            return;
+        }
+        
+        const currentIndex = Math.floor(progress * (totalPoints - 1));
+        const nextIndex = Math.min(currentIndex + 1, totalPoints - 1);
+        const t = (progress * (totalPoints - 1)) % 1;
+        
+        // Smooth interpolation between points
+        const currentPos = coordinates[currentIndex];
+        const nextPos = coordinates[nextIndex];
+        const lat = currentPos[0] + (nextPos[0] - currentPos[0]) * t;
+        const lng = currentPos[1] + (nextPos[1] - currentPos[1]) * t;
+        
+        peopleMarker.setLatLng([lat, lng]);
+        
+        // Rotate marker to face direction of travel
+        if (nextIndex !== currentIndex) {
+            const angle = Math.atan2(nextPos[1] - currentPos[1], nextPos[0] - currentPos[0]) * (180 / Math.PI);
+            if (peopleMarker._icon) {
+                peopleMarker._icon.style.transform = `rotate(${angle}deg)`;
+            }
+        }
+    }, 50); // Smooth 50ms updates
+}
+
 function showNoRouteError(title) {
     animationInProgress = false;
+    if (routeAnimationInterval) {
+        clearInterval(routeAnimationInterval);
+        routeAnimationInterval = null;
+    }
+    if (peopleMarker) {
+        map.removeLayer(peopleMarker);
+        peopleMarker = null;
+    }
+    
     const confirmBtn = document.querySelector('.confirm-btn');
     confirmBtn.textContent = 'No Route Found';
     confirmBtn.style.background = 'linear-gradient(to right, #ef4444, #dc2626)';
@@ -246,7 +322,7 @@ function addRouteSummary(title, distance, time) {
 function animationComplete() {
     animationInProgress = false;
     const confirmBtn = document.querySelector('.confirm-btn');
-    confirmBtn.textContent = 'Route Confirmed ✓';
+    confirmBtn.textContent = 'Route Complete ✓';
     setTimeout(() => {
         confirmBtn.textContent = 'Draw Again';
         confirmBtn.disabled = false;
@@ -259,6 +335,11 @@ function getCurrentLocation() {
             const newStart = [pos.coords.latitude, pos.coords.longitude];
             if (routeLine) map.removeLayer(routeLine);
             if (routeSummary) map.removeControl(routeSummary);
+            if (peopleMarker) map.removeLayer(peopleMarker);
+            if (routeAnimationInterval) {
+                clearInterval(routeAnimationInterval);
+                routeAnimationInterval = null;
+            }
             
             createMap(newStart[0], newStart[1], 
                      parseFloat(new URLSearchParams(window.location.search).get('destLat')) || SIMARA_COORDS.lat,
