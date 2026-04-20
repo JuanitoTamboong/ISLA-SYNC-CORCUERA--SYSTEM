@@ -189,7 +189,7 @@ function animateLine(coordinates, title, distance, time) {
                 color: '#2563eb'
             });
             
-            addRouteSummary(title, distance, time);
+            // addRouteSummary(title, distance, time);  // REMOVED: Blocking popup
             animatePeopleAlongRoute(coordinates);
         }
     };
@@ -272,22 +272,9 @@ function showNoRouteError(title) {
     
     // Show error summary
     if (routeSummary) map.removeControl(routeSummary);
-    const ErrorControl = L.Control.extend({
-        options: { position: 'topleft' },
-        onAdd: function() {
-            const div = L.DomUtil.create('div');
-            div.innerHTML = `
-                <div style="background: rgba(255,255,255,0.95); padding: 16px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(239,68,68,0.3); backdrop-filter: blur(15px); min-width: 220px; text-align: center;">
-                    <div style="color: #dc2626; font-weight: 700; font-size: 15px; margin-bottom: 8px;">${title}</div>
-                    <div style="color: #64748b; font-size: 13px;">No route data available</div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">Try GPS or different location</div>
-                </div>
-            `;
-            return div;
-        }
-    });
-    routeSummary = new ErrorControl();
-    routeSummary.addTo(map);
+    // const ErrorControl = L.Control.extend({...});  // REMOVED: Error popup
+    // routeSummary = new ErrorControl();
+    // routeSummary.addTo(map);
     
     setTimeout(() => {
         confirmBtn.textContent = 'Try Again';

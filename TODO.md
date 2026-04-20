@@ -1,36 +1,9 @@
-# Route Enhancement TODO
-## Approved Plan Steps
+# Remove Blocking Route Popup - Colong-Colong Viewpoint
 
-### [x] 1. Enhance CSS styles ✅
-- Add .start-pin, .dest-pin gradients + icons
-- Add .people-icon styles (orange pulsing)
-- Update .pin base
-
-### [x] 2. Update JS markers in createMap() ✅
-- Start: blue gradient + fa-location-dot
-- Dest: green gradient + fa-flag-checkered
-
-### [x] 3. Add moving people icon ✅
-- Global fullCoordinates, peopleMarker
-- In animateLine: store as LatLngs
-- In animationComplete(): orange fa-users follows route (12s), GPS clears
-
-### [ ] 2. Update JS markers in createMap()
-- Start: blue gradient + fa-location-dot
-- Dest: green gradient + fa-flag-checkered
-
-### [ ] 3. Add moving people icon
-- Global fullCoordinates
-- In animateLine: store coordinates
-- In animationComplete(): create peopleMarker (fa-users), animate along path
-
-### [ ] 4. Polish & clean
-- Update GPS refresh markers
-- Button states
-- Responsive icons
-
-### [ ] 5. Test complete flow
-- Map → place → directions → Draw → new pins + moving people
-
-Progress: 0/5
-
+## Steps:
+1. [x] Create TODO.md with plan steps
+2. [x] Edit get-directions.js - remove routeSummary.addTo(map) in animateLine()
+3. [x] Edit get-directions.js - remove routeSummary.addTo(map) in showNoRouteError()
+4. [x] Update TODO.md with progress
+5. [x] Test: map.html -> Colong-Colong -> directions -> draw route (no popup) - SUCCESS: Route fully visible, no blocking popup
+6. [x] Complete task ✓
