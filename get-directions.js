@@ -1,4 +1,4 @@
-// get-directions.js - REAL ROUTES ONLY (No Straight Line)
+
 const SIMARA_COORDS = { lat: 12.8055, lon: 122.0474 };
 
 let map;
@@ -163,97 +163,37 @@ function decodePolyline(encoded) {
 function animateLine(coordinates, title, distance, time) {
     if (routeLine) map.removeLayer(routeLine);
     
-    routeLine = L.polyline(coordinates, {
-        color: '#3b82f6',
-        weight: 6,
-        opacity: 0
-    }).addTo(map);
-
+    routeLine = L.polyline(coordinates, { color: '#3b82f6', weight: 6, opacity: 0 }).addTo(map);
     const latlngs = routeLine.getLatLngs();
-    let i = 0;
     
-    const animate = () => {
-        if (i < latlngs.length) {
-            routeLine.setLatLngs(latlngs.slice(0, i + 1));
-            routeLine.setStyle({ 
-                opacity: Math.min(0.4 + (i / latlngs.length) * 0.6, 1),
-                weight: 5 + (i / latlngs.length) * 4
-            });
-            i++;
-            setTimeout(animate, 20);
-        } else {
-            // Route complete - start people animation
-            routeLine.setStyle({
-                opacity: 1,
-                weight: 9,
-                color: '#2563eb'
-            });
-            
-            // addRouteSummary(title, distance, time);  // REMOVED: Blocking popup
-            animatePeopleAlongRoute(coordinates);
-        }
-    };
-    animate();
-}
-
-function animatePeopleAlongRoute(coordinates) {
-    // Remove previous people marker
-    if (peopleMarker) map.removeLayer(peopleMarker);
-    
-    // Create people marker at start
-    peopleMarker = L.marker(coordinates[0], {
-        icon: L.divIcon({
-            className: 'people-icon',
-            html: '<div class="people-icon"></div>',
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-            className: ''
-        })
-    }).addTo(map);
+    // REMOVED peopleMarker to avoid lapses/delay - route line only
 
     let progress = 0;
-    const totalPoints = coordinates.length;
-    
     routeAnimationInterval = setInterval(() => {
-        progress += 0.02; // Speed control
+        progress += 0.015; // Slower smooth speed
         
         if (progress >= 1) {
             progress = 1;
             clearInterval(routeAnimationInterval);
             routeAnimationInterval = null;
-            // Celebration effect at destination
-            peopleMarker.setIcon(L.divIcon({
-                className: 'people-icon',
-                html: '<div class="people-icon" style="background: linear-gradient(135deg, #10b981, #059669); animation: bounce 0.8s infinite alternate;">👤</div>',
-                iconSize: [36, 36],
-                iconAnchor: [18, 18],
-                className: ''
-            }));
+            
+            // Final route style
+            routeLine.setStyle({ opacity: 1, weight: 9, color: '#2563eb' });
+            
             animationComplete();
             return;
         }
         
-        const currentIndex = Math.floor(progress * (totalPoints - 1));
-        const nextIndex = Math.min(currentIndex + 1, totalPoints - 1);
-        const t = (progress * (totalPoints - 1)) % 1;
-        
-        // Smooth interpolation between points
-        const currentPos = coordinates[currentIndex];
-        const nextPos = coordinates[nextIndex];
-        const lat = currentPos[0] + (nextPos[0] - currentPos[0]) * t;
-        const lng = currentPos[1] + (nextPos[1] - currentPos[1]) * t;
-        
-        peopleMarker.setLatLng([lat, lng]);
-        
-        // Rotate marker to face direction of travel
-        if (nextIndex !== currentIndex) {
-            const angle = Math.atan2(nextPos[1] - currentPos[1], nextPos[0] - currentPos[0]) * (180 / Math.PI);
-            if (peopleMarker._icon) {
-                peopleMarker._icon.style.transform = `rotate(${angle}deg)`;
-            }
-        }
-    }, 50); // Smooth 50ms updates
+        // Update line only
+        const lineEnd = Math.floor(progress * latlngs.length);
+        routeLine.setLatLngs(latlngs.slice(0, lineEnd + 1));
+        routeLine.setStyle({ 
+            opacity: Math.min(0.4 + progress * 0.6, 1),
+            weight: Math.min(5 + progress * 4, 9)
+        });
+    }, 15); // 66 FPS smooth
 }
+
 
 function showNoRouteError(title) {
     animationInProgress = false;
