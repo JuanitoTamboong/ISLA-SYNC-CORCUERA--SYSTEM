@@ -24,11 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const h3El = document.querySelector('.location-section h3');
     if (h3El) h3El.textContent = title;
 
-    // Confirm button
+    // Confirm button - no longer used for clear
     const confirmBtn = document.querySelector('.confirm-btn');
     if (confirmBtn) {
-        confirmBtn.textContent = 'Clear Route';
-        confirmBtn.onclick = clearRoute;
+confirmBtn.textContent = 'Confirm Location';
+        confirmBtn.disabled = true;
     }
 
     // Back
@@ -97,7 +97,6 @@ function addRouteSummary(title, distance, time) {
                         <i class="fa fa-road" style="margin-right: 4px;"></i>${distance} | 
                         <i class="fa fa-clock" style="margin-right: 4px;"></i>${time}
                     </div>
-                    <button onclick="clearRoute()" style="margin-top: 8px; width: 100%; background: #ef4444; border: none; padding: 6px 12px; border-radius: 8px; color: white; cursor: pointer; font-size: 12px;">Clear</button>
                 </div>
             `;
             return div;
@@ -118,12 +117,5 @@ function getCurrentLocation() {
     }
 }
 
-function clearRoute() {
-    if (currentRoute) map.removeControl(currentRoute);
-    currentRoute = null;
-    if (routeSummary) map.removeControl(routeSummary);
-    routeSummary = null;
-}
 
-window.clearRoute = clearRoute;
 
