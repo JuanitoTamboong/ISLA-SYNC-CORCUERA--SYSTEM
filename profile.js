@@ -1,19 +1,99 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Check if Supabase is loaded
+    if (typeof supabase === 'undefined') {
+        console.error('Supabase SDK not loaded');
+        alert('Error: Supabase SDK failed to load. Please refresh the page.');
+        return;
+    }
+
+    // Supabase configuration
+    const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
+
+    // Initialize Supabase client
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Check session
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Load user data
+    await loadUserDataFromSupabase(supabaseClient);
     loadAndUpdateProfile();
+
+    // Show notification function
+    window.showNotification = function(message, type = 'info') {
+        const existing = document.querySelector('.notification');
+        if (existing) existing.remove();
+        
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.left = '50%';
+        notification.style.transform = 'translateX(-50%)';
+        notification.style.padding = '12px 20px';
+        notification.style.borderRadius = '12px';
+        notification.style.color = 'white';
+        notification.style.fontSize = '14px';
+        notification.style.zIndex = '1000';
+        notification.style.backgroundColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    };
     
-    // Back button
+    // Back button navigation
     const backBtn = document.querySelector('.header i');
     if (backBtn) {
         backBtn.style.cursor = 'pointer';
         backBtn.addEventListener('click', () => {
-            window.history.back();
+            window.location.href = 'resident-homepage.html';
         });
     }
 
     // Setup edit profile functionality
-    setupEditProfile();
+    setupEditProfile(supabaseClient);
     setupPhotoUpload();
 });
+
+async function loadUserDataFromSupabase(supabaseClient) {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+
+        const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') {
+            console.error('Profile load error:', error);
+            return;
+        }
+
+        if (profile) {
+            const userData = {
+                id: profile.id,
+                fullName: profile.full_name || '',
+                email: profile.email || '',
+                phone: profile.phone_number || '',
+                address: profile.address || '',
+                dateOfBirth: profile.date_of_birth || '',
+                photo: profile.avatar_url || '',
+                userType: profile.user_type || 'resident'
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            console.log('Profile loaded from Supabase:', userData);
+        }
+    } catch (error) {
+        console.error('Error loading profile from Supabase:', error);
+    }
+}
 
 function loadAndUpdateProfile() {
     const currentUser = localStorage.getItem('currentUser');
@@ -39,19 +119,61 @@ function calculateCompletion(user) {
 }
 
 function updateProfileDisplay(user) {
-    // Basic info
-    document.getElementById('profileName').textContent = user.fullName || 'Your Name';
-    document.getElementById('personalFullName').textContent = user.fullName || 'Your Name';
-    document.getElementById('profileEmail').textContent = user.email || 'your@email.com';
-    document.getElementById('personalEmail').textContent = user.email || 'your@email.com';
+    console.log('Updating display with user:', user);
     
-    // Update text fields
-    ['phone', 'address', 'dateOfBirth'].forEach(field => {
-        const fieldElement = document.querySelector(`[data-field="${field}"] p`);
-        if (fieldElement) {
-            fieldElement.textContent = user[field] || `Add your ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
+    // Basic info
+    const profileName = document.getElementById('profileName');
+    const personalFullName = document.getElementById('personalFullName');
+    const profileEmail = document.getElementById('profileEmail');
+    const personalEmail = document.getElementById('personalEmail');
+    
+    if (profileName) profileName.textContent = user.fullName || 'Your Name';
+    if (personalFullName) personalFullName.textContent = user.fullName || 'Your Name';
+    if (profileEmail) profileEmail.textContent = user.email || 'your@email.com';
+    if (personalEmail) personalEmail.textContent = user.email || 'your@email.com';
+    
+    // Update phone
+    const personalPhone = document.getElementById('personalPhone');
+    if (personalPhone) {
+        personalPhone.textContent = user.phone && user.phone.trim() !== '' ? user.phone : 'Add phone number';
+        const phoneIcon = document.getElementById('phoneIcon');
+        if (phoneIcon && user.phone && user.phone.trim() !== '') {
+            phoneIcon.classList.add('complete');
+        } else if (phoneIcon) {
+            phoneIcon.classList.remove('complete');
         }
-    });
+    }
+    
+    // Update address
+    const personalAddress = document.getElementById('personalAddress');
+    if (personalAddress) {
+        personalAddress.textContent = user.address && user.address.trim() !== '' ? user.address : 'Add your address';
+        const addressIcon = document.getElementById('addressIcon');
+        if (addressIcon && user.address && user.address.trim() !== '') {
+            addressIcon.classList.add('complete');
+        } else if (addressIcon) {
+            addressIcon.classList.remove('complete');
+        }
+    }
+    
+    // Update date of birth
+    const personalDOB = document.getElementById('personalDOB');
+    if (personalDOB) {
+        if (user.dateOfBirth && user.dateOfBirth.trim() !== '') {
+            const formattedDate = new Date(user.dateOfBirth).toLocaleDateString();
+            personalDOB.textContent = formattedDate;
+            const dobIcon = document.getElementById('dobIcon');
+            if (dobIcon) {
+                dobIcon.classList.add('complete');
+            }
+        } else {
+            personalDOB.textContent = 'Add your date of birth';
+            const dobIcon = document.getElementById('dobIcon');
+            if (dobIcon) {
+                dobIcon.classList.remove('complete');
+            }
+        }
+    }
     
     // Update photo
     updatePhotoDisplay(user.photo);
@@ -59,19 +181,37 @@ function updateProfileDisplay(user) {
 
 function updatePhotoDisplay(photoData) {
     const avatar = document.getElementById('userAvatar');
+    if (!avatar) return;
+    
+    // Clear existing content
+    avatar.innerHTML = '';
     
     if (photoData && photoData.trim() !== '') {
+        // Has photo - show image
         avatar.classList.add('has-photo');
-        avatar.innerHTML = `
-            <img src="${photoData}" alt="Profile Photo" onerror="handlePhotoError()">
-            <span class="edit" title="Change Photo"><i class="fas fa-camera"></i></span>
-        `;
+        const img = document.createElement('img');
+        img.src = photoData;
+        img.alt = 'Profile Photo';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.borderRadius = '50%';
+        img.style.objectFit = 'cover';
+        img.onerror = function() {
+            console.log('Photo load error');
+            avatar.classList.remove('has-photo');
+        };
+        avatar.appendChild(img);
     } else {
+        // No photo - show default (CSS will show the default avatar)
         avatar.classList.remove('has-photo');
-        avatar.innerHTML = `
-            <span class="edit" title="Upload Photo"><i class="fas fa-camera"></i></span>
-        `;
     }
+    
+    // Add edit button
+    const editSpan = document.createElement('span');
+    editSpan.className = 'edit';
+    editSpan.title = 'Change Photo';
+    editSpan.innerHTML = '<i class="fas fa-camera"></i>';
+    avatar.appendChild(editSpan);
 }
 
 function updateProfileCompletion(percentage) {
@@ -79,102 +219,165 @@ function updateProfileCompletion(percentage) {
     const completionText = document.getElementById('completionText');
     
     percentage = Math.min(100, Math.max(0, percentage));
-    progressFill.style.width = percentage + '%';
-    
-    if (percentage === 100) {
-        completionText.textContent = '100% Complete 🎉 Perfect!';
-        completionText.classList.add('perfect');
-    } else {
-        completionText.textContent = percentage + '% Complete';
-        completionText.classList.remove('perfect');
+    if (progressFill) {
+        progressFill.style.width = percentage + '%';
     }
     
-    updateFieldIcons(percentage);
-}
-
-function updateFieldIcons(percentage) {
-    const items = document.querySelectorAll('.item');
-    const totalFields = 6;
-    const completedFields = Math.round((percentage / 100) * totalFields);
-    
-    items.forEach((item, index) => {
-        const icon = item.querySelector('.icon');
-        if (index < completedFields) {
-            icon.classList.add('complete');
+    if (completionText) {
+        if (percentage === 100) {
+            completionText.textContent = '100% Complete ✅ Perfect!';
+            completionText.classList.add('perfect');
         } else {
-            icon.classList.remove('complete');
+            completionText.textContent = percentage + '% Complete';
+            completionText.classList.remove('perfect');
         }
-    });
+    }
 }
 
-function setupEditProfile() {
+// Global variable to store temp photo data
+let tempPhotoData = null;
+
+function setupEditProfile(supabaseClient) {
     const editBtn = document.getElementById('editProfileBtn');
     const form = document.getElementById('editProfileForm');
     const cancelBtn = document.getElementById('cancelEdit');
     const saveBtn = document.getElementById('saveProfile');
 
-    editBtn.addEventListener('click', () => {
-        form.classList.add('active');
-        document.querySelector('.profile').style.display = 'none';
-        document.querySelectorAll('.section').forEach(section => {
-            section.style.display = 'none';
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            // Reset temp photo when opening form
+            tempPhotoData = null;
+            form.classList.add('active');
+            document.querySelector('.profile').style.display = 'none';
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
         });
-    });
+    }
 
-    cancelBtn.addEventListener('click', cancelEdit);
-    saveBtn.addEventListener('click', saveProfile);
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', cancelEdit);
+    }
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => saveProfile(supabaseClient));
+    }
 
     function cancelEdit() {
         form.classList.remove('active');
         document.querySelector('.profile').style.display = 'block';
-        document.querySelectorAll('.section').forEach(section => {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => {
             section.style.display = 'block';
         });
-        populateEditForm(JSON.parse(localStorage.getItem('currentUser') || '{}'));
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        populateEditForm(currentUser);
+        tempPhotoData = null;
     }
 
-    function saveProfile() {
+    async function saveProfile(supabaseClient) {
+        // Get form values
         const formData = {
             fullName: document.getElementById('formFullName').value.trim(),
             email: document.getElementById('formEmail').value.trim(),
             phone: document.getElementById('formPhone').value.trim(),
             address: document.getElementById('formAddress').value.trim(),
-            dateOfBirth: document.getElementById('formDateOfBirth').value
+            dateOfBirth: document.getElementById('formDateOfBirth').value,
+            photo: tempPhotoData // Use temp photo if available
         };
-
-        // Get photo from localStorage
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        formData.photo = currentUser.photo || '';
-
-        // Save to localStorage
-        localStorage.setItem('currentUser', JSON.stringify(formData));
         
-        // Update display
-        loadAndUpdateProfile();
-        
-        // Hide form
-        cancelEdit();
+        // If no new photo was selected, keep existing photo
+        if (!formData.photo) {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            formData.photo = currentUser.photo || '';
+        }
+
+        console.log('Saving form data:', { ...formData, photo: formData.photo ? '[PHOTO_DATA]' : 'no photo' });
+
+        // Save to Supabase
+        const success = await saveProfileToSupabase(formData, supabaseClient);
+
+        if (success) {
+            // Update localStorage
+            localStorage.setItem('currentUser', JSON.stringify(formData));
+            await loadUserDataFromSupabase(supabaseClient);
+            loadAndUpdateProfile();
+            showNotification('Profile updated successfully!', 'success');
+            cancelEdit();
+        } else {
+            showNotification('Failed to update profile. Please try again.', 'error');
+        }
     }
 }
 
 function populateEditForm(user) {
-    document.getElementById('formFullName').value = user.fullName || '';
-    document.getElementById('formEmail').value = user.email || '';
-    document.getElementById('formPhone').value = user.phone || '';
-    document.getElementById('formAddress').value = user.address || '';
-    document.getElementById('formDateOfBirth').value = user.dateOfBirth || '';
-
-    // Update photo preview
+    const formFullName = document.getElementById('formFullName');
+    const formEmail = document.getElementById('formEmail');
+    const formPhone = document.getElementById('formPhone');
+    const formAddress = document.getElementById('formAddress');
+    const formDateOfBirth = document.getElementById('formDateOfBirth');
     const photoPreview = document.getElementById('photoPreview');
     const photoPlaceholder = document.getElementById('photoPlaceholder');
     
-    if (user.photo && user.photo.trim() !== '') {
-        photoPreview.src = user.photo;
-        photoPreview.style.display = 'block';
-        photoPlaceholder.style.display = 'none';
-    } else {
-        photoPreview.style.display = 'none';
-        photoPlaceholder.style.display = 'flex';
+    if (formFullName) formFullName.value = user.fullName || '';
+    if (formEmail) formEmail.value = user.email || '';
+    if (formPhone) formPhone.value = user.phone || '';
+    if (formAddress) formAddress.value = user.address || '';
+    if (formDateOfBirth) formDateOfBirth.value = user.dateOfBirth || '';
+
+    // Update photo preview - show existing photo or placeholder
+    if (photoPreview && photoPlaceholder) {
+        if (user.photo && user.photo.trim() !== '') {
+            photoPreview.src = user.photo;
+            photoPreview.style.display = 'block';
+            photoPlaceholder.style.display = 'none';
+        } else {
+            photoPreview.style.display = 'none';
+            photoPlaceholder.style.display = 'flex';
+        }
+    }
+}
+
+async function saveProfileToSupabase(formData, supabaseClient) {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            console.error('No active session');
+            return false;
+        }
+
+        // Map form data to DB schema
+        const profileData = {
+            id: session.user.id,
+            full_name: formData.fullName,
+            email: formData.email,
+            phone_number: formData.phone,
+            address: formData.address,
+            date_of_birth: formData.dateOfBirth || null,
+            avatar_url: formData.photo || null,
+            updated_at: new Date().toISOString()
+        };
+
+        console.log('Saving to Supabase:', { ...profileData, avatar_url: profileData.avatar_url ? '[PHOTO_DATA]' : 'null' });
+
+        const { error } = await supabaseClient
+            .from('profiles')
+            .upsert(profileData, { 
+                onConflict: 'id' 
+            });
+
+        if (error) {
+            console.error('Supabase upsert error:', error);
+            showNotification(`Error: ${error.message}`, 'error');
+            return false;
+        }
+
+        console.log('Profile synced to Supabase successfully');
+        return true;
+    } catch (error) {
+        console.error('Error saving profile to Supabase:', error);
+        return false;
     }
 }
 
@@ -184,26 +387,29 @@ function setupPhotoUpload() {
     const photoPreview = document.getElementById('photoPreview');
     const photoPlaceholder = document.getElementById('photoPlaceholder');
 
-    // Handle file selection
-    photoInput.addEventListener('change', handlePhotoUpload);
+    if (photoInput) {
+        photoInput.addEventListener('change', handlePhotoUpload);
+    }
 
-    // Change photo button
-    changePhotoBtn.addEventListener('click', () => photoInput.click());
+    if (changePhotoBtn) {
+        changePhotoBtn.addEventListener('click', () => photoInput.click());
+    }
 
-    // Photo placeholder click
-    photoPlaceholder.addEventListener('click', () => photoInput.click());
+    if (photoPlaceholder) {
+        photoPlaceholder.addEventListener('click', () => photoInput.click());
+    }
 
     function handlePhotoUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
         
         if (!file.type.startsWith('image/')) {
-            alert('Please select an image file');
+            showNotification('Please select an image file', 'error');
             return;
         }
         
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            alert('Image too large (max 5MB)');
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('Image too large (max 5MB)', 'error');
             return;
         }
         
@@ -211,31 +417,21 @@ function setupPhotoUpload() {
         reader.onload = function(e) {
             const photoData = e.target.result;
             
-            // Update preview
-            photoPreview.src = photoData;
-            photoPreview.style.display = 'block';
-            photoPlaceholder.style.display = 'none';
+            // Store in global temp variable
+            tempPhotoData = photoData;
             
-            // Save to localStorage
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            currentUser.photo = photoData;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            // Update preview immediately
+            if (photoPreview && photoPlaceholder) {
+                photoPreview.src = photoData;
+                photoPreview.style.display = 'block';
+                photoPlaceholder.style.display = 'none';
+            }
             
-            loadAndUpdateProfile();
+            showNotification('Photo selected! Click Save to update your profile photo.', 'success');
         };
         reader.onerror = function() {
-            alert('Failed to read image');
+            showNotification('Failed to read image', 'error');
         };
         reader.readAsDataURL(file);
-    }
-}
-
-function handlePhotoError() {
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-        const user = JSON.parse(currentUser);
-        delete user.photo;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        loadAndUpdateProfile();
     }
 }

@@ -28,16 +28,16 @@
                 <span class="edit" title="Change Photo"><i class="fas fa-camera"></i></span>
             </div>
 
-            <h3 id="profileName">Juan Dela Cruz</h3>
-            <p id="profileEmail">juan.delacruz@email.com</p>
+            <h3 id="profileName">Your Name</h3>
+            <p id="profileEmail">your@email.com</p>
 
             <!-- Profile Completion -->
             <div class="completion">
                 <h4>PROFILE COMPLETION</h4>
                 <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 33%;"></div>
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
                 </div>
-                <div class="completion-text" id="completionText">33% Complete</div>
+                <div class="completion-text" id="completionText">0% Complete</div>
             </div>
 
             <!-- Edit Profile Button -->
@@ -99,16 +99,16 @@
             <h4>MY REPORTS STATUS</h4>
             <div class="cards">
                 <div class="card total">
-<span>TOTAL</span>
-                    <h2>0</h2>
+                    <span>TOTAL</span>
+                    <h2 id="totalReports">0</h2>
                 </div>
                 <div class="card resolved">
-<span>RESOLVED</span>
-                    <h2>0</h2>
+                    <span>RESOLVED</span>
+                    <h2 id="resolvedReports">0</h2>
                 </div>
                 <div class="card pending">
-<span>PENDING</span>
-                    <h2>0</h2>
+                    <span>PENDING</span>
+                    <h2 id="pendingReports">0</h2>
                 </div>
             </div>
         </div>
@@ -117,49 +117,50 @@
         <div class="section">
             <h4>PERSONAL INFORMATION</h4>
             <div class="info">
-                <div class="item" data-field="fullName">
+                <div class="item">
                     <div class="icon complete"><i class="far fa-user"></i></div>
                     <div class="text">
                         <small>Full Name</small>
-                        <p id="personalFullName">Juan Dela Cruz</p>
+                        <p id="personalFullName">Your Name</p>
                     </div>
                 </div>
 
-                <div class="item" data-field="email">
+                <div class="item">
                     <div class="icon complete"><i class="fas fa-envelope"></i></div>
                     <div class="text">
                         <small>Email</small>
-                        <p id="personalEmail">juan.delacruz@email.com</p>
+                        <p id="personalEmail">your@email.com</p>
                     </div>
                 </div>
 
-                <div class="item" data-field="phone">
-                    <div class="icon"><i class="fas fa-phone"></i></div>
+                <div class="item">
+                    <div class="icon" id="phoneIcon"><i class="fas fa-phone"></i></div>
                     <div class="text">
                         <small>Phone Number</small>
-                        <p>Add phone number</p>
+                        <p id="personalPhone">Add phone number</p>
                     </div>
                 </div>
 
-                <div class="item" data-field="address">
-                    <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="item">
+                    <div class="icon" id="addressIcon"><i class="fas fa-map-marker-alt"></i></div>
                     <div class="text">
                         <small>Address</small>
-                        <p>Add your address</p>
+                        <p id="personalAddress">Add your address</p>
                     </div>
                 </div>
 
-                <div class="item" data-field="dateOfBirth">
-                    <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="item">
+                    <div class="icon" id="dobIcon"><i class="fas fa-calendar-alt"></i></div>
                     <div class="text">
                         <small>Date of Birth</small>
-                        <p>Add your date of birth</p>
+                        <p id="personalDOB">Add your date of birth</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="profile.js"></script>
 </body>
 </html>
