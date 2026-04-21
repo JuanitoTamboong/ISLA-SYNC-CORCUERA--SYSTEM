@@ -225,7 +225,7 @@ function updateProfileCompletion(percentage) {
     
     if (completionText) {
         if (percentage === 100) {
-            completionText.textContent = '100% Complete ✅ Perfect!';
+            completionText.textContent = '100% Completed!';
             completionText.classList.add('perfect');
         } else {
             completionText.textContent = percentage + '% Complete';
