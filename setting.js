@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('currentUser', JSON.stringify(user))
                 
                 // Update profile card
-                document.querySelector('.profile-card h4').textContent = user.fullName
-                document.querySelector('.profile-card p').textContent = user.email
+                document.querySelector('.profile-card h4').textContent = user.fullName || 'User Name'
+                document.querySelector('.profile-card p').textContent = user.email || 'user@example.com'
             }
         } catch (error) {
             console.error('Profile load error:', error)
@@ -115,6 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 break
             case 'notifications':
                 window.location.href = 'notif.html'
+                break
+            case 'profile':
+                window.location.href = 'profile.html'
                 break
             case 'settings':
                 // Stay on current page

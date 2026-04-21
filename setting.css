@@ -56,7 +56,9 @@
     font-size: 12px;
     color: #6b7280;
 }
-
+.profile-card .fa-chevron-right{
+    cursor: pointer;
+}
 .item {
     display: flex;
     justify-content: space-between;

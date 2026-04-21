@@ -246,6 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'notifications':
                 window.location.href = 'notif.html'
                 break
+            case 'profile':
+                window.location.href = 'profile.html'
+                break
             case 'settings':
                 window.location.href = 'setting.html'
                 break

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="profile.css">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <i class="fas fa-chevron-left"></i>
+            <h2>Profile</h2>
+        </div>
+
+        <!-- Profile -->
+        <div class="profile">
+            <div class="avatar" id="userAvatar">
+                <span class="edit" title="Add Photo"><i class="fas fa-camera"></i></span>
+            </div>
+
+            <h3 id="profileName">Juan Dela Cruz</h3>
+            <p id="profileEmail">juan.delacruz@email.com</p>
+
+            <!-- Profile Completion -->
+            <div class="completion">
+                <h4>PROFILE COMPLETION</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 40%;"></div>
+                </div>
+                <div class="completion-text" id="completionText">40% Complete</div>
+            </div>
+        </div>
+
+        <!-- Report Status -->
+        <div class="section">
+            <h4>MY REPORTS STATUS</h4>
+            <div class="cards">
+                <div class="card total">
+                    <span>TOTAL</span>
+                    <h2>12</h2>
+                </div>
+                <div class="card resolved">
+                    <span>RESOLVED</span>
+                    <h2>8</h2>
+                </div>
+                <div class="card pending">
+                    <span>PENDING</span>
+                    <h2>4</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="section">
+            <h4>PERSONAL INFORMATION</h4>
+            <div class="info">
+                <!-- Full Name - Always Complete -->
+                <div class="item" data-field="fullName">
+                    <div class="icon complete"><i class="far fa-user"></i></div>
+                    <div class="text">
+                        <small>Full Name</small>
+                        <p id="personalFullName">Juan Dela Cruz</p>
+                    </div>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+
+                <!-- Email - Always Complete -->
+                <div class="item" data-field="email">
+                    <div class="icon complete"><i class="fas fa-envelope"></i></div>
+                    <div class="text">
+                        <small>Email</small>
+                        <p id="personalEmail">juan.delacruz@email.com</p>
+                    </div>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+
+                <!-- Phone -->
+                <div class="item" data-field="phone">
+                    <div class="icon"><i class="fas fa-phone"></i></div>
+                    <div class="text">
+                        <small>Phone Number</small>
+                        <p>Add phone number</p>
+                    </div>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+
+                <!-- Address -->
+                <div class="item" data-field="address">
+                    <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="text">
+                        <small>Address</small>
+                        <p>Add your address</p>
+                    </div>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="item" data-field="dateOfBirth">
+                    <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="text">
+                        <small>Date of Birth</small>
+                        <p>Add your date of birth</p>
+                    </div>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="profile.js"></script>
+</body>
+</html>
