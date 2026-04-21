@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('Resident homepage loaded');
     
-    // Check if user is logged in
+    // Check if user is logged in with id validation (fix 400 error)
     const currentUser = localStorage.getItem('currentUser')
     
     if (!currentUser) {
@@ -25,7 +25,21 @@ document.addEventListener('DOMContentLoaded', function() {
         return
     }
     
-    let user = JSON.parse(currentUser)
+    let user;
+    try {
+        user = JSON.parse(currentUser)
+        if (!user || !user.id) {
+            console.warn('No valid user id found, clearing localStorage')
+            localStorage.removeItem('currentUser')
+            window.location.href = 'login.html'
+            return
+        }
+    } catch (e) {
+        console.error('Invalid currentUser JSON:', e)
+        localStorage.removeItem('currentUser')
+        window.location.href = 'login.html'
+        return
+    }
     
     // Verify user is a resident
     if (user.userType !== 'resident') {

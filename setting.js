@@ -12,13 +12,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds'
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     
-    // Check user
+    // Check user with id validation (fix 400 error)
     const currentUser = localStorage.getItem('currentUser')
     if (!currentUser) {
         window.location.href = 'login.html'
         return
     }
-    let user = JSON.parse(currentUser)
+    let user;
+    try {
+        user = JSON.parse(currentUser)
+        if (!user || !user.id) {
+            console.warn('No valid user id found, clearing localStorage')
+            localStorage.removeItem('currentUser')
+            window.location.href = 'login.html'
+            return
+        }
+    } catch (e) {
+        console.error('Invalid currentUser JSON:', e)
+        localStorage.removeItem('currentUser')
+        window.location.href = 'login.html'
+        return
+    }
     
     // Load and update profile
     async function loadUserData() {
