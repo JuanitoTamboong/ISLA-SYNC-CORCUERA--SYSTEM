@@ -25,7 +25,7 @@
         <!-- Profile -->
         <div class="profile">
             <div class="avatar" id="userAvatar">
-                <span class="edit" title="Add Photo"><i class="fas fa-camera"></i></span>
+                <span class="edit" title="Change Photo"><i class="fas fa-camera"></i></span>
             </div>
 
             <h3 id="profileName">Juan Dela Cruz</h3>
@@ -38,6 +38,59 @@
                     <div class="progress-fill" id="progressFill" style="width: 33%;"></div>
                 </div>
                 <div class="completion-text" id="completionText">33% Complete</div>
+            </div>
+
+            <!-- Edit Profile Button -->
+            <button class="edit-profile-btn" id="editProfileBtn">
+                <i class="fas fa-edit"></i> Edit Profile
+            </button>
+        </div>
+
+        <!-- Edit Profile Form -->
+        <div class="edit-profile-form" id="editProfileForm">
+            <!-- PERFECTLY CENTERED PHOTO SECTION -->
+            <div class="form-group photo-section">
+                <label class="form-label">Profile Photo</label>
+                <div class="photo-container">
+                    <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;">
+                    <img id="photoPreview" class="photo-preview" src="" alt="Preview" style="display: none;">
+                    <div id="photoPlaceholder">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <button type="button" id="changePhotoBtn" class="btn btn-secondary">Change Photo</button>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="formFullName" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="formEmail" placeholder="your@email.com">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-input" id="formPhone" placeholder="+63 912 345 6789">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" class="form-input" id="formDateOfBirth">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea class="form-input" id="formAddress" rows="3" placeholder="Enter your complete address"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveProfile">Save Profile</button>
             </div>
         </div>
 
@@ -70,7 +123,6 @@
                         <small>Full Name</small>
                         <p id="personalFullName">Juan Dela Cruz</p>
                     </div>
-                    <i class="fas fa-chevron-right arrow"></i>
                 </div>
 
                 <div class="item" data-field="email">
@@ -79,7 +131,6 @@
                         <small>Email</small>
                         <p id="personalEmail">juan.delacruz@email.com</p>
                     </div>
-                    <i class="fas fa-chevron-right arrow"></i>
                 </div>
 
                 <div class="item" data-field="phone">
@@ -88,7 +139,6 @@
                         <small>Phone Number</small>
                         <p>Add phone number</p>
                     </div>
-                    <i class="fas fa-chevron-right arrow"></i>
                 </div>
 
                 <div class="item" data-field="address">
@@ -97,7 +147,6 @@
                         <small>Address</small>
                         <p>Add your address</p>
                     </div>
-                    <i class="fas fa-chevron-right arrow"></i>
                 </div>
 
                 <div class="item" data-field="dateOfBirth">
@@ -106,29 +155,7 @@
                         <small>Date of Birth</small>
                         <p>Add your date of birth</p>
                     </div>
-                    <i class="fas fa-chevron-right arrow"></i>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hidden File Input -->
-    <input type="file" id="photoInput" accept="image/*" capture="environment">
-
-    <!-- Photo Upload Overlay -->
-    <div class="photo-overlay" id="photoOverlay">
-        <div class="upload-container">
-            <h3>Upload Profile Photo</h3>
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                </div>
-                <div class="upload-text">Click to select photo</div>
-                <div class="upload-subtext">or drag & drop (JPG, PNG up to 5MB)</div>
-            </div>
-            <div class="upload-actions">
-                <button class="btn btn-secondary" id="cancelUpload">Cancel</button>
-                <button class="btn btn-primary" id="removePhoto" style="display: none;">Remove Photo</button>
             </div>
         </div>
     </div>

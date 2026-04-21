@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Setup editors
-    setupFieldEditors();
+    // Setup edit profile functionality
+    setupEditProfile();
     setupPhotoUpload();
 });
 
@@ -22,6 +22,7 @@ function loadAndUpdateProfile() {
 
     updateProfileDisplay(user);
     updateProfileCompletion(completionPercentage);
+    populateEditForm(user);
 }
 
 function calculateCompletion(user) {
@@ -58,22 +59,17 @@ function updateProfileDisplay(user) {
 
 function updatePhotoDisplay(photoData) {
     const avatar = document.getElementById('userAvatar');
-    const photoInput = document.getElementById('photoInput');
     
     if (photoData && photoData.trim() !== '') {
         avatar.classList.add('has-photo');
-        // If it's base64 data, use directly; if URL, use URL
-        const imgSrc = photoData.startsWith('data:image') ? photoData : photoData;
         avatar.innerHTML = `
-            <img src="${imgSrc}" alt="Profile Photo" onerror="handlePhotoError()">
+            <img src="${photoData}" alt="Profile Photo" onerror="handlePhotoError()">
             <span class="edit" title="Change Photo"><i class="fas fa-camera"></i></span>
-            ${photoInput.outerHTML}
         `;
     } else {
         avatar.classList.remove('has-photo');
         avatar.innerHTML = `
             <span class="edit" title="Upload Photo"><i class="fas fa-camera"></i></span>
-            ${photoInput.outerHTML}
         `;
     }
 }
@@ -111,95 +107,130 @@ function updateFieldIcons(percentage) {
     });
 }
 
-function setupFieldEditors() {
-    document.querySelectorAll('.item[data-field]').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const field = this.dataset.field;
-            if (field !== 'photo') { // Photo handled separately
-                editField(field);
-            }
+function setupEditProfile() {
+    const editBtn = document.getElementById('editProfileBtn');
+    const form = document.getElementById('editProfileForm');
+    const cancelBtn = document.getElementById('cancelEdit');
+    const saveBtn = document.getElementById('saveProfile');
+
+    editBtn.addEventListener('click', () => {
+        form.classList.add('active');
+        document.querySelector('.profile').style.display = 'none';
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.display = 'none';
         });
     });
+
+    cancelBtn.addEventListener('click', cancelEdit);
+    saveBtn.addEventListener('click', saveProfile);
+
+    function cancelEdit() {
+        form.classList.remove('active');
+        document.querySelector('.profile').style.display = 'block';
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.display = 'block';
+        });
+        populateEditForm(JSON.parse(localStorage.getItem('currentUser') || '{}'));
+    }
+
+    function saveProfile() {
+        const formData = {
+            fullName: document.getElementById('formFullName').value.trim(),
+            email: document.getElementById('formEmail').value.trim(),
+            phone: document.getElementById('formPhone').value.trim(),
+            address: document.getElementById('formAddress').value.trim(),
+            dateOfBirth: document.getElementById('formDateOfBirth').value
+        };
+
+        // Get photo from localStorage
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        formData.photo = currentUser.photo || '';
+
+        // Save to localStorage
+        localStorage.setItem('currentUser', JSON.stringify(formData));
+        
+        // Update display
+        loadAndUpdateProfile();
+        
+        // Hide form
+        cancelEdit();
+    }
+}
+
+function populateEditForm(user) {
+    document.getElementById('formFullName').value = user.fullName || '';
+    document.getElementById('formEmail').value = user.email || '';
+    document.getElementById('formPhone').value = user.phone || '';
+    document.getElementById('formAddress').value = user.address || '';
+    document.getElementById('formDateOfBirth').value = user.dateOfBirth || '';
+
+    // Update photo preview
+    const photoPreview = document.getElementById('photoPreview');
+    const photoPlaceholder = document.getElementById('photoPlaceholder');
+    
+    if (user.photo && user.photo.trim() !== '') {
+        photoPreview.src = user.photo;
+        photoPreview.style.display = 'block';
+        photoPlaceholder.style.display = 'none';
+    } else {
+        photoPreview.style.display = 'none';
+        photoPlaceholder.style.display = 'flex';
+    }
 }
 
 function setupPhotoUpload() {
     const photoInput = document.getElementById('photoInput');
-    const avatar = document.getElementById('userAvatar');
-    
+    const changePhotoBtn = document.getElementById('changePhotoBtn');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoPlaceholder = document.getElementById('photoPlaceholder');
+
     // Handle file selection
     photoInput.addEventListener('change', handlePhotoUpload);
-    
-    // Handle camera button clicks (dynamic)
-    avatar.addEventListener('click', function(e) {
-        if (e.target.closest('.edit') || !this.classList.contains('has-photo')) {
-            photoInput.click();
+
+    // Change photo button
+    changePhotoBtn.addEventListener('click', () => photoInput.click());
+
+    // Photo placeholder click
+    photoPlaceholder.addEventListener('click', () => photoInput.click());
+
+    function handlePhotoUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
         }
-    });
-}
-
-function handlePhotoUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    if (!file.type.startsWith('image/')) {
-        showToast('Please select an image file', 'warning');
-        return;
+        
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            alert('Image too large (max 5MB)');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const photoData = e.target.result;
+            
+            // Update preview
+            photoPreview.src = photoData;
+            photoPreview.style.display = 'block';
+            photoPlaceholder.style.display = 'none';
+            
+            // Save to localStorage
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            currentUser.photo = photoData;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            loadAndUpdateProfile();
+        };
+        reader.onerror = function() {
+            alert('Failed to read image');
+        };
+        reader.readAsDataURL(file);
     }
-    
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        showToast('Image too large (max 5MB)', 'warning');
-        return;
-    }
-    
-    // Show loading
-    showToast('Uploading photo...', 'info');
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const photoData = e.target.result; // Base64 data URL
-        saveField('photo', photoData);
-        showToast('Photo uploaded successfully! ✅', 'success');
-    };
-    reader.onerror = function() {
-        showToast('Failed to read image', 'warning');
-    };
-    reader.readAsDataURL(file);
-}
-
-function editField(field) {
-    const currentUser = localStorage.getItem('currentUser');
-    const user = currentUser ? JSON.parse(currentUser) : {};
-    let currentValue = user[field] || '';
-    
-    let placeholder = `Enter your ${field.replace('_', ' ').replace(/([A-Z])/g, ' $1').toLowerCase()}`;
-    let newValue;
-    
-    if (field === 'dateOfBirth') {
-        newValue = prompt(placeholder + '\n(Format: YYYY-MM-DD)', currentValue);
-    } else if (field === 'phone') {
-        newValue = prompt(placeholder + '\n(Format: +63 912 345 6789)', currentValue);
-    } else {
-        newValue = prompt(placeholder, currentValue);
-    }
-    
-    if (newValue !== null && newValue.trim() !== currentValue.trim()) {
-        saveField(field, newValue.trim());
-    }
-}
-
-function saveField(field, value) {
-    const currentUser = localStorage.getItem('currentUser');
-    let user = currentUser ? JSON.parse(currentUser) : {};
-    
-    user[field] = value;
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    
-    loadAndUpdateProfile();
 }
 
 function handlePhotoError() {
-    showToast('Photo failed to load, using default avatar', 'warning');
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
         const user = JSON.parse(currentUser);
@@ -207,20 +238,4 @@ function handlePhotoError() {
         localStorage.setItem('currentUser', JSON.stringify(user));
         loadAndUpdateProfile();
     }
-}
-
-function showToast(message, type = 'info') {
-    document.querySelectorAll('.toast').forEach(toast => toast.remove());
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    requestAnimationFrame(() => toast.style.transform = 'translateX(0)');
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateX(400px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
 }
