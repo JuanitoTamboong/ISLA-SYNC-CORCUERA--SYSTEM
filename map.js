@@ -60,7 +60,7 @@ const MARKER_ICONS = {
     })
 };
 
-// Icon mapping for place types (used when no image is provided)
+// Icon mapping for place types
 const PLACE_ICONS = {
     lighthouse: '<i class="fa fa-lightbulb-o" style="font-size: 48px; color: #667eea;"></i>',
     government: '<i class="fa fa-university" style="font-size: 48px; color: #667eea;"></i>',
@@ -97,10 +97,8 @@ async function loadPlacesFromJSON() {
         const response = await fetch('places.json');
         const data = await response.json();
         placesData = data.places;
-        console.log('Places loaded successfully!', placesData);
         return placesData;
     } catch (error) {
-        console.error('Error loading places.json:', error);
         return getFallbackPlaces();
     }
 }
@@ -124,14 +122,13 @@ function getFallbackPlaces() {
     };
 }
 
-// Get icon HTML for a place type (used when no image)
+// Get icon HTML for a place type
 function getPlaceIcon(type) {
     return PLACE_ICONS[type] || PLACE_ICONS.default;
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof L === 'undefined') {
-        console.error('Leaflet not loaded');
         return;
     }
 
@@ -227,7 +224,6 @@ function loadPlacesByCategory(category) {
             }
             
             var rating = place.rating || (Math.random() * 1.5 + 3.5).toFixed(1);
-            // Use image if provided, otherwise use null (will show icon)
             var imageUrl = place.image || null;
             
             markersData.push({
@@ -289,14 +285,14 @@ function searchSimaraPlaces(searchText) {
     return allResults;
 }
 
-// ============ MARKERS WITH NO POPUP - ONLY BOTTOM CARD ============
 function addMarkersToMap(places) {
     currentMarkers = [];
     
     for (var i = 0; i < places.length; i++) {
         var place = places[i];
         
-
+        var iconType = CATEGORY_ICON_TYPE[place.category] || 'default';
+        
         var markerIcon = place.img ? L.divIcon({
             html: `<img src="${place.img}" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">`,
             iconSize: [40, 40],
@@ -304,7 +300,6 @@ function addMarkersToMap(places) {
         }) : (MARKER_ICONS[iconType] || MARKER_ICONS.default);
         
         var marker = L.marker(place.coords, { icon: markerIcon })
-
             .on('click', function(p) {
                 return function() {
                     showLocationCard(p);
@@ -323,26 +318,21 @@ function addMarkersToMap(places) {
     }
 }
 
-// ============ BOTTOM LOCATION CARD ============
 function showLocationCard(place) {
     var locationCard = document.getElementById('locationCard');
     if (!locationCard) return;
     
     document.getElementById('cardTitle').textContent = place.title;
     
-    // Show image if available, otherwise show icon
     var cardImg = document.getElementById('cardImg');
     if (place.img && place.img !== '') {
         cardImg.src = place.img;
         cardImg.style.display = 'block';
         cardImg.style.height = '120px';
-        // Remove any icon container if exists
         var iconContainer = cardImg.parentNode.querySelector('.icon-placeholder');
         if (iconContainer) iconContainer.remove();
     } else {
-        // Hide image and show icon instead
         cardImg.style.display = 'none';
-        // Check if icon container already exists
         var existingIcon = cardImg.parentNode.querySelector('.icon-placeholder');
         if (!existingIcon) {
             var iconDiv = document.createElement('div');
@@ -447,7 +437,6 @@ function showNoResultsMessage() {
     }
 }
 
-// ============ SEARCH ============
 function setupSearch() {
     var searchInput = document.getElementById('mapSearch');
     if (!searchInput) return;
@@ -496,7 +485,6 @@ function setupSearch() {
     });
 }
 
-// ============ TABS ============
 function setupTabs() {
     var tabs = document.querySelectorAll('.tabs button');
     var categories = ['discovery', 'nature', 'dining', 'resort'];
@@ -516,7 +504,6 @@ function setupTabs() {
     }
 }
 
-// ============ DIRECTIONS ============
 function setupDirectionsHandler() {
     var cardDirectionsBtn = document.getElementById('cardDirections');
     if (cardDirectionsBtn) {
@@ -529,7 +516,6 @@ function setupDirectionsHandler() {
                 var startLat = userLocation ? userLocation.lat : SIMARA_COORDS.lat;
                 var startLng = userLocation ? userLocation.lon : SIMARA_COORDS.lon;
                 
-                // Navigate to dedicated directions page
                 const params = new URLSearchParams({
                     destLat: lat,
                     destLng: lng,
@@ -614,7 +600,6 @@ function showDirections(startLat, startLng, endLat, endLng, title) {
         });
         
     } catch (error) {
-        console.error('Routing error:', error);
         alert('Directions not available. Please try again.');
     }
 }
@@ -630,7 +615,6 @@ window.clearRoute = function() {
     }
 };
 
-// ============ USER LOCATION ============
 function getUserLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -653,7 +637,6 @@ function getUserLocation() {
                 loadPlacesByCategory(currentCategory);
             },
             function(error) {
-                console.log('Location access denied:', error);
                 userLocation = SIMARA_COORDS;
             }
         );
@@ -672,7 +655,7 @@ pulseStyle.textContent = `
 `;
 document.head.appendChild(pulseStyle);
 
-// ============ SHARE & FAVORITE BUTTONS ============
+// Share & favorite buttons
 document.addEventListener('DOMContentLoaded', function() {
     var shareBtn = document.querySelector('.share');
     if (shareBtn) {
@@ -684,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: title,
                     text: 'Check out ' + title + ' on Simara Island, Corcuera, Romblon!',
                     url: window.location.href
-                }).catch(function(e) { console.log('Sharing cancelled'); });
+                }).catch(function(e) {});
             } else {
                 navigator.clipboard.writeText(title + ' - Simara Island, Corcuera, Romblon');
                 alert('Link copied to clipboard!');
@@ -747,7 +730,6 @@ toastStyle.textContent = `
 `;
 document.head.appendChild(toastStyle);
 
-// ============ HELPER FUNCTIONS ============
 function calculateDistance(lat1, lon1, lat2, lon2) {
     var R = 6371;
     var dLat = (lat2 - lat1) * Math.PI / 180;

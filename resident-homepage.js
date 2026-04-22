@@ -2,7 +2,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
-        console.error('Supabase SDK not loaded');
         showNotification('Error: Supabase SDK failed to load. Please refresh the page.', 'error');
         return;
     }
@@ -14,13 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Supabase client
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     
-    console.log('Resident homepage loaded');
-    
-    // Check if user is logged in with id validation (fix 400 error)
+    // Check if user is logged in with id validation
     const currentUser = localStorage.getItem('currentUser')
     
     if (!currentUser) {
-        console.log('No user found, redirecting to login');
         window.location.href = 'login.html'
         return
     }
@@ -29,13 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         user = JSON.parse(currentUser)
         if (!user || !user.id) {
-            console.warn('No valid user id found, clearing localStorage')
             localStorage.removeItem('currentUser')
             window.location.href = 'login.html'
             return
         }
     } catch (e) {
-        console.error('Invalid currentUser JSON:', e)
         localStorage.removeItem('currentUser')
         window.location.href = 'login.html'
         return
@@ -43,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Verify user is a resident
     if (user.userType !== 'resident') {
-        console.log('User is not a resident, redirecting to admin page');
         window.location.href = 'admin-dashboard.html'
         return
     }
@@ -54,14 +47,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession()
             
             if (sessionError || !session) {
-                console.log('Session expired or invalid');
                 localStorage.removeItem('currentUser')
                 window.location.href = 'login.html'
                 return false
             }
             
             if (session.user.id !== user.id) {
-                console.log('User ID mismatch');
                 localStorage.removeItem('currentUser')
                 window.location.href = 'login.html'
                 return false
@@ -69,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return true
         } catch (error) {
-            console.error('Session verification error:', error);
             return false
         }
     }
@@ -84,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .maybeSingle()
             
             if (profileError) {
-                console.error('Error fetching profile:', profileError)
                 updateUserInterface(user)
                 return
             }
@@ -95,7 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     fullName: profile.full_name,
                     email: profile.email,
                     userType: profile.user_type,
-                    is_active: profile.is_active
+                    is_active: profile.is_active,
+                    photo: profile.avatar_url
                 }
                 localStorage.setItem('currentUser', JSON.stringify(user))
                 
@@ -106,14 +96,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 updateUserInterface(user)
+                updateProfileImage(user)
                 updateGreeting()
             }
         } catch (error) {
-            console.error('Error loading user data:', error)
             updateUserInterface(user)
         }
     }
     
+    // Immediately show cached profile image
+    updateProfileImage(user)
+
     // Run verification and load data
     verifySession().then(isValid => {
         if (isValid) {
@@ -121,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })
     
-    // Banner image shuffle for Explore Simara Island
+    // Banner image shuffle
     const bannerImages = [
         'assets/generate background image of corquera romblon.jpg',
         'assets/generate background image of corquera romblon (1).jpg',
@@ -132,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
         'assets/generate background of corquera romblon (2).jpg',
         'assets/7.jpg',
         'assets/sea.jpg',
-
     ];
     
     let currentImageIndex = 0;
@@ -145,9 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Start shuffling after 2s delay, every 4s
+    // Start shuffling
     setTimeout(() => {
-        shuffleBanner(); // Initial set
+        shuffleBanner();
         setInterval(shuffleBanner, 4000);
     }, 2000);
     
@@ -156,6 +148,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const userNameElement = document.getElementById('userName')
         if (userNameElement) {
             userNameElement.textContent = user.fullName
+        }
+        updateProfileImage(user)
+    }
+
+    // Update profile image
+    function updateProfileImage(user) {
+        const img = document.getElementById('profileImg')
+        const icon = document.getElementById('profileIcon')
+        if (!img || !icon) return
+
+        img.style.display = 'none'
+        icon.style.display = 'block'
+
+        if (user.photo && user.photo.trim()) {
+            img.src = user.photo
+            img.style.display = 'block'
+            icon.style.display = 'none'
+            img.onerror = () => {
+                img.style.display = 'none'
+                icon.style.display = 'block'
+            }
         }
     }
     
@@ -173,8 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         greetingElement.textContent = greeting
     }
-    
-
     
     // View profile
     window.viewProfile = function() {
@@ -238,7 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = 'login.html'
             }, 1000)
         } catch (error) {
-            console.error('Logout error:', error)
             showNotification('Error logging out', 'error')
         }
     }
@@ -270,13 +280,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Services
-window.reportIssue = () => { window.location.href = 'report.html'; }
+    window.reportIssue = () => { window.location.href = 'report.html'; }
     window.viewNews = () => showNotification('Latest news feature coming soon!', 'info')
     window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
     window.viewMyReports = () => { window.location.href = 'view-reports.html'; }
     
     // Notification function
-
     function showNotification(message, type = 'info') {
         const existingNotification = document.querySelector('.notification')
         if (existingNotification) existingNotification.remove()
@@ -315,5 +324,4 @@ window.reportIssue = () => { window.location.href = 'report.html'; }
             if (notification && notification.parentNode) notification.remove()
         }, 4000)
     }
-    
 })

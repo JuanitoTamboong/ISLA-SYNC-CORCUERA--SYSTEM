@@ -2,7 +2,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
-        console.error('Supabase SDK not loaded');
         showNotification('Error: Supabase SDK failed to load. Please refresh the page.', 'error');
         return;
     }
@@ -13,8 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize Supabase client
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    
-    console.log('Login page loaded');
     
     // Get form elements
     const emailInput = document.getElementById('emailInput')
@@ -43,13 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 .maybeSingle()
             
             if (error) {
-                console.error('Error fetching full name:', error)
                 return null
             }
             
             return data ? data.email : null
         } catch (error) {
-            console.error('Full name lookup error:', error)
             return null
         }
     }
@@ -63,8 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create profile function with retry logic
     async function createUserProfile(userId, email, fullName) {
         try {
-            console.log('Attempting to create profile for user:', userId);
-            
             // First, check if profile already exists
             const { data: existingProfile, error: checkError } = await supabaseClient
                 .from('profiles')
@@ -73,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .maybeSingle()
             
             if (existingProfile) {
-                console.log('Profile already exists:', existingProfile);
                 return existingProfile;
             }
             
@@ -86,8 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 is_active: true
             };
             
-            console.log('Creating profile with data:', profileData);
-            
             const { data: newProfile, error: insertError } = await supabaseClient
                 .from('profiles')
                 .insert([profileData])
@@ -95,11 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 .single()
             
             if (insertError) {
-                console.error('Error inserting profile:', insertError);
-                
                 // If unique violation, try to fetch again
                 if (insertError.code === '23505') {
-                    console.log('Unique violation, fetching existing profile...');
                     const { data: fetchedProfile, error: fetchError } = await supabaseClient
                         .from('profiles')
                         .select('*')
@@ -114,10 +101,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw insertError;
             }
             
-            console.log('Profile created successfully:', newProfile);
             return newProfile;
         } catch (error) {
-            console.error('Error in createUserProfile:', error);
             return null;
         }
     }
@@ -141,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!isEmail(inputValue)) {
                 isFullNameLogin = true
-                console.log('Full name detected:', inputValue)
                 email = await getEmailFromFullName(inputValue)
                 
                 if (!email) {
@@ -150,10 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     loginButton.textContent = 'Log In'
                     return
                 }
-                console.log('Found email for full name:', email)
             }
-            
-            console.log('Attempting login for:', email)
             
             const { data: authData, error: signInError } = await supabaseClient.auth.signInWithPassword({
                 email: email,
@@ -161,7 +142,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             
             if (signInError) {
-                console.error('Auth error:', signInError)
                 if (signInError.message.includes('Invalid login credentials')) {
                     showNotification(isFullNameLogin ? 'Invalid name or password' : 'Invalid email or password', 'error')
                 } else if (signInError.message.includes('Email not confirmed')) {
@@ -181,8 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return
             }
             
-            console.log('User authenticated:', authData.user.id)
-            
             // Get or create profile with retries
             let profile = null;
             let attempts = 0;
@@ -197,16 +175,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (profileData) {
                     profile = profileData;
-                    console.log('Profile found:', profile);
                     break;
                 }
                 
-                if (profileError && profileError.code !== 'PGRST116') {
-                    console.error('Profile fetch error:', profileError);
-                }
-                
                 if (!profileData) {
-                    console.log(`Attempt ${attempts + 1} to create profile`);
                     profile = await createUserProfile(
                         authData.user.id,
                         authData.user.email,
@@ -224,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Use fallback data if profile creation failed
             if (!profile) {
-                console.warn('Using fallback user data');
                 profile = {
                     id: authData.user.id,
                     full_name: authData.user.user_metadata?.full_name || authData.user.email?.split('@')[0] || 'User',
@@ -261,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1500)
             
         } catch (error) {
-            console.error('Login error:', error)
             showNotification('An unexpected error occurred. Please try again.', 'error')
             loginButton.disabled = false
             loginButton.textContent = 'Log In'
@@ -336,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const newUserName = localStorage.getItem('newUserName')
     
     if (newUserEmail) {
-showNotification('Account ready! Please login with your credentials.', 'success')
+        showNotification('Account ready! Please login with your credentials.', 'success')
         if (emailInput) emailInput.value = newUserEmail
         localStorage.removeItem('newUserEmail')
         localStorage.removeItem('newUserName')
