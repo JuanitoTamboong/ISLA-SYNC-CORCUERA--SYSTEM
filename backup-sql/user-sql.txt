@@ -1,5 +1,5 @@
 -- ============================================
--- ISLA-SYNC CORCUERA - FIXED RLS POLICIES
+-- ISLA-SYNC CORCUERA - COMPLETE PROFILES TABLE
 -- ============================================
 
 -- Drop all existing policies to start fresh
@@ -17,12 +17,18 @@ DROP POLICY IF EXISTS "service_role_access" ON public.profiles;
 -- Temporarily disable RLS to clean up
 ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
 
--- Ensure the profiles table has correct structure
-CREATE TABLE IF NOT EXISTS public.profiles (
+-- Drop and recreate the profiles table with all columns
+DROP TABLE IF EXISTS public.profiles CASCADE;
+
+CREATE TABLE public.profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     full_name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     user_type TEXT NOT NULL DEFAULT 'resident' CHECK (user_type IN ('resident', 'admin')),
+    phone_number TEXT,
+    address TEXT,
+    date_of_birth DATE,
+    avatar_url TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -53,7 +59,7 @@ CREATE TRIGGER update_profiles_updated_at
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
 
--- Recreate the function with better error handling
+-- Recreate the function with all fields
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -62,18 +68,30 @@ SET search_path = public
 AS $$
 BEGIN
     -- Insert into profiles with all required fields
-    INSERT INTO public.profiles (id, full_name, email, user_type)
+    INSERT INTO public.profiles (
+        id, 
+        full_name, 
+        email, 
+        user_type,
+        phone_number,
+        address,
+        date_of_birth,
+        avatar_url
+    )
     VALUES (
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
         NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'user_type', 'resident')
+        COALESCE(NEW.raw_user_meta_data->>'user_type', 'resident'),
+        NEW.raw_user_meta_data->>'phone_number',
+        NEW.raw_user_meta_data->>'address',
+        NULL,
+        NEW.raw_user_meta_data->>'avatar_url'
     );
     
     RETURN NEW;
 EXCEPTION
     WHEN OTHERS THEN
-        -- Log error (you can see this in Supabase logs)
         RAISE NOTICE 'Error in handle_new_user: %', SQLERRM;
         RETURN NEW;
 END;
@@ -119,7 +137,7 @@ GRANT ALL ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 GRANT SELECT ON public.profiles TO anon;
 
--- Create a simple function to check if user is admin (avoids recursion)
+-- Create a simple function to check if user is admin
 CREATE OR REPLACE FUNCTION check_is_admin(user_id UUID)
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -131,3 +149,19 @@ AS $$
     WHERE id = user_id
     LIMIT 1;
 $$;
+
+-- Create a view for easier profile management
+CREATE OR REPLACE VIEW public.user_profiles AS
+SELECT 
+    id,
+    full_name,
+    email,
+    user_type,
+    phone_number,
+    address,
+    date_of_birth,
+    avatar_url,
+    is_active,
+    created_at,
+    updated_at
+FROM public.profiles;

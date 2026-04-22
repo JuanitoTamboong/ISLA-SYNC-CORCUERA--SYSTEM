@@ -1,0 +1,132 @@
+-- ============================================
+-- ISLA-SYNC CORCUERA - REPORTS TABLE
+-- ============================================
+
+-- Create the reports table
+CREATE TABLE IF NOT EXISTS public.reports (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    reference TEXT NOT NULL UNIQUE,
+    category TEXT NOT NULL,
+    description TEXT NOT NULL,
+    image_url TEXT,
+    location TEXT NOT NULL,
+    location_address TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'resolved')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    -- Additional useful fields
+    latitude NUMERIC(10, 7),
+    longitude NUMERIC(10, 7),
+    upvotes INTEGER DEFAULT 0,
+    downvotes INTEGER DEFAULT 0,
+    admin_notes TEXT,
+    resolved_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Create indexes for faster queries
+CREATE INDEX IF NOT EXISTS idx_reports_user_id ON public.reports(user_id);
+CREATE INDEX IF NOT EXISTS idx_reports_category ON public.reports(category);
+CREATE INDEX IF NOT EXISTS idx_reports_status ON public.reports(status);
+CREATE INDEX IF NOT EXISTS idx_reports_created_at ON public.reports(created_at);
+CREATE INDEX IF NOT EXISTS idx_reports_reference ON public.reports(reference);
+
+-- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_reports_updated_at ON public.reports;
+CREATE TRIGGER update_reports_updated_at
+    BEFORE UPDATE ON public.reports
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Enable Row Level Security
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+
+-- Policy 1: Users can view their own reports
+CREATE POLICY "view_own_reports"
+    ON public.reports
+    FOR SELECT
+    USING (auth.uid() = user_id);
+
+-- Policy 2: Users can insert their own reports
+CREATE POLICY "insert_own_reports"
+    ON public.reports
+    FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+-- Policy 3: Users can update their own reports (only if pending)
+CREATE POLICY "update_own_reports"
+    ON public.reports
+    FOR UPDATE
+    USING (auth.uid() = user_id AND status = 'pending');
+
+-- Policy 4: Admins can view all reports
+CREATE POLICY "admins_view_all_reports"
+    ON public.reports
+    FOR SELECT
+    USING (check_is_admin(auth.uid()));
+
+-- Policy 5: Admins can update any report
+CREATE POLICY "admins_update_all_reports"
+    ON public.reports
+    FOR UPDATE
+    USING (check_is_admin(auth.uid()));
+
+-- Grant permissions
+GRANT ALL ON public.reports TO authenticated;
+GRANT SELECT ON public.reports TO anon;
+GRANT ALL ON public.reports TO service_role;
+
+-- Create a view for reports with user details
+CREATE OR REPLACE VIEW public.reports_with_users AS
+SELECT 
+    r.*,
+    p.full_name as reporter_name,
+    p.email as reporter_email,
+    p.phone_number as reporter_phone
+FROM public.reports r
+LEFT JOIN public.profiles p ON r.user_id = p.id;
+
+-- Function to generate reference number automatically
+CREATE OR REPLACE FUNCTION generate_report_reference()
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    ref_num TEXT;
+    year_part TEXT;
+    seq_num INT;
+BEGIN
+    year_part := TO_CHAR(NOW(), 'YYYY');
+    
+    -- Get next sequence number for this year
+    SELECT COALESCE(MAX(CAST(SPLIT_PART(reference, '-', 3) AS INT)), 0) + 1
+    INTO seq_num
+    FROM public.reports
+    WHERE reference LIKE 'ISC-' || year_part || '-%';
+    
+    ref_num := 'ISC-' || year_part || '-' || LPAD(seq_num::TEXT, 4, '0');
+    
+    RETURN ref_num;
+END;
+$$;
+
+-- Function to auto-update status timestamps
+CREATE OR REPLACE FUNCTION update_report_status_timestamp()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NEW.status = 'resolved' AND OLD.status != 'resolved' THEN
+        NEW.resolved_at = NOW();
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger for status change
+DROP TRIGGER IF EXISTS report_status_change ON public.reports;
+CREATE TRIGGER report_status_change
+    BEFORE UPDATE ON public.reports
+    FOR EACH ROW
+    EXECUTE FUNCTION update_report_status_timestamp();
