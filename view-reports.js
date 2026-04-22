@@ -70,11 +70,9 @@ function formatStatusClass(status) {
 
 function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
+    return str.replace(/[&<>"]/g, function(m) {
+        const map = { '&': '&amp;', '<': '<', '>': '>', '"': '"' };
+        return map[m];
     });
 }
 
@@ -102,8 +100,8 @@ function renderReportItem(report) {
                 </div>
                 ${locationText ? `<div class="report-location"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(locationText.substring(0, 60))}</div>` : ''}
             </div>
-            <div class="report-action" style="font-size:0.75rem; color:#8ba0bc;">
-                <i class="fa-regular fa-comment"></i> View
+            <div class="report-action">
+                <i class="fa-regular fa-eye"></i> View
             </div>
         </div>
     `;
@@ -146,8 +144,7 @@ function renderCategorizedReports() {
     
     filteredReports.forEach(report => {
         const cat = detectCategory(report);
-        if (grouped[cat]) grouped[cat].push(report);
-        else grouped['infrastructure'].push(report);
+        grouped[cat] ? grouped[cat].push(report) : grouped['infrastructure'].push(report);
     });
     
     let html = '';
@@ -172,11 +169,6 @@ function renderCategorizedReports() {
         `;
     }
     
-    if (html === '' && filteredReports.length > 0) {
-        html = `<div class="category-section"><div class="category-header"><i class="fa-solid fa-list"></i><span class="category-title">All Reports</span></div>
-        <div class="reports-list">${filteredReports.map(report => renderReportItem(report)).join('')}</div></div>`;
-    }
-    
     container.innerHTML = html;
 }
 
@@ -189,6 +181,82 @@ async function fetchUserReports(userId) {
     
     if (error) return [];
     return data || [];
+}
+
+async function fetchReportDetail(reportId) {
+    const { data, error } = await supabaseClient
+        .from('reports')
+        .select('*')
+        .eq('id', reportId)
+        .single();
+    
+    if (error || !data) {
+        console.error('Error fetching report:', error);
+        return null;
+    }
+    return data;
+}
+
+function populateModal(report) {
+    document.getElementById('modalTitle').textContent = report.reference || 'Report Details';
+    document.getElementById('modalReference').textContent = report.reference || 'N/A';
+    
+    const statusEl = document.getElementById('modalStatus');
+    statusEl.textContent = report.status ? report.status.toUpperCase().replace('_', ' ') : 'PENDING';
+    statusEl.className = `status-badge ${formatStatusClass(report.status)}`;
+    
+    document.getElementById('modalDescription').textContent = report.description || 'No description provided.';
+    
+    const dateStr = report.created_at ? new Date(report.created_at).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) : 'Unknown';
+    document.getElementById('modalDate').textContent = dateStr;
+    
+    // Location
+    const locSection = document.getElementById('modalLocationSection');
+    const locText = document.getElementById('modalLocation');
+    const mapLink = document.getElementById('modalMapLink');
+    const location = report.location_address || report.location || '';
+    if (location) {
+        locText.textContent = location;
+        locSection.style.display = 'block';
+        if (report.latitude && report.longitude) {
+            mapLink.href = `https://www.google.com/maps?q=${report.latitude},${report.longitude}`;
+            mapLink.style.display = 'block';
+        } else {
+            mapLink.style.display = 'none';
+        }
+    } else {
+        locSection.style.display = 'none';
+    }
+    
+    // Image
+    const imgSection = document.getElementById('modalImageSection');
+    const imgEl = document.getElementById('modalImage');
+    if (report.image_url && report.image_url.startsWith('data:')) {
+        imgEl.src = report.image_url;
+        imgSection.style.display = 'block';
+    } else {
+        imgSection.style.display = 'none';
+    }
+}
+
+function showModal() {
+    const modal = document.getElementById('reportModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    modal.classList.add('show');
+}
+
+function hideModal() {
+    const modal = document.getElementById('reportModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    modal.classList.remove('show');
 }
 
 async function initPage() {
@@ -213,56 +281,51 @@ async function initPage() {
     }
     
     document.getElementById('loadingState').style.display = 'flex';
-    document.getElementById('categoriesContainer').style.display = 'none';
-    document.getElementById('emptyState').style.display = 'none';
     
     allReports = await fetchUserReports(currentUser.id);
     document.getElementById('loadingState').style.display = 'none';
     
-    const filterTabs = document.querySelectorAll('.filter-tab');
-    filterTabs.forEach(tab => {
+    renderCategorizedReports();
+    
+    // Filter tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
-            filterTabs.forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            const filterValue = tab.getAttribute('data-filter');
-            if (filterValue === 'all') activeFilter = 'all';
-            else if (filterValue === 'pending') activeFilter = 'pending';
-            else if (filterValue === 'resolved') activeFilter = 'resolved';
+            activeFilter = tab.dataset.filter;
             renderCategorizedReports();
         });
     });
-    
-    renderCategorizedReports();
-    
-    if (allReports.length === 0) {
-        document.getElementById('categoriesContainer').style.display = 'none';
-        document.getElementById('emptyState').style.display = 'flex';
-    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     initPage();
     
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) backBtn.onclick = () => window.history.back();
+    // Navigation buttons
+    document.getElementById('backBtn').onclick = () => window.history.back();
+    document.getElementById('submitNewBtn').onclick = () => window.location.href = 'report.html';
+    document.getElementById('emptySubmitBtn').onclick = () => window.location.href = 'report.html';
     
-    const submitBtn = document.getElementById('submitNewBtn');
-    if (submitBtn) submitBtn.onclick = () => window.location.href = 'report.html';
+    // Modal controls
+    document.getElementById('modalClose').onclick = hideModal;
+    document.getElementById('modalOverlay').onclick = hideModal;
     
-    const emptySubmit = document.getElementById('emptySubmitBtn');
-    if (emptySubmit) emptySubmit.onclick = () => window.location.href = 'report.html';
-    
-    document.getElementById('categoriesContainer')?.addEventListener('click', (e) => {
-        const item = e.target.closest('.report-item');
-        if (item && item.dataset.id) {
-            window.location.href = `report-detail.html?id=${item.dataset.id}`;
-        }
-    });
-    
-    document.body.addEventListener('click', (e) => {
-        if (e.target.closest('.report-item')) {
-            const id = e.target.closest('.report-item').dataset.id;
-            if (id) window.location.href = `report-detail.html?id=${id}`;
+    // Report view click handler
+    document.body.addEventListener('click', async (e) => {
+        const reportItem = e.target.closest('.report-item');
+        if (reportItem && reportItem.dataset.id && supabaseClient) {
+            const reportId = reportItem.dataset.id;
+            document.getElementById('loadingState').innerHTML = '<i class="fa-solid fa-spinner fa-pulse"></i> Loading details...';
+            document.getElementById('loadingState').style.display = 'flex';
+            
+            const report = await fetchReportDetail(reportId);
+            document.getElementById('loadingState').style.display = 'none';
+            
+            if (report) {
+                populateModal(report);
+                showModal();
+            }
         }
     });
 });
+

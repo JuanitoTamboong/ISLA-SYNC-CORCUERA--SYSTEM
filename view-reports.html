@@ -41,10 +41,49 @@
         </div>
     </div>
 
-
+    <!-- REPORT DETAIL MODAL -->
+    <div id="reportModal" class="report-modal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Report Details</h2>
+                <button class="modal-close" id="modalClose">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-section">
+                    <label>Reference</label>
+                    <p id="modalReference">-</p>
+                </div>
+                <div class="detail-section">
+                    <label>Status</label>
+                    <span id="modalStatus" class="status-badge status-pending">-</span>
+                </div>
+                <div class="detail-section">
+                    <label>Description</label>
+                    <p id="modalDescription">-</p>
+                </div>
+                <div class="detail-section" id="modalLocationSection" style="display: none;">
+                    <label>Location</label>
+                    <p id="modalLocation">-</p>
+                    <a id="modalMapLink" href="#" target="_blank" class="map-link" style="display: none;">View Map</a>
+                </div>
+                <div class="detail-section">
+                    <label>Date</label>
+                    <p id="modalDate">-</p>
+                </div>
+                <div class="detail-section" id="modalImageSection" style="display: none;">
+                    <label>Photo</label>
+                    <div class="report-image-container">
+                        <img id="modalImage" src="" alt="Report image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
     <script src="view-reports.js"></script>
 </body>
 </html>
-
