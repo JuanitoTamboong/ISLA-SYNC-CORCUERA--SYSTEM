@@ -1,18 +1,17 @@
-// Settings page - extracted from resident-homepage.js
+// Settings page
 document.addEventListener('DOMContentLoaded', function() {
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
-        console.error('Supabase SDK not loaded');
         showNotification('Error: Supabase SDK failed to load. Please refresh.', 'error');
         return;
     }
     
-    // Supabase configuration (same as resident-homepage)
+    // Supabase configuration
     const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds'
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     
-    // Check user with id validation (fix 400 error)
+    // Check user with id validation
     const currentUser = localStorage.getItem('currentUser')
     if (!currentUser) {
         window.location.href = 'login.html'
@@ -22,13 +21,11 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         user = JSON.parse(currentUser)
         if (!user || !user.id) {
-            console.warn('No valid user id found, clearing localStorage')
             localStorage.removeItem('currentUser')
             window.location.href = 'login.html'
             return
         }
     } catch (e) {
-        console.error('Invalid currentUser JSON:', e)
         localStorage.removeItem('currentUser')
         window.location.href = 'login.html'
         return
@@ -48,41 +45,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 user.email = profile.email
                 localStorage.setItem('currentUser', JSON.stringify(user))
                 
-                // Update profile card
                 document.querySelector('.profile-card h4').textContent = user.fullName || 'User Name'
                 document.querySelector('.profile-card p').textContent = user.email || 'user@example.com'
             }
         } catch (error) {
-            console.error('Profile load error:', error)
+            // Silently handle error
         }
     }
     
     loadUserData()
     
-    // Logout function - define BEFORE attaching event listener
+    // Logout function
     window.logout = async function() {
         try {
-            // Show confirmation
             const confirmed = confirm('Are you sure you want to log out?')
             if (!confirmed) return
             
-            // Clear all auth data
             localStorage.removeItem('currentUser')
             localStorage.removeItem('authToken')
             localStorage.removeItem('userSession')
             
-            // Sign out from Supabase
             await supabaseClient.auth.signOut()
             
             showNotification('Logged out successfully', 'success')
             
-            // Force redirect to login
             setTimeout(() => {
                 window.location.href = 'login.html'
             }, 500)
         } catch (error) {
-            console.error('Logout error:', error)
-            // Even if logout fails, redirect to login
             setTimeout(() => {
                 window.location.href = 'login.html'
             }, 500)
@@ -94,14 +84,14 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'resident-homepage.html'
     })
     
-    // Logout button - attach AFTER function is defined
+    // Logout button
     document.querySelector('.logout').addEventListener('click', function(e) {
         e.preventDefault()
         e.stopPropagation()
         window.logout()
     })
     
-    // Notification (shared)
+    // Notification function
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div')
         notification.className = `notification ${type}`
@@ -134,15 +124,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = 'profile.html'
                 break
             case 'settings':
-                // Stay on current page
                 break
         }
     }
     
-    // Bottom nav home (redundant but kept for direct handler)
+    // Bottom nav home
     document.querySelector('.nav-item i.fa-home').parentElement.onclick = () => {
         window.location.href = 'resident-homepage.html'
     }
-    
-    console.log('Settings loaded')
 })

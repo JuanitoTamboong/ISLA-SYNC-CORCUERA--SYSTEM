@@ -1,10 +1,8 @@
-
 const SIMARA_COORDS = { lat: 12.8055, lon: 122.0474 };
 
 let map;
 let routeLine = null;
 let routeSummary = null;
-let peopleMarker = null;
 let animationInProgress = false;
 let routeAnimationInterval = null;
 
@@ -20,22 +18,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const startLat = parseFloat(params.get('startLat')) || SIMARA_COORDS.lat;
     const startLng = parseFloat(params.get('startLng')) || SIMARA_COORDS.lon;
 
-    // Update UI
     document.querySelector('.top-bar .title').textContent = `Directions to ${title}`;
     document.querySelector('.location-section h3').textContent = title;
 
-    // Confirm button
     const confirmBtn = document.querySelector('.confirm-btn');
     confirmBtn.textContent = 'Draw Route';
     confirmBtn.onclick = () => animateRouteToDestination(startLat, startLng, destLat, destLng, title);
 
-    // Back button
     document.querySelector('.back-btn').onclick = () => history.back();
-
-    // GPS button
     document.querySelector('.gps-btn').onclick = getCurrentLocation;
 
-    // Init map
     const initMapDelayed = () => {
         if (typeof L === 'undefined') {
             setTimeout(initMapDelayed, 100);
@@ -47,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function createMap(startLat, startLng, destLat, destLng, title) {
-    // Clear existing layers
     if (map) map.remove();
     
     map = L.map('map').setView([startLat, startLng], 14);
@@ -59,7 +50,6 @@ function createMap(startLat, startLng, destLat, destLng, title) {
 
     L.control.scale({metric: true}).addTo(map);
 
-    // Start marker (red)
     L.marker([startLat, startLng], {
         icon: L.divIcon({
             className: 'pin',
@@ -70,7 +60,6 @@ function createMap(startLat, startLng, destLat, destLng, title) {
         })
     }).addTo(map).bindPopup('Start');
 
-    // Destination marker (green)
     L.marker([destLat, destLng], {
         icon: L.divIcon({
             className: 'pin green',
@@ -92,11 +81,8 @@ function animateRouteToDestination(startLat, startLng, destLat, destLng, title) 
     confirmBtn.textContent = 'Finding Route...';
     confirmBtn.disabled = true;
 
-    // Clear previous markers
-    if (peopleMarker) map.removeLayer(peopleMarker);
     if (routeAnimationInterval) clearInterval(routeAnimationInterval);
 
-    // Use multiple OSRM endpoints for reliability
     const routingServices = [
         `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${destLng},${destLat}?overview=full&alternatives=false&steps=false`,
         `http://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${destLng},${destLat}?overview=full&alternatives=false&steps=false`,
@@ -165,35 +151,30 @@ function animateLine(coordinates, title, distance, time) {
     
     routeLine = L.polyline(coordinates, { color: '#3b82f6', weight: 6, opacity: 0 }).addTo(map);
     const latlngs = routeLine.getLatLngs();
-    
-    // REMOVED peopleMarker to avoid lapses/delay - route line only
 
     let progress = 0;
     routeAnimationInterval = setInterval(() => {
-        progress += 0.015; // Slower smooth speed
+        progress += 0.015;
         
         if (progress >= 1) {
             progress = 1;
             clearInterval(routeAnimationInterval);
             routeAnimationInterval = null;
             
-            // Final route style
             routeLine.setStyle({ opacity: 1, weight: 9, color: '#2563eb' });
             
             animationComplete();
             return;
         }
         
-        // Update line only
         const lineEnd = Math.floor(progress * latlngs.length);
         routeLine.setLatLngs(latlngs.slice(0, lineEnd + 1));
         routeLine.setStyle({ 
             opacity: Math.min(0.4 + progress * 0.6, 1),
             weight: Math.min(5 + progress * 4, 9)
         });
-    }, 15); // 66 FPS smooth
+    }, 15);
 }
-
 
 function showNoRouteError(title) {
     animationInProgress = false;
@@ -201,20 +182,10 @@ function showNoRouteError(title) {
         clearInterval(routeAnimationInterval);
         routeAnimationInterval = null;
     }
-    if (peopleMarker) {
-        map.removeLayer(peopleMarker);
-        peopleMarker = null;
-    }
     
     const confirmBtn = document.querySelector('.confirm-btn');
     confirmBtn.textContent = 'No Route Found';
     confirmBtn.style.background = 'linear-gradient(to right, #ef4444, #dc2626)';
-    
-    // Show error summary
-    if (routeSummary) map.removeControl(routeSummary);
-    // const ErrorControl = L.Control.extend({...});  // REMOVED: Error popup
-    // routeSummary = new ErrorControl();
-    // routeSummary.addTo(map);
     
     setTimeout(() => {
         confirmBtn.textContent = 'Try Again';
@@ -262,7 +233,6 @@ function getCurrentLocation() {
             const newStart = [pos.coords.latitude, pos.coords.longitude];
             if (routeLine) map.removeLayer(routeLine);
             if (routeSummary) map.removeControl(routeSummary);
-            if (peopleMarker) map.removeLayer(peopleMarker);
             if (routeAnimationInterval) {
                 clearInterval(routeAnimationInterval);
                 routeAnimationInterval = null;

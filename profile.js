@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', async function() {
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
-        console.error('Supabase SDK not loaded');
         alert('Error: Supabase SDK failed to load. Please refresh the page.');
         return;
     }
@@ -25,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadAndUpdateProfile();
     await fetchReportCounts(supabaseClient);
 
-    // Show notification function - FIXED: APPEARS AT TOP WITH ANIMATION
+    // Show notification function
     window.showNotification = function(message, type = 'info') {
         const existing = document.querySelector('.notification');
         if (existing) existing.remove();
@@ -43,12 +42,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         notification.style.fontWeight = '500';
         notification.style.zIndex = '10000';               
         notification.style.maxWidth = '90vw';
-        notification.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)'; // ✅ Better shadow
+        notification.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)';
         notification.style.backgroundColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
         notification.textContent = message;
         document.body.appendChild(notification);
         
-        // ✅ Smooth slide-in animation
         notification.style.opacity = '0';
         notification.style.transform = 'translateX(-50%) translateY(-20px)';
         notification.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -58,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             notification.style.transform = 'translateX(-50%) translateY(0)';
         }, 100);
         
-        // ✅ Smooth slide-out animation
         setTimeout(() => {
             notification.style.opacity = '0';
             notification.style.transform = 'translateX(-50%) translateY(-20px)';
@@ -92,7 +89,6 @@ async function loadUserDataFromSupabase(supabaseClient) {
             .single();
 
         if (error && error.code !== 'PGRST116') {
-            console.error('Profile load error:', error);
             return;
         }
 
@@ -108,10 +104,9 @@ async function loadUserDataFromSupabase(supabaseClient) {
                 userType: profile.user_type || 'resident'
             };
             localStorage.setItem('currentUser', JSON.stringify(userData));
-            console.log('Profile loaded from Supabase:', userData);
         }
     } catch (error) {
-        console.error('Error loading profile from Supabase:', error);
+        // Silently handle error
     }
 }
 
@@ -127,7 +122,6 @@ async function fetchReportCounts(supabaseClient) {
             .eq('user_id', user.id);
         
         if (error) {
-            console.error('Report counts error:', error);
             return;
         }
         
@@ -138,10 +132,8 @@ async function fetchReportCounts(supabaseClient) {
         document.getElementById('totalReports').textContent = total;
         document.getElementById('resolvedReports').textContent = resolved;
         document.getElementById('pendingReports').textContent = pending;
-        
-        console.log('Report counts updated:', { total, resolved, pending });
     } catch (error) {
-        console.error('Error fetching report counts:', error);
+        // Silently handle error
     }
 }
 
@@ -169,8 +161,6 @@ function calculateCompletion(user) {
 }
 
 function updateProfileDisplay(user) {
-    console.log('Updating display with user:', user);
-    
     // Basic info
     const profileName = document.getElementById('profileName');
     const personalFullName = document.getElementById('personalFullName');
@@ -233,11 +223,9 @@ function updatePhotoDisplay(photoData) {
     const avatar = document.getElementById('userAvatar');
     if (!avatar) return;
     
-    // Clear existing content
     avatar.innerHTML = '';
     
     if (photoData && photoData.trim() !== '') {
-        // Has photo - show image
         avatar.classList.add('has-photo');
         const img = document.createElement('img');
         img.src = photoData;
@@ -247,16 +235,13 @@ function updatePhotoDisplay(photoData) {
         img.style.borderRadius = '50%';
         img.style.objectFit = 'cover';
         img.onerror = function() {
-            console.log('Photo load error');
             avatar.classList.remove('has-photo');
         };
         avatar.appendChild(img);
     } else {
-        // No photo - show default (CSS will show the default avatar)
         avatar.classList.remove('has-photo');
     }
     
-    // Add edit button
     const editSpan = document.createElement('span');
     editSpan.className = 'edit';
     editSpan.title = 'Change Photo';
@@ -284,7 +269,6 @@ function updateProfileCompletion(percentage) {
     }
 }
 
-// Global variable to store temp photo data
 let tempPhotoData = null;
 
 function setupEditProfile(supabaseClient) {
@@ -295,7 +279,6 @@ function setupEditProfile(supabaseClient) {
 
     if (editBtn) {
         editBtn.addEventListener('click', () => {
-            // Reset temp photo when opening form
             tempPhotoData = null;
             form.classList.add('active');
             document.querySelector('.profile').style.display = 'none';
@@ -327,29 +310,23 @@ function setupEditProfile(supabaseClient) {
     }
 
     async function saveProfile(supabaseClient) {
-        // Get form values
         const formData = {
             fullName: document.getElementById('formFullName').value.trim(),
             email: document.getElementById('formEmail').value.trim(),
             phone: document.getElementById('formPhone').value.trim(),
             address: document.getElementById('formAddress').value.trim(),
             dateOfBirth: document.getElementById('formDateOfBirth').value,
-            photo: tempPhotoData // Use temp photo if available
+            photo: tempPhotoData
         };
         
-        // If no new photo was selected, keep existing photo
         if (!formData.photo) {
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             formData.photo = currentUser.photo || '';
         }
 
-        console.log('Saving form data:', { ...formData, photo: formData.photo ? '[PHOTO_DATA]' : 'no photo' });
-
-        // Save to Supabase
         const success = await saveProfileToSupabase(formData, supabaseClient);
 
         if (success) {
-            // Update localStorage
             localStorage.setItem('currentUser', JSON.stringify(formData));
             await loadUserDataFromSupabase(supabaseClient);
             loadAndUpdateProfile();
@@ -376,7 +353,6 @@ function populateEditForm(user) {
     if (formAddress) formAddress.value = user.address || '';
     if (formDateOfBirth) formDateOfBirth.value = user.dateOfBirth || '';
 
-    // Update photo preview - show existing photo or placeholder
     if (photoPreview && photoPlaceholder) {
         if (user.photo && user.photo.trim() !== '') {
             photoPreview.src = user.photo;
@@ -393,11 +369,9 @@ async function saveProfileToSupabase(formData, supabaseClient) {
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
-            console.error('No active session');
             return false;
         }
 
-        // Map form data to DB schema
         const profileData = {
             id: session.user.id,
             full_name: formData.fullName,
@@ -409,8 +383,6 @@ async function saveProfileToSupabase(formData, supabaseClient) {
             updated_at: new Date().toISOString()
         };
 
-        console.log('Saving to Supabase:', { ...profileData, avatar_url: profileData.avatar_url ? '[PHOTO_DATA]' : 'null' });
-
         const { error } = await supabaseClient
             .from('profiles')
             .upsert(profileData, { 
@@ -418,15 +390,12 @@ async function saveProfileToSupabase(formData, supabaseClient) {
             });
 
         if (error) {
-            console.error('Supabase upsert error:', error);
             showNotification(`Error: ${error.message}`, 'error');
             return false;
         }
 
-        console.log('Profile synced to Supabase successfully');
         return true;
     } catch (error) {
-        console.error('Error saving profile to Supabase:', error);
         return false;
     }
 }
@@ -466,11 +435,8 @@ function setupPhotoUpload() {
         const reader = new FileReader();
         reader.onload = function(e) {
             const photoData = e.target.result;
-            
-            // Store in global temp variable
             tempPhotoData = photoData;
             
-            // Update preview immediately
             if (photoPreview && photoPlaceholder) {
                 photoPreview.src = photoData;
                 photoPreview.style.display = 'block';
@@ -485,4 +451,3 @@ function setupPhotoUpload() {
         reader.readAsDataURL(file);
     }
 }
-
