@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Status</title>
 
+<link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="submit-report.css">
 
 <!-- Icons -->
@@ -44,5 +45,45 @@
 
 </div>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentUserStr = localStorage.getItem('currentUser');
+        
+        if (!currentUserStr) {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        let user;
+        try {
+            user = JSON.parse(currentUserStr);
+            if (!user || !user.id || !user.fullName) {
+                throw new Error('Invalid user data');
+            }
+        } catch (e) {
+            console.error('Invalid currentUser JSON:', e);
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Update page with user info
+        document.querySelector('.main-text').textContent = `Report Submitted Successfully, ${user.fullName}!`;
+        document.querySelector('.desc').textContent = `Thank you for helping us keep Corcuera safe and beautiful. Our team will review your report shortly.`;
+        document.querySelector('.ref-box h4').textContent = `#ISC-2024-${user.id}`;
+        
+        // Button actions
+        document.querySelector('.btn.primary').addEventListener('click', function() {
+            window.location.href = 'view-reports.html';
+
+        });
+        
+        document.querySelector('.btn.secondary').addEventListener('click', function() {
+            window.history.back();
+        });
+    });
+    </script>
 </body>
+
 </html>

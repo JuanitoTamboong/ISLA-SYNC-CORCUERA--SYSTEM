@@ -30,7 +30,7 @@
 
         <div class="card active">
             <i class="fa-solid fa-road"></i>
-            <h4>INFRASTRUCTUR</h4>
+            <h4>INFRASTRUCTURE</h4>
             <p>Streetlights, transport, energy, water, seaports</p>
         </div>
 
@@ -82,12 +82,12 @@
         <div class="loc-left">
             <i class="fa-solid fa-location-dot"></i>
             <div>
-                <h4>San Jose, Corcuera</h4>
-                <p>Current Location</p>
+                <h4 id="location-address">Getting current location...</h4>
+                <p id="location-coords"></p>
             </div>
         </div>
 
-        <span class="change">Change</span>
+        <span class="change" id="change-location">Refresh Location</span>
     </div>
 
     <!-- BUTTON -->
@@ -98,6 +98,9 @@
 
 </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+
     <script src="report.js"></script>
+
 </body>
 </html>

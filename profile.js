@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Load user data
     await loadUserDataFromSupabase(supabaseClient);
     loadAndUpdateProfile();
+    await fetchReportCounts(supabaseClient);
 
     // Show notification function - FIXED: APPEARS AT TOP WITH ANIMATION
     window.showNotification = function(message, type = 'info') {
@@ -111,6 +112,36 @@ async function loadUserDataFromSupabase(supabaseClient) {
         }
     } catch (error) {
         console.error('Error loading profile from Supabase:', error);
+    }
+}
+
+async function fetchReportCounts(supabaseClient) {
+    try {
+        const currentUserStr = localStorage.getItem('currentUser');
+        if (!currentUserStr) return;
+        const user = JSON.parse(currentUserStr);
+        
+        const { data, error } = await supabaseClient
+            .from('reports')
+            .select('status')
+            .eq('user_id', user.id);
+        
+        if (error) {
+            console.error('Report counts error:', error);
+            return;
+        }
+        
+        const total = data.length;
+        const resolved = data.filter(r => r.status === 'resolved').length;
+        const pending = data.filter(r => r.status === 'pending' || r.status === 'in_review').length;
+        
+        document.getElementById('totalReports').textContent = total;
+        document.getElementById('resolvedReports').textContent = resolved;
+        document.getElementById('pendingReports').textContent = pending;
+        
+        console.log('Report counts updated:', { total, resolved, pending });
+    } catch (error) {
+        console.error('Error fetching report counts:', error);
     }
 }
 
@@ -454,3 +485,4 @@ function setupPhotoUpload() {
         reader.readAsDataURL(file);
     }
 }
+

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Reports</title>
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="view-reports.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <i class="fa-solid fa-arrow-left"></i>
+        <h2>My Reports</h2>
+    </div>
+    <button class="submit new-report-btn">
+        <i class="fa-solid fa-plus"></i> Submit New Report
+    </button>
+    <div id="reports-list" class="reports-grid"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+<script src="view-reports.js"></script>
+</body>
+</html>

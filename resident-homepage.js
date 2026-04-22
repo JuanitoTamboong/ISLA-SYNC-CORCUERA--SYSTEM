@@ -273,8 +273,10 @@ document.addEventListener('DOMContentLoaded', function() {
 window.reportIssue = () => { window.location.href = 'report.html'; }
     window.viewNews = () => showNotification('Latest news feature coming soon!', 'info')
     window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
+    window.viewMyReports = () => { window.location.href = 'view-reports.html'; }
     
     // Notification function
+
     function showNotification(message, type = 'info') {
         const existingNotification = document.querySelector('.notification')
         if (existingNotification) existingNotification.remove()
