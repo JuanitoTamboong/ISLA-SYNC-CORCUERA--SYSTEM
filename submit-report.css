@@ -1,0 +1,106 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* CONTAINER */
+.container {
+    width: 360px;
+    background: #f5f7fb;
+    border-radius: 20px;
+    padding: 25px 20px;
+    text-align: center;
+}
+
+/* TITLE */
+.title {
+    margin-bottom: 20px;
+}
+
+/* SUCCESS ICON */
+.success-circle {
+    width: 140px;
+    height: 140px;
+    background: #e6f4ea;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.check {
+    width: 60px;
+    height: 60px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 26px;
+}
+
+/* TEXT */
+.main-text {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+/* REFERENCE BOX */
+.ref-box {
+    background: #eef2f7;
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 25px;
+}
+
+.ref-box span {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.ref-box h4 {
+    color: #2f80ed;
+    margin-top: 5px;
+}
+
+/* BUTTONS */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    margin-bottom: 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* PRIMARY */
+.primary {
+    background: linear-gradient(135deg, #2f80ed, #1c64d1);
+    color: white;
+}
+
+/* SECONDARY */
+.secondary {
+    background: #e5e7eb;
+    color: #374151;
+}

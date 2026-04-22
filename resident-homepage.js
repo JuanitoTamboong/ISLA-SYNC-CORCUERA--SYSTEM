@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Services
-    window.reportIssue = () => showNotification('Report Issue feature coming soon!', 'info')
+window.reportIssue = () => { window.location.href = 'report.html'; }
     window.viewNews = () => showNotification('Latest news feature coming soon!', 'info')
     window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
     
