@@ -277,6 +277,8 @@ function setupEditProfile(supabaseClient) {
     const cancelBtn = document.getElementById('cancelEdit');
     const saveBtn = document.getElementById('saveProfile');
 
+    let isSaving = false;
+
     if (editBtn) {
         editBtn.addEventListener('click', () => {
             tempPhotoData = null;
@@ -307,6 +309,7 @@ function setupEditProfile(supabaseClient) {
         const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         populateEditForm(currentUser);
         tempPhotoData = null;
+        isSaving = false; // Reset saving state
     }
 
     async function saveProfile(supabaseClient) {
@@ -324,6 +327,13 @@ function setupEditProfile(supabaseClient) {
             formData.photo = currentUser.photo || '';
         }
 
+        if (isSaving) return; // Prevent double click
+
+        isSaving = true;
+        saveBtn.disabled = true;
+        const originalHTML = saveBtn.innerHTML;
+        saveBtn.innerHTML = 'Saving... <i class="fas fa-spinner fa-spin"></i>';
+
         const success = await saveProfileToSupabase(formData, supabaseClient);
 
         if (success) {
@@ -335,6 +345,11 @@ function setupEditProfile(supabaseClient) {
         } else {
             showNotification('Failed to update profile. Please try again.', 'error');
         }
+
+        // Reset button state
+        isSaving = false;
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalHTML;
     }
 }
 
