@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Community Report</title>
-
-<link rel="stylesheet" href="report.css">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<!-- Icons -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>ISLA SYNC - Community Report</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Stylesheets -->
+<link rel="stylesheet" href="report.css">
+
+<!-- Supabase UMD -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -16,91 +20,112 @@
 
     <!-- HEADER -->
     <div class="header">
-        <i class="fa-solid fa-arrow-left"></i>
+        <i class="fa-solid fa-arrow-left" id="backBtn"></i>
         <h2>Community Report</h2>
     </div>
 
-    <!-- CATEGORY -->
+    <!-- CATEGORY SECTION -->
     <div class="section-title">
         <span>SELECT CATEGORY</span>
         <p>Required</p>
     </div>
 
-    <div class="grid">
-
-        <div class="card active">
+    <div class="grid" id="categoryGrid">
+        <div class="card active" data-category="INFRASTRUCTURE">
             <i class="fa-solid fa-road"></i>
             <h4>INFRASTRUCTURE</h4>
             <p>Streetlights, transport, energy, water, seaports</p>
         </div>
-
-        <div class="card">
+        <div class="card" data-category="PUBLIC SAFETY">
             <i class="fa-solid fa-shield-halved"></i>
             <h4>PUBLIC SAFETY</h4>
             <p>Emergency, Disaster, Safety Concerns</p>
         </div>
-
-        <div class="card">
+        <div class="card" data-category="ENGINEERING">
             <i class="fa-solid fa-people-group"></i>
             <h4>ENGINEERING</h4>
             <p>Pavement, potholes, manholes, wires</p>
         </div>
-
-        <div class="card">
+        <div class="card" data-category="TRAFFIC VIOLATION">
             <i class="fa-solid fa-traffic-light"></i>
             <h4>TRAFFIC VIOLATION</h4>
             <p>Habal-Habal, Truck Ban, Illegal Parking</p>
         </div>
-
     </div>
 
-    <!-- DESCRIPTION -->
-    <h3 class="label">ISSUE DESCRIPTION</h3>
-    <textarea placeholder="Describe the issue in detail..."></textarea>
+    <!-- ISSUE DESCRIPTION -->
+    <h3 class="label">ISSUE DESCRIPTION <span class="required-star">*</span></h3>
+    <textarea id="issueDesc" placeholder="Describe the issue in detail... (e.g., what happened, exact location details, urgency)"></textarea>
 
-    <!-- UPLOAD -->
-    <h3 class="label">VISUAL EVIDENCE</h3>
-
+    <!-- VISUAL EVIDENCE -->
+    <h3 class="label">VISUAL EVIDENCE (Optional)</h3>
     <div class="upload-area">
-
-        <div class="upload-box">
+        <div class="upload-box" id="uploadBox">
             <i class="fa-solid fa-camera"></i>
             <p>UPLOAD</p>
         </div>
-
-        <div class="preview" style="display: none;">
-            <img src="" alt="Preview">
-            <span class="remove">×</span>
+        <div class="preview" id="previewDiv" style="display: none;">
+            <img id="previewImg" src="" alt="Preview">
+            <span class="remove" id="removePhotoBtn">×</span>
         </div>
-
     </div>
 
-    <!-- LOCATION -->
-    <h3 class="label">LOCATION</h3>
-
-    <div class="location">
-        <div class="loc-left">
+    <!-- LOCATION SECTION - Enhanced with manual edit -->
+    <h3 class="label">CURRENT LOCATION <span class="required-star">*</span></h3>
+    
+    <div class="location-card">
+        <div class="location-header">
             <i class="fa-solid fa-location-dot"></i>
-            <div>
-                <h4 id="location-address">Getting current location...</h4>
-                <p id="location-coords"></p>
+            <span>Live Location</span>
+        </div>
+        
+        <!-- Display address and coordinates -->
+        <div class="location-info">
+            <div class="address-row">
+                <i class="fa-regular fa-building"></i>
+                <span id="locationAddress">Getting current location...</span>
             </div>
         </div>
 
-        <span class="change" id="change-location">Refresh Location</span>
+        <!-- Action buttons -->
+        <div class="location-actions">
+            <button class="loc-btn refresh-btn" id="refreshLocationBtn">
+                <i class="fa-solid fa-rotate-right"></i> Refresh GPS
+            </button>
+            <button class="loc-btn change-btn" id="changeLocationBtn">
+                <i class="fa-solid fa-pen"></i> Change Location
+            </button>
+        </div>
     </div>
 
-    <!-- BUTTON -->
-    <button class="submit">
-        <i class="fa-solid fa-paper-plane"></i>
-        Submit Report
+    <!-- Manual Location Modal (hidden by default) - NO DEFAULT PLACEHOLDER VALUES -->
+    <div id="locationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-location-dot"></i> Edit Location</h3>
+                <span class="close-modal" id="closeModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="modal-hint">If GPS is inaccurate, enter the location address below.</p>
+                <div class="input-group">
+                    <label>Address / Place name</label>
+                    <input type="text" id="manualAddress" placeholder="Enter street, barangay, city">
+                </div>
+                <div class="modal-buttons">
+                    <button id="applyLocationBtn" class="apply-btn"><i class="fa-regular fa-floppy-disk"></i> Apply</button>
+                    <button id="cancelLocationBtn" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMIT BUTTON -->
+    <button class="submit" id="submitBtn">
+        <i class="fa-solid fa-paper-plane"></i> Submit Report
     </button>
 
 </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-
-    <script src="report.js"></script>
-
+<script src="report.js"></script>
 </body>
 </html>
