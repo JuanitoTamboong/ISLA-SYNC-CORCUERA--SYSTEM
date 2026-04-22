@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadUserDataFromSupabase(supabaseClient);
     loadAndUpdateProfile();
 
-    // Show notification function
+    // Show notification function - FIXED: APPEARS AT TOP WITH ANIMATION
     window.showNotification = function(message, type = 'info') {
         const existing = document.querySelector('.notification');
         if (existing) existing.remove();
@@ -32,18 +32,37 @@ document.addEventListener('DOMContentLoaded', async function() {
         const notification = document.createElement('div');
         notification.className = 'notification';
         notification.style.position = 'fixed';
-        notification.style.bottom = '20px';
+        notification.style.top = '20px';
         notification.style.left = '50%';
         notification.style.transform = 'translateX(-50%)';
-        notification.style.padding = '12px 20px';
+        notification.style.padding = '12px 24px';
         notification.style.borderRadius = '12px';
         notification.style.color = 'white';
         notification.style.fontSize = '14px';
-        notification.style.zIndex = '1000';
+        notification.style.fontWeight = '500';
+        notification.style.zIndex = '10000';               
+        notification.style.maxWidth = '90vw';
+        notification.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)'; // ✅ Better shadow
         notification.style.backgroundColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';
         notification.textContent = message;
         document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
+        
+        // ✅ Smooth slide-in animation
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(-50%) translateY(-20px)';
+        notification.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(-50%) translateY(0)';
+        }, 100);
+        
+        // ✅ Smooth slide-out animation
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(-50%) translateY(-20px)';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     };
     
     // Back button navigation
