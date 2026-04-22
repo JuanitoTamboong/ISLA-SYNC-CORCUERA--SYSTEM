@@ -1,19 +1,16 @@
 // Report page - Submit new report with manual location override
-// Uses Supabase UMD (global supabase)
-
 const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
 
-// Global location state
-window.currentLocation = null;      // "lat, lng" string
-window.locationAddress = null;      // human readable address
-window.selectedPhoto = null;        // base64 image
+window.currentLocation = null;
+window.locationAddress = null;
+window.selectedPhoto = null;
+window.currentLatitude = null;
+window.currentLongitude = null;
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // Initialize Supabase client
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // Authentication check
     const currentUserStr = localStorage.getItem('currentUser');
     if (!currentUserStr) {
         window.location.href = 'login.html';
@@ -26,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
     
-    // DOM Elements
     const previewDiv = document.getElementById('previewDiv');
     const uploadBox = document.getElementById('uploadBox');
     const submitBtn = document.getElementById('submitBtn');
@@ -40,10 +36,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const manualAddressInput = document.getElementById('manualAddress');
     const locationAddressSpan = document.getElementById('locationAddress');
     
-    // Hide preview initially
     previewDiv.style.display = 'none';
     
-    // Category selection logic
     const cards = document.querySelectorAll('.card');
     cards.forEach(card => {
         card.onclick = () => {
@@ -52,34 +46,32 @@ document.addEventListener('DOMContentLoaded', async function() {
         };
     });
     
-    // Photo upload handler
-    uploadBox.onclick = () => handlePhotoUpload();
+    uploadBox.onclick = () => handlePhotoUpload(previewDiv, uploadBox);
     
-    // Remove photo handler
     const removePhotoBtn = document.getElementById('removePhotoBtn');
     if (removePhotoBtn) {
         removePhotoBtn.onclick = () => {
             previewDiv.style.display = 'none';
             window.selectedPhoto = null;
-            document.querySelector('.upload-area').insertBefore(uploadBox, previewDiv);
+            const previewImg = document.getElementById('previewImg');
+            if (previewImg) previewImg.src = '';
+            const uploadArea = document.querySelector('.upload-area');
+            if (uploadArea && !uploadArea.contains(uploadBox)) {
+                uploadArea.insertBefore(uploadBox, previewDiv);
+            }
         };
     }
     
-    // Back button
     if (backBtn) backBtn.onclick = () => window.history.back();
     
-    // Get current location on load (GPS)
-    await getCurrentLocation();
+    await getCurrentLocation(locationAddressSpan);
     
-    // Refresh GPS location
     refreshLocationBtn.onclick = async () => {
-        await getCurrentLocation();
+        await getCurrentLocation(locationAddressSpan);
     };
     
-    // Open manual location modal (CHANGE LOCATION)
     changeLocationBtn.onclick = () => {
-        // Pre-fill modal with existing location data
-        if (window.locationAddress && window.locationAddress !== 'Fetching address...') {
+        if (window.locationAddress && window.locationAddress !== 'Fetching address...' && !window.locationAddress.includes('Permission denied')) {
             manualAddressInput.value = window.locationAddress;
         } else {
             manualAddressInput.value = '';
@@ -87,35 +79,31 @@ document.addEventListener('DOMContentLoaded', async function() {
         locationModal.style.display = 'flex';
     };
     
-    // Close modal functions
     const closeModal = () => {
         locationModal.style.display = 'none';
     };
-    closeModalBtn.onclick = closeModal;
-    cancelLocationBtn.onclick = closeModal;
+    if (closeModalBtn) closeModalBtn.onclick = closeModal;
+    if (cancelLocationBtn) cancelLocationBtn.onclick = closeModal;
     window.onclick = (e) => {
         if (e.target === locationModal) closeModal();
     };
     
-    // Apply manually changed location
     applyLocationBtn.onclick = () => {
         let newAddress = manualAddressInput.value.trim();
-        
         if (newAddress) {
             window.locationAddress = newAddress;
             locationAddressSpan.textContent = newAddress;
+            if (!window.currentLocation) {
+                window.currentLocation = 'Manual location';
+            }
+            closeModal();
         } else {
             alert('Please enter the location address.');
-            return;
         }
-        
-        closeModal();
     };
     
-    // Submit report
     submitBtn.onclick = () => submitReport(supabaseClient, user);
     
-    // Helper: fetch address from BigDataCloud (CORS friendly)
     async function fetchAddressFromCoords(lat, lng) {
         try {
             const response = await fetch(
@@ -132,19 +120,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return parts.join(', ') || data.formattedAddress || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
             }
         } catch (err) {
-            console.warn('Reverse geocoding error:', err);
+            // Silent fail
         }
         return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     }
     
-    // Get GPS location with high accuracy
-    async function getCurrentLocation() {
-        const addressSpan = document.getElementById('locationAddress');
-        
-        addressSpan.textContent = ' Acquiring GPS signal...';
+    async function getCurrentLocation(addressSpan) {
+        addressSpan.textContent = 'Acquiring GPS signal...';
         
         if (!navigator.geolocation) {
-            addressSpan.textContent = '❌ Geolocation not supported by browser';
+            addressSpan.textContent = 'Geolocation not supported';
             return;
         }
         
@@ -158,29 +143,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             
             const { latitude, longitude } = position.coords;
-            const coordString = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-            window.currentLocation = coordString;
+            window.currentLatitude = latitude;
+            window.currentLongitude = longitude;
+            window.currentLocation = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
             
-            // Get human-readable address
             addressSpan.textContent = 'Fetching address...';
             const address = await fetchAddressFromCoords(latitude, longitude);
             window.locationAddress = address;
             addressSpan.textContent = address;
             
         } catch (geoError) {
-            console.error('Geolocation error:', geoError);
-            let errorMsg = 'Location access denied or unavailable. ';
-            if (geoError.code === 1) errorMsg = '📍 Permission denied. Click "Change Location" to enter manually.';
-            else if (geoError.code === 2) errorMsg = '📡 Position unavailable. Try "Change Location" to enter manually.';
-            else errorMsg = ' GPS timeout. Use "Change Location" button.';
-            
-            document.getElementById('locationAddress').textContent = errorMsg;
+            let errorMsg = 'Location access denied. Click "Change Location" to enter manually.';
+            if (geoError.code === 2) errorMsg = 'Position unavailable. Use "Change Location".';
+            else if (geoError.code === 3) errorMsg = 'GPS timeout. Use "Change Location".';
+            addressSpan.textContent = errorMsg;
             window.currentLocation = null;
         }
     }
     
-    // Photo upload handler (capture or gallery)
-    function handlePhotoUpload() {
+    function handlePhotoUpload(previewDiv, uploadBox) {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/jpeg, image/png, image/jpg';
@@ -193,8 +174,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const previewImg = document.getElementById('previewImg');
                     previewImg.src = ev.target.result;
                     previewDiv.style.display = 'block';
+                    // Store the FULL base64 string including the data URL prefix
                     window.selectedPhoto = ev.target.result;
-                    // reposition upload box if needed
                     const uploadArea = document.querySelector('.upload-area');
                     if (uploadArea.contains(uploadBox) && previewDiv) {
                         uploadArea.appendChild(previewDiv);
@@ -208,7 +189,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         input.click();
     }
     
-    // Submit report to Supabase
     async function submitReport(supabaseClient, user) {
         const activeCard = document.querySelector('.card.active');
         const description = document.getElementById('issueDesc').value.trim();
@@ -221,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             alert('Please describe the issue in detail');
             return;
         }
-        if (!window.currentLocation) {
+        if (!window.currentLocation && !window.locationAddress) {
             alert('Location is required. Please refresh GPS or manually change location.');
             return;
         }
@@ -233,27 +213,45 @@ document.addEventListener('DOMContentLoaded', async function() {
         submitButton.disabled = true;
         
         try {
-            const refNum = `ISC-${Math.floor(Date.now() / 1000)}-${Math.floor(Math.random() * 999)}`;
+            const date = new Date();
+            const year = date.getFullYear();
+            const timestamp = Math.floor(date.getTime() / 1000);
+            const random = Math.floor(Math.random() * 999);
+            const refNum = `ISC-${year}-${timestamp}-${random}`;
+            
+            // Make sure image_url is properly set
+            let imageUrl = null;
+            if (window.selectedPhoto) {
+                imageUrl = window.selectedPhoto;
+            }
+            
             const reportData = {
                 user_id: user.id,
                 category: category,
                 description: description,
-                image_url: window.selectedPhoto || null,
-                location: window.currentLocation,
+                image_url: imageUrl,
+                location: window.currentLocation || window.locationAddress,
                 location_address: window.locationAddress || window.currentLocation,
+                latitude: window.currentLatitude || null,
+                longitude: window.currentLongitude || null,
                 status: 'pending',
-                reference: `#${refNum}`,
+                reference: refNum,
                 created_at: new Date().toISOString()
             };
+            
+            // Debug: Check what we're submitting
+            console.log('Submitting report:', {
+                ...reportData,
+                image_url: reportData.image_url ? 'Image present (length: ' + reportData.image_url.length + ')' : 'No image'
+            });
             
             const { error } = await supabaseClient.from('reports').insert([reportData]);
             if (error) throw new Error(error.message);
             
-            alert(`✅ Report submitted successfully!\nReference: ${refNum}\nLocation: ${window.locationAddress || window.currentLocation}`);
-            window.location.href = 'dashboard.html';
+            alert(`Report submitted successfully!\nReference: ${refNum}`);
+            window.location.href = 'view-reports.html';
         } catch (err) {
-            alert(`❌ Submission failed: ${err.message}`);
-            console.error(err);
+            alert(`Submission failed: ${err.message}`);
         } finally {
             submitButton.innerHTML = originalHtml;
             submitButton.disabled = false;
