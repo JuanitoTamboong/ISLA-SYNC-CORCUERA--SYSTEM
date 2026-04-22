@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Report</title>
+
+<link rel="stylesheet" href="report.css">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <i class="fa-solid fa-arrow-left"></i>
+        <h2>Community Report</h2>
+    </div>
+
+    <!-- CATEGORY -->
+    <div class="section-title">
+        <span>SELECT CATEGORY</span>
+        <p>Required</p>
+    </div>
+
+    <div class="grid">
+
+        <div class="card active">
+            <i class="fa-solid fa-road"></i>
+            <h4>INFRASTRUCTUR</h4>
+            <p>Streetlights, transport, energy, water, seaports</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h4>PUBLIC SAFETY</h4>
+            <p>Emergency, Disaster, Safety Concerns</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-people-group"></i>
+            <h4>ENGINEERING</h4>
+            <p>Pavement, potholes, manholes, wires</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-traffic-light"></i>
+            <h4>TRAFFIC VIOLATION</h4>
+            <p>Habal-Habal, Truck Ban, Illegal Parking</p>
+        </div>
+
+    </div>
+
+    <!-- DESCRIPTION -->
+    <h3 class="label">ISSUE DESCRIPTION</h3>
+    <textarea placeholder="Describe the issue in detail..."></textarea>
+
+    <!-- UPLOAD -->
+    <h3 class="label">VISUAL EVIDENCE</h3>
+
+    <div class="upload-area">
+
+        <div class="upload-box">
+            <i class="fa-solid fa-camera"></i>
+            <p>UPLOAD</p>
+        </div>
+
+        <div class="preview" style="display: none;">
+            <img src="" alt="Preview">
+            <span class="remove">×</span>
+        </div>
+
+    </div>
+
+    <!-- LOCATION -->
+    <h3 class="label">LOCATION</h3>
+
+    <div class="location">
+        <div class="loc-left">
+            <i class="fa-solid fa-location-dot"></i>
+            <div>
+                <h4>San Jose, Corcuera</h4>
+                <p>Current Location</p>
+            </div>
+        </div>
+
+        <span class="change">Change</span>
+    </div>
+
+    <!-- BUTTON -->
+    <button class="submit">
+        <i class="fa-solid fa-paper-plane"></i>
+        Submit Report
+    </button>
+
+</div>
+
+    <script src="report.js"></script>
+</body>
+</html>
