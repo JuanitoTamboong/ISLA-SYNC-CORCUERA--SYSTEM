@@ -1,6 +1,5 @@
 @import "shared.css";
 
-/* PAGE-SPECIFIC STYLES - Inside unified container */
 .page-header {
     display: flex;
     align-items: center;
@@ -12,24 +11,14 @@
 .back-btn {
     width: 42px;
     height: 42px;
-    border-radius: 50%;
-    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 1px solid #e5e7eb;
     font-size: 1.1rem;
     color: #374151;
     transition: all 0.2s;
 }
-
-.back-btn:hover, .back-btn:active {
-    background: #f3f4f6;
-    transform: translateX(-2px);
-}
-
 .page-header h1 {
     font-size: 20px;
     font-weight: 700;
@@ -128,15 +117,15 @@
 }
 
 .category-icon {
-    font-size: 1.4rem;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    font-size: 1.3rem;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    padding: 10px;
+    background: #ca0a0a;
+    box-shadow: 0 4px 12px rgba(248, 113, 113, 0.4);
 }
 
 .category-title {

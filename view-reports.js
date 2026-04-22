@@ -18,7 +18,7 @@ const CATEGORY_GROUPS = [
         key: 'public_safety', 
         title: 'PUBLIC SAFETY', 
         subtitle: 'Emergency, Disaster, Safety Concerns',
-        icon: 'fa-solid fa-shield-haltered',
+        icon: 'fa-solid fa-shield-halved',
         keywords: ['safety', 'emergency', 'disaster', 'open manhole', 'danger', 'crime', 'hazard']
     },
     { 
