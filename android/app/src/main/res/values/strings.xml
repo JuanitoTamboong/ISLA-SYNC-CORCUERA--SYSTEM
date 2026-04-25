@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Isla Sync</string>
+    <string name="title_activity_main">Isla Sync</string>
+    <string name="package_name">com.corcuera.islasync</string>
+    <string name="custom_url_scheme">com.corcuera.islasync</string>
+</resources>
+

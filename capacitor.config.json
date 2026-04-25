@@ -1,0 +1,14 @@
+{
+  "appId": "com.corcuera.islasync",
+  "appName": "Isla Sync",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "cleartext": true,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
+

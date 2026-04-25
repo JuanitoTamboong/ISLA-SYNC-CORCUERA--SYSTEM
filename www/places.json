@@ -1,0 +1,134 @@
+{
+  "places": {
+    "// Discovery places": "",
+    "discovery": [
+      {
+        "name": "Corcuera Lighthouse, Corcuera, Romblon",
+        "lat": 12.8092,
+        "lon": 122.0512,
+        "type": "lighthouse",
+        "description": "Historic lighthouse guiding ships through Romblon waters",
+        "rating": 4.8,
+        "image": "assets/places/corcuera-lighthouse.jpg"
+      },
+      {
+        "name": "Corcuera Municipal Hall",
+        "lat": 12.8055,
+        "lon": 122.0474,
+        "type": "government",
+        "description": "Town hall of Corcuera",
+        "rating": 4.5,
+        "image": "assets/places/corcuera-municipal-hall.jpg"
+      },
+      {
+        "name": "Colong-Colong Viewpoint",
+        "lat": 12.81,
+        "lon": 122.052,
+        "type": "viewpoint",
+        "description": "A scenic viewpoint with a stunning panoramic view of Simara Island and the sea.",
+        "rating": 4.9,
+        "image": "assets/places/colong-colong-simara-island.jpg"
+      }
+    ],
+    "// Nature places": "",
+    "nature": [
+      {
+        "name": "Busay Falls",
+        "lat": 12.808,
+        "lon": 122.045,
+        "type": "waterfall",
+        "description": "Beautiful waterfall on Simara Island",
+        "rating": 4.9,
+        "image": "assets/generate background image of corquera romblon sea-7.jpg"
+      },
+      {
+        "name": "Simara Rock Formation",
+        "lat": 12.811,
+        "lon": 122.053,
+        "type": "nature",
+        "description": "Unique rock formations along the coast",
+        "rating": 4.6,
+        "image": "assets/generate background of corquera romblon.jpg"
+      },
+      {
+        "name": "Mangrove Forest",
+        "lat": 12.804,
+        "lon": 122.046,
+        "type": "nature",
+        "description": "Protected mangrove ecosystem",
+        "rating": 4.7,
+        "image": "assets/generate background of corquera romblon (1).jpg"
+      }
+    ],
+    "// Dining places": "",
+    "dining": [
+      {
+        "name": "Simara Seafood Grill",
+        "lat": 12.806,
+        "lon": 122.0475,
+        "type": "restaurant",
+        "description": "Fresh seafood and local cuisine",
+        "rating": 4.6,
+        "image": "assets/generate background image of corquera romblon.jpg"
+      },
+      {
+        "name": "Island View Cafe",
+        "lat": 12.805,
+        "lon": 122.048,
+        "type": "cafe",
+        "description": "Coffee shop with island views",
+        "rating": 4.5,
+        "image": "assets/generate background image of corquera romblon (1).jpg"
+      },
+      {
+        "name": "Corcuera Eatery",
+        "lat": 12.8045,
+        "lon": 122.047,
+        "type": "restaurant",
+        "description": "Local Filipino dishes",
+        "rating": 4.4,
+        "image": "assets/generate background image of corquera romblon (2).jpg"
+      },
+      {
+        "name": "Beachfront Bar & Grill",
+        "lat": 12.803,
+        "lon": 122.049,
+        "type": "bar",
+        "description": "Beachside dining and drinks",
+        "rating": 4.5,
+        "image": "assets/generate background image of corquera romblon sea-7.jpg"
+      },
+      {
+        "name": "Taclobo Beach Resort Restaurant",
+        "lat": 12.8025,
+        "lon": 122.0505,
+        "type": "restaurant",
+        "description": "Dining with beach view",
+        "rating": 4.7,
+        "image": "assets/sea.jpg"
+      }
+    ],
+    "// Beaches": "",
+    "beaches": [
+      {
+        "name": "Taclobo Beach",
+        "lat": 12.802,
+        "lon": 122.05,
+        "type": "beach",
+        "description": "White sand beach with clear waters",
+        "rating": 4.8,
+        "image": "assets/sea.jpg"
+      },
+      {
+        "name": "Hidden Cove Beach",
+        "lat": 12.8075,
+        "lon": 122.0495,
+        "type": "beach",
+        "description": "Secluded beach perfect for swimming",
+        "rating": 4.8,
+        "image": "assets/7.jpg"
+      }
+    ]
+  }
+}
+
