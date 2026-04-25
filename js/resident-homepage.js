@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentUser = localStorage.getItem('currentUser')
     
     if (!currentUser) {
-        window.location.href = 'login.html'
+        window.location.href = '../pages/login.html'
         return
     }
     
@@ -26,18 +26,18 @@ document.addEventListener('DOMContentLoaded', function() {
         user = JSON.parse(currentUser)
         if (!user || !user.id) {
             localStorage.removeItem('currentUser')
-            window.location.href = 'login.html'
+            window.location.href = '../pages/login.html'
             return
         }
     } catch (e) {
         localStorage.removeItem('currentUser')
-        window.location.href = 'login.html'
+        window.location.href = '../pages/login.html'
         return
     }
     
     // Verify user is a resident
     if (user.userType !== 'resident') {
-        window.location.href = 'admin-dashboard.html'
+        window.location.href = '../pages/admin-dashboard.html'
         return
     }
     
@@ -48,13 +48,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (sessionError || !session) {
                 localStorage.removeItem('currentUser')
-                window.location.href = 'login.html'
+                window.location.href = '../pages/login.html'
                 return false
             }
             
             if (session.user.id !== user.id) {
                 localStorage.removeItem('currentUser')
-                window.location.href = 'login.html'
+                window.location.href = '../pages/login.html'
                 return false
             }
             
@@ -116,15 +116,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Banner image shuffle
     const bannerImages = [
-        'assets/generate background image of corquera romblon.jpg',
-        'assets/generate background image of corquera romblon (1).jpg',
-        'assets/generate background image of corquera romblon (2).jpg',
-        'assets/generate background image of corquera romblon sea-7.jpg',
-        'assets/generate background of corquera romblon.jpg',
-        'assets/generate background of corquera romblon (1).jpg',
-        'assets/generate background of corquera romblon (2).jpg',
-        'assets/7.jpg',
-        'assets/sea.jpg',
+        '../assets/generate background image of corquera romblon.jpg',
+        '../assets/generate background image of corquera romblon (1).jpg',
+        '../assets/generate background image of corquera romblon (2).jpg',
+        '../assets/generate background image of corquera romblon sea-7.jpg',
+        '../assets/generate background of corquera romblon.jpg',
+        '../assets/generate background of corquera romblon (1).jpg',
+        '../assets/generate background of corquera romblon (2).jpg',
+        '../assets/7.jpg',
+        '../assets/sea.jpg',
     ];
     
     let currentImageIndex = 0;
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
             await supabaseClient.auth.signOut()
             showNotification('Logged out successfully', 'success')
             setTimeout(() => {
-                window.location.href = 'login.html'
+                window.location.href = '../pages/login.html'
             }, 1000)
         } catch (error) {
             showNotification('Error logging out', 'error')
@@ -262,28 +262,28 @@ document.addEventListener('DOMContentLoaded', function() {
     window.navigateTo = function(page) {
         switch(page) {
             case 'home':
-                window.location.href = 'resident-homepage.html'
+                window.location.href = '../pages/resident-homepage.html'
                 break
             case 'map':
-                window.location.href = 'map.html'
+                window.location.href = '../pages/map.html'
                 break
             case 'notifications':
-                window.location.href = 'notif.html'
+                window.location.href = '../pages/notif.html'
                 break
             case 'profile':
-                window.location.href = 'profile.html'
+                window.location.href = '../pages/profile.html'
                 break
             case 'settings':
-                window.location.href = 'setting.html'
+                window.location.href = '../pages/setting.html'
                 break
         }
     }
     
     // Services
-    window.reportIssue = () => { window.location.href = 'report.html'; }
+    window.reportIssue = () => { window.location.href = '../pages/report.html'; }
     window.viewNews = () => showNotification('Latest news feature coming soon!', 'info')
     window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
-    window.viewMyReports = () => { window.location.href = 'view-reports.html'; }
+    window.viewMyReports = () => { window.location.href = '../pages/view-reports.html'; }
     
     // Notification function
     function showNotification(message, type = 'info') {

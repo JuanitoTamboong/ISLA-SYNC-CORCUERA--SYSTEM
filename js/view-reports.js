@@ -264,7 +264,7 @@ async function initPage() {
     
     const currentUserStr = localStorage.getItem('currentUser');
     if (!currentUserStr) {
-        window.location.href = 'login.html';
+        window.location.href = '../pages/login.html';
         return;
     }
     
@@ -272,11 +272,11 @@ async function initPage() {
         currentUser = JSON.parse(currentUserStr);
         if (!currentUser.id) {
             localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            window.location.href = '../pages/login.html';
             return;
         }
     } catch(e) {
-        window.location.href = 'login.html';
+        window.location.href = '../pages/login.html';
         return;
     }
     
@@ -303,8 +303,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Navigation buttons
     document.getElementById('backBtn').onclick = () => window.history.back();
-    document.getElementById('submitNewBtn').onclick = () => window.location.href = 'report.html';
-    document.getElementById('emptySubmitBtn').onclick = () => window.location.href = 'report.html';
+    document.getElementById('submitNewBtn').onclick = () => window.location.href = '../pages/report.html';
+    document.getElementById('emptySubmitBtn').onclick = () => window.location.href = '../pages/report.html';
     
     // Modal controls
     document.getElementById('modalClose').onclick = hideModal;

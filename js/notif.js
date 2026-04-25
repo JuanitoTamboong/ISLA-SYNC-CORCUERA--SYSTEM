@@ -4,16 +4,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.navigateTo = function(page) {
         switch(page) {
             case 'home':
-                window.location.href = 'resident-homepage.html';
+                window.location.href = '../pages/resident-homepage.html';
                 break;
             case 'map':
-                window.location.href = 'map.html';
+                window.location.href = '../pages/map.html';
                 break;
             case 'notifications':
                 // Stay on current page
                 break;
             case 'settings':
-                window.location.href = 'setting.html';
+                window.location.href = '../pages/setting.html';
                 break;
         }
     };

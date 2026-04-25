@@ -26,7 +26,7 @@ body {
 .hero {
     flex: 1;
     min-height: 640px;
-    background: url('assets/7.jpg') no-repeat center/cover;
+    background: url('../assets/7.jpg') no-repeat center/cover;
     position: relative;
 }
 

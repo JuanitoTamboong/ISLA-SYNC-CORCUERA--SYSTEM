@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification(`Welcome back, ${profile.full_name}!`, 'success')
             
             setTimeout(() => {
-                window.location.href = profile.user_type === 'admin' ? 'admin-dashboard.html' : 'resident-homepage.html'
+                window.location.href = profile.user_type === 'admin' ? '../pages/admin-dashboard.html' : '../pages/resident-homepage.html'
             }, 1500)
             
         } catch (error) {
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/reset-password.html`
+                    redirectTo: `${window.location.origin}/pages/reset-password.html`
                 })
                 
                 if (error) {
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60)
                 
                 if (hoursSinceLogin < 24) {
-                    window.location.href = user.userType === 'admin' ? 'admin-dashboard.html' : 'resident-homepage.html'
+                    window.location.href = user.userType === 'admin' ? '../pages/admin-dashboard.html' : '../pages/resident-homepage.html'
                     return
                 } else {
                     localStorage.removeItem('currentUser')

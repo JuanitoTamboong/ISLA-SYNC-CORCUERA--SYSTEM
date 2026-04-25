@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check user with id validation
     const currentUser = localStorage.getItem('currentUser')
     if (!currentUser) {
-        window.location.href = 'login.html'
+        window.location.href = '../pages/login.html'
         return
     }
     let user;
@@ -22,12 +22,12 @@ document.addEventListener('DOMContentLoaded', function() {
         user = JSON.parse(currentUser)
         if (!user || !user.id) {
             localStorage.removeItem('currentUser')
-            window.location.href = 'login.html'
+            window.location.href = '../pages/login.html'
             return
         }
     } catch (e) {
         localStorage.removeItem('currentUser')
-        window.location.href = 'login.html'
+        window.location.href = '../pages/login.html'
         return
     }
     
@@ -70,18 +70,18 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Logged out successfully', 'success')
             
             setTimeout(() => {
-                window.location.href = 'login.html'
+                window.location.href = '../pages/login.html'
             }, 500)
         } catch (error) {
             setTimeout(() => {
-                window.location.href = 'login.html'
+                window.location.href = '../pages/login.html'
             }, 500)
         }
     }
     
     // Back button
     document.querySelector('.header i').addEventListener('click', () => {
-        window.location.href = 'resident-homepage.html'
+        window.location.href = '../pages/resident-homepage.html'
     })
     
     // Logout button
@@ -112,16 +112,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.navigateTo = function(page) {
         switch(page) {
             case 'home':
-                window.location.href = 'resident-homepage.html'
+                window.location.href = '../pages/resident-homepage.html'
                 break
             case 'map':
-                window.location.href = 'map.html'
+                window.location.href = '../pages/map.html'
                 break
             case 'notifications':
-                window.location.href = 'notif.html'
+                window.location.href = '../pages/notif.html'
                 break
             case 'profile':
-                window.location.href = 'profile.html'
+                window.location.href = '../pages/profile.html'
                 break
             case 'settings':
                 break
@@ -130,6 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Bottom nav home
     document.querySelector('.nav-item i.fa-home').parentElement.onclick = () => {
-        window.location.href = 'resident-homepage.html'
+        window.location.href = '../pages/resident-homepage.html'
     }
 })

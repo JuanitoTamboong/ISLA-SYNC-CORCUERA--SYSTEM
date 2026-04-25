@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Check session
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
-        window.location.href = 'login.html';
+        window.location.href = '../pages/login.html';
         return;
     }
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (backBtn) {
         backBtn.style.cursor = 'pointer';
         backBtn.addEventListener('click', () => {
-            window.location.href = 'resident-homepage.html';
+            window.location.href = '../pages/resident-homepage.html';
         });
     }
 

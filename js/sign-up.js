@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         full_name: fullName,
                         user_type: 'resident'
                     },
-                    emailRedirectTo: 'https://isla-sync-corcuera-system.vercel.app/verify-email.html'  // KEY FIX!
+                    emailRedirectTo: 'https://isla-sync-corcuera-system.vercel.app/pages/verify-email.html'  // KEY FIX!
                 }
             })
             
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Redirect to login page after 2 seconds
                 setTimeout(() => {
-                    window.location.href = 'login.html'
+                    window.location.href = '../pages/login.html'
                 }, 2000)
             }
             

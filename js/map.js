@@ -1,9 +1,9 @@
 // Global navigateTo - for onclick handlers
 window.navigateTo = function(page) {
     const navMap = {
-        'home': 'resident-homepage.html',
-        'notifications': 'notif.html',
-        'settings': 'setting.html'
+        'home': '../pages/resident-homepage.html',
+        'notifications': '../pages/notif.html',
+        'settings': '../pages/setting.html'
     };
     if (navMap[page]) {
         window.location.href = navMap[page];
@@ -94,9 +94,21 @@ const MAP_TILES = {
 // Load places from JSON file
 async function loadPlacesFromJSON() {
     try {
-        const response = await fetch('places.json');
+        const response = await fetch('../places.json');
         const data = await response.json();
         placesData = data.places;
+        
+        // Fix image paths since map.html now lives in pages/ folder
+        for (const category in placesData) {
+            if (Array.isArray(placesData[category])) {
+                for (const place of placesData[category]) {
+                    if (place.image && place.image.startsWith('assets/')) {
+                        place.image = '../' + place.image;
+                    }
+                }
+            }
+        }
+        
         return placesData;
     } catch (error) {
         return getFallbackPlaces();
@@ -523,7 +535,7 @@ function setupDirectionsHandler() {
                     startLat: startLat,
                     startLng: startLng
                 });
-                window.location.href = 'get direction.html?' + params.toString();
+                window.location.href = '../pages/get-direction.html?' + params.toString();
             }
         });
     }

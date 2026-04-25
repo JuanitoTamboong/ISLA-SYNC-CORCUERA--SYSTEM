@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: url('assets/generate\ background\ of\ corquera\ romblon.jpg') no-repeat center/cover;
+    background: url('../assets/generate\ background\ of\ corquera\ romblon.jpg') no-repeat center/cover;
     min-height: 100vh;
     display: flex;
     align-items: center;

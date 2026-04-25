@@ -1,8 +1,13 @@
-# TODO: Add loading indicator to Save Profile button
+# Reorganization TODO
 
-- [x] 1. Create TODO.md with plan steps ✅
-- [x] 2. Edit profile.js to add loading logic, disable button during save
-- [x] 3. Edit profile.css to style disabled button and spinner
-- [x] 4. Test the implementation
-- [x] 5. Mark complete and attempt_completion
+- [x] Create TODO.md
+- [x] Move all CSS files to `css/`
+- [x] Move all JS files to `js/`
+- [x] Move all HTML files to `pages/`
+- [x] Create root `index.html` redirect to `pages/index.html`
+- [x] Update HTML file references (CSS → `../css/`, JS → `../js/`, assets → `../assets/`)
+- [x] Update JS file references (pages → `../pages/`, assets → `../assets/`, places.json → `../places.json`)
+- [x] Update CSS file references (assets → `../assets/`)
+- [x] Verify key pages
+
 

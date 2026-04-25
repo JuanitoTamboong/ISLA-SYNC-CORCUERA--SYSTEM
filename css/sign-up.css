@@ -22,7 +22,7 @@ body {
 /* Top image */
 .hero {
     height: 180px;
-    background: url('assets/generate\ background\ of\ corquera\ romblon\ \(2\).jpg') no-repeat center/cover;
+    background: url('../assets/generate\ background\ of\ corquera\ romblon\ \(2\).jpg') no-repeat center/cover;
 }
 
 /* Card */

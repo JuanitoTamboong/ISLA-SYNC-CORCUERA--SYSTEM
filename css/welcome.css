@@ -27,7 +27,7 @@ body {
 .hero {
     flex: 1;
     min-height: 260px;
-    background: url('assets/generate\ background\ of\ corquera\ romblon\ \(1\).jpg') no-repeat center/cover;
+    background: url('../assets/generate\ background\ of\ corquera\ romblon\ \(1\).jpg') no-repeat center/cover;
 }
 
 /* Card */

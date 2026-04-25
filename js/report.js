@@ -13,13 +13,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     const currentUserStr = localStorage.getItem('currentUser');
     if (!currentUserStr) {
-        window.location.href = 'login.html';
+        window.location.href = '../pages/login.html';
         return;
     }
     const user = JSON.parse(currentUserStr);
     if (!user.id) {
         localStorage.removeItem('currentUser');
-        window.location.href = 'login.html';
+        window.location.href = '../pages/login.html';
         return;
     }
     
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (error) throw new Error(error.message);
             
             alert(`Report submitted successfully!\nReference: ${refNum}`);
-            window.location.href = 'view-reports.html';
+            window.location.href = '../pages/view-reports.html';
         } catch (err) {
             alert(`Submission failed: ${err.message}`);
         } finally {
