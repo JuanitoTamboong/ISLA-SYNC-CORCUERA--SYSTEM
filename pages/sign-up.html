@@ -22,47 +22,48 @@
         <h2>Create Your Account</h2>
         <p class="subtitle">Join the Corcuera community</p>
 
-        <!-- Full Name -->
-        <div class="input-group">
-            <label>Full Name</label>
-            <div class="input-box">
-                <i class="fa-regular fa-user"></i>
-                <input type="text" placeholder="Enter your full name">
-            </div>
-        </div>
-
-        <!-- Email -->
-        <div class="input-group">
-            <label>Email Address</label>
-            <div class="input-box">
-                <i class="fa-regular fa-envelope"></i>
-                <input type="email" placeholder="name@example.com">
-            </div>
-        </div>
-
-        <!-- Password -->
-        <div class="input-group">
-            <label>Password</label>
-            <div class="input-box">
-                <i class="fa-solid fa-lock"></i>
-                <input type="password" placeholder="Create a password">
-                <i class="fa-regular fa-eye toggle"></i>
-            </div>
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="input-group">
-            <label>Confirm Password</label>
-            <div class="input-box">
-                <i class="fa-solid fa-lock"></i>
-                <input type="password" placeholder="Repeat password">
-                <i class="fa-regular fa-eye toggle"></i>
+        <form id="signupForm">
+            <!-- Full Name -->
+            <div class="input-group">
+                <label>Full Name</label>
+                <div class="input-box">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="fullNameInput" placeholder="Enter your full name" autocomplete="name">
+                </div>
             </div>
 
-        </div>
+            <!-- Email -->
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-box">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="emailInput" placeholder="name@example.com" autocomplete="email">
+                </div>
+            </div>
 
-        <!-- Button -->
-        <button class="btn">Sign Up</button>
+            <!-- Password -->
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="passwordInput" placeholder="Create a password" autocomplete="new-password">
+                    <i class="fa-regular fa-eye toggle"></i>
+                </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="confirmPasswordInput" placeholder="Repeat password" autocomplete="new-password">
+                    <i class="fa-regular fa-eye toggle"></i>
+                </div>
+            </div>
+
+            <!-- Button -->
+            <button type="submit" class="btn" id="signupButton">Sign Up</button>
+        </form>
 
         <!-- Divider -->
         <div class="divider">

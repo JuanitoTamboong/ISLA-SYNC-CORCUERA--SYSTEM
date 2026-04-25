@@ -24,29 +24,31 @@
             <h2>Welcome Back</h2>
             <p class="subtitle">Sign in to sync with Corcuera</p>
 
-            <!-- Email -->
-            <div class="input-group">
-                <label>EMAIL OR USERNAME</label>
-                <div class="input-box">
-                    <i class="fa-regular fa-envelope"></i>
-                    <input type="text" id="emailInput" placeholder="Enter your email">
+            <form id="loginForm">
+                <!-- Email -->
+                <div class="input-group">
+                    <label>EMAIL OR USERNAME</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                    <input type="text" id="emailInput" placeholder="Enter your email" autocomplete="username">
+                    </div>
                 </div>
-            </div>
 
-            <!-- Password -->
-            <div class="input-group">
-                <label>PASSWORD</label>
-                <div class="input-box">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="passwordInput" placeholder="Enter your password">
-                    <i class="fa-regular fa-eye toggle" id="togglePassword"></i>
+                <!-- Password -->
+                <div class="input-group">
+                    <label>PASSWORD</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="passwordInput" placeholder="Enter your password" autocomplete="current-password">
+                        <i class="fa-regular fa-eye toggle" id="togglePassword"></i>
+                    </div>
                 </div>
-            </div>
 
-            <div class="forgot" id="forgotPassword">Forgot Password?</div>
+                <div class="forgot" id="forgotPassword">Forgot Password?</div>
 
-            <!-- Button -->
-            <button class="btn" id="loginButton">Log In</button>
+                <!-- Button -->
+                <button type="submit" class="btn" id="loginButton">Log In</button>
+            </form>
 
             <!-- Divider -->
             <div class="divider">OR CONTINUE WITH</div>

@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     
     // Get form elements
+    const loginForm = document.getElementById('loginForm')
     const emailInput = document.getElementById('emailInput')
     const passwordInput = document.getElementById('passwordInput')
     const loginButton = document.getElementById('loginButton')
@@ -281,24 +282,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
     
-    // Login button click
-    if (loginButton) {
-        loginButton.addEventListener('click', (e) => {
+    // Form submit handler
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault()
             handleLogin()
         })
-    }
-    
-    // Enter key press
-    if (emailInput && passwordInput) {
-        const handleEnter = (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault()
-                handleLogin()
-            }
-        }
-        emailInput.addEventListener('keypress', handleEnter)
-        passwordInput.addEventListener('keypress', handleEnter)
     }
     
     // Check for new user from signup

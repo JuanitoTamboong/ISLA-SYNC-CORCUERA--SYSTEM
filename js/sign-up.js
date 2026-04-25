@@ -13,11 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Signup script loaded successfully');
 
     // Get form elements
-    const fullNameInput = document.querySelector('input[placeholder="Enter your full name"]')
-    const emailInput = document.querySelector('input[placeholder="name@example.com"]')
-    const passwordInput = document.querySelector('input[placeholder="Create a password"]')
-    const confirmPasswordInput = document.querySelector('input[placeholder="Repeat password"]')
-    const signupButton = document.querySelector('.btn')
+    const signupForm = document.getElementById('signupForm')
+    const fullNameInput = document.getElementById('fullNameInput')
+    const emailInput = document.getElementById('emailInput')
+    const passwordInput = document.getElementById('passwordInput')
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput')
+    const signupButton = document.getElementById('signupButton')
 
     // Prevent duplicate submissions
     let isSubmitting = false
@@ -42,25 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Signup button click handler
-    signupButton.addEventListener('click', async (e) => {
-        e.preventDefault()
-        console.log('Signup button clicked');
-        await handleSignup()
-    })
-
-    // Handle Enter key press
-    const inputs = [fullNameInput, emailInput, passwordInput, confirmPasswordInput]
-    inputs.forEach(input => {
-        if (input) {
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleSignup()
-                }
-            })
-        }
-    })
+    // Form submit handler
+    if (signupForm) {
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            console.log('Signup form submitted');
+            await handleSignup()
+        })
+    }
 
     // Main signup function
     async function handleSignup() {
