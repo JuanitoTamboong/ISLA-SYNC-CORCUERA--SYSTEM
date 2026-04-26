@@ -1,14 +1,21 @@
-# APK Build TODO
+# Fix Admin Profile Container Size
 
-- [x] 1. Create package.json for Capacitor CLI recognition
-- [x] 2. Fix capacitor.config.json (legal appId, remove server.url, bundle local assets)
-- [x] 3. Populate www/ with all web assets and fix root index.html paths
-- [x] 4. Regenerate Android project with Capacitor CLI
-- [x] 5. Restore custom Android resources and local.properties
-- [x] 6. Add missing AndroidManifest.xml permissions
-- [x] 7. Build app-debug.apk with Gradle
+## Problem
+The admin profile page (`css/admin/admin-profile.css`) has inconsistent container/content sizing compared to other pages (settings, notifications, resident homepage).
 
-BUILD SUCCESSFUL! APK generated at:
-- `android/app/build/outputs/apk/debug/app-debug.apk`
-- `app-debug.apk` (copied to project root)
+## Root Causes Found
+1. `.card` has `margin: 0 15px 15px` — adds extra left/right margins, making cards narrower than other pages
+2. `.section-title` has `margin: 15px` — different from other pages (`15px 5px 8px`)
+3. `.header` has `padding: 15px` — inconsistent with settings/notif-news headers
+4. Missing responsive `@media (max-width: 480px)` container padding override
+
+## Plan
+- [x] Edit `css/admin/admin-profile.css`
+  - Change `.card` margin from `0 15px 15px` to `margin-bottom: 15px`
+  - Change `.section-title` margin from `15px` to `15px 5px 8px`
+  - Update `.header` to match settings/notif-news style (remove padding, add margin-bottom)
+  - Add responsive `@media (max-width: 480px)` container padding override
+
+## Dependent Files
+- None — only `css/admin/admin-profile.css` needs changes
 
