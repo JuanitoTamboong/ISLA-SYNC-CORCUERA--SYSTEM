@@ -214,6 +214,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 return
             }
             
+            // STRICT SEPARATION: Resident login only for residents
+            if (profile.user_type === 'admin') {
+                showNotification('Access denied: Please use the Admin Portal to login.', 'error')
+                await supabaseClient.auth.signOut()
+                loginButton.disabled = false
+                loginButton.textContent = 'Log In'
+                return
+            }
+            
             // Store user data
             const userData = {
                 id: profile.id,
@@ -225,11 +234,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginTime: new Date().toISOString()
             }
             localStorage.setItem('currentUser', JSON.stringify(userData))
+            // Clear any admin session
+            localStorage.removeItem('currentAdmin')
             
             showNotification(`Welcome back, ${profile.full_name}!`, 'success')
             
             setTimeout(() => {
-                window.location.href = profile.user_type === 'admin' ? '../pages/admin-dashboard.html' : '../pages/resident-homepage.html'
+                window.location.href = '../pages/resident-homepage.html'
             }, 1500)
             
         } catch (error) {
@@ -301,18 +312,18 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('newUserName')
     }
     
-    // Check existing session
+    // Check existing session - ONLY for residents
     const currentUser = localStorage.getItem('currentUser')
     if (currentUser) {
         try {
             const user = JSON.parse(currentUser)
-            if (user.isLoggedIn && user.loginTime) {
+            if (user.isLoggedIn && user.loginTime && user.userType === 'resident') {
                 const loginTime = new Date(user.loginTime)
                 const now = new Date()
                 const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60)
                 
                 if (hoursSinceLogin < 24) {
-                    window.location.href = user.userType === 'admin' ? '../pages/admin-dashboard.html' : '../pages/resident-homepage.html'
+                    window.location.href = '../pages/resident-homepage.html'
                     return
                 } else {
                     localStorage.removeItem('currentUser')
