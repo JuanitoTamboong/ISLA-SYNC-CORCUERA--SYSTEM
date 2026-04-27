@@ -107,12 +107,77 @@ document.addEventListener('DOMContentLoaded', function() {
     // Immediately show cached profile image
     updateProfileImage(user)
 
-    // Run verification and load data
+    // Load latest news for Community Updates
+    async function loadCommunityUpdates() {
+        try {
+            const { data: newsData, error } = await supabaseClient
+                .from('news')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(3);
+
+            if (error) {
+                console.error('Load community updates error:', error);
+                return;
+            }
+
+            const updatesContainer = document.getElementById('communityUpdates');
+            if (!updatesContainer) return;
+
+            if (!newsData || newsData.length === 0) {
+                // Keep default if no news
+                return;
+            }
+
+            const categoryIcons = {
+                'Advisory': 'fa-bullhorn',
+                'Tourism': 'fa-map-location-dot',
+                'Events': 'fa-calendar-days',
+                'Community': 'fa-users'
+            };
+
+            const html = newsData.map(news => {
+                const icon = categoryIcons[news.category] || 'fa-bullhorn';
+                const shortTitle = news.title.length > 40 
+                    ? news.title.substring(0, 40) + '...' 
+                    : news.title;
+                
+                return `
+                    <div class="update-card" onclick="window.location.href='../pages/news.html'" style="cursor: pointer;">
+                        <div class="update-icon">
+                            <i class="fa ${icon}"></i>
+                        </div>
+                        <div class="update-text">
+                            <p class="title">${escapeHtml(news.category || 'Update')}</p>
+                            <span>${escapeHtml(shortTitle)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updatesContainer.innerHTML = html;
+
+        } catch (error) {
+            console.error('Community updates error:', error);
+        }
+    }
+
+    // Escape HTML helper
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Load community updates after user data is loaded
     verifySession().then(isValid => {
         if (isValid) {
-            loadUserData()
+            loadUserData().then(() => {
+                loadCommunityUpdates();
+            });
         }
-    })
+    });
     
     // Banner image shuffle
     const bannerImages = [

@@ -9,6 +9,8 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -32,49 +34,20 @@
         <div class="pill">Advisory</div>
         <div class="pill">Tourism</div>
         <div class="pill">Events</div>
+        <div class="pill">Community</div>
     </div>
 
-    <!-- FEATURED -->
-    <div class="featured">
-        <img src="../assets/generate background image of corquera romblon.jpg" alt="Featured News Background">
-        <div class="featured-content">
-            <span class="badge">FEATURED</span>
-            <p class="meta">2 hours ago • Tourism</p>
-            <h3>Eco-Tourism Trails: Exploring the Hidden Waterfalls of Corcuera</h3>
-        </div>
+    <!-- FEATURED (Dynamic) -->
+    <div class="featured" id="featuredContainer" style="display: none;">
+        <!-- Populated by js/news.js -->
     </div>
 
     <!-- LATEST -->
     <h3 class="section-title">Latest Updates</h3>
 
-    <!-- CARD 1 -->
-    <div class="news-card">
-        <img src="../assets/places/corcuera-municipal-hall.jpg" alt="Weather Advisory News">
-        <div>
-            <span class="tag blue">ADVISORY</span>
-            <h4>Weather Update: Local Boat Trips Suspended for 24h</h4>
-            <p class="date"><i class="fa-regular fa-calendar"></i> Oct 24, 2023</p>
-        </div>
-    </div>
-
-    <!-- CARD 2 -->
-    <div class="news-card">
-        <img src="../assets/places/corcuera-lighthouse.jpg" alt="Festival Event News">
-        <div>
-            <span class="tag orange">EVENT</span>
-            <h4>Simara Festival 2023 Schedule Released</h4>
-            <p class="date"><i class="fa-regular fa-calendar"></i> Oct 22, 2023</p>
-        </div>
-    </div>
-
-    <!-- CARD 3 -->
-    <div class="news-card">
-        <img src="../assets/places/colong-colong-simara-island.jpg" alt="Community Update News">
-        <div>
-            <span class="tag green">COMMUNITY</span>
-            <h4>Community Tree Planting Program Hits New Milestone</h4>
-            <p class="date"><i class="fa-regular fa-calendar"></i> Oct 20, 2023</p>
-        </div>
+    <!-- NEWS LIST (Dynamic) -->
+    <div id="newsContainer">
+        <!-- Populated by js/news.js -->
     </div>
 
 </div>
@@ -105,3 +78,4 @@
 <script src="../js/news.js"></script>
 </body>
 </html>
+
