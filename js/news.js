@@ -167,6 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const category = featuredNews.category || 'News';
 
             featuredContainer.style.display = 'block';
+            featuredContainer.style.cursor = 'pointer';
+            featuredContainer.onclick = function() { viewNewsDetail(featuredNews.id); };
             featuredContainer.innerHTML = `
                 <img src="${escapeHtml(featuredImage)}" alt="${escapeHtml(featuredNews.title)}" onerror="this.src='../assets/generate background image of corquera romblon.jpg'">
                 <div class="featured-content">
