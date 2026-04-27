@@ -115,14 +115,15 @@ function renderNewsList() {
         const shortContent = (news.content || '').length > 100
             ? news.content.substring(0, 100) + '...'
             : (news.content || '');
-        const imageUrl = news.image_url || DEFAULT_IMAGE;
+        const imageUrl = news.image_url;
+        const hasImage = !!imageUrl;
 
         return `
             <div class="news-card">
-                <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(news.title)}" class="news-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="news-image-placeholder" style="display: none;">
-                    <i class="fa-regular fa-image"></i>
-                </div>
+                ${hasImage
+                    ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(news.title)}" class="news-image">`
+                    : `<div class="news-image-placeholder"><i class="fa-regular fa-image"></i></div>`
+                }
                 <div class="news-body">
                     <div class="news-header">
                         <span class="news-tag ${tagClass}">${escapeHtml(news.category)}</span>

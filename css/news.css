@@ -104,6 +104,10 @@
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
+.featured.no-image {
+    background: #1f2937;
+}
+
 .featured img {
     width: 100%;
     height: 100%;

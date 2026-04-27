@@ -160,7 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Render featured section
         if (featuredContainer && featuredNews) {
-            const featuredImage = featuredNews.image_url || '../assets/generate background image of corquera romblon.jpg';
+            const featuredImage = featuredNews.image_url;
+            const hasFeaturedImage = !!featuredImage;
             const dateStr = featuredNews.created_at
                 ? formatRelativeTime(featuredNews.created_at)
                 : '';
@@ -168,9 +169,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             featuredContainer.style.display = 'block';
             featuredContainer.style.cursor = 'pointer';
+            featuredContainer.classList.toggle('no-image', !hasFeaturedImage);
             featuredContainer.onclick = function() { viewNewsDetail(featuredNews.id); };
             featuredContainer.innerHTML = `
-                <img src="${escapeHtml(featuredImage)}" alt="${escapeHtml(featuredNews.title)}" onerror="this.src='../assets/generate background image of corquera romblon.jpg'">
+                ${hasFeaturedImage ? `<img src="${escapeHtml(featuredImage)}" alt="${escapeHtml(featuredNews.title)}">` : ''}
                 <div class="featured-content">
                     <span class="badge">FEATURED</span>
                     <p class="meta">${escapeHtml(dateStr)} • ${escapeHtml(category)}</p>
@@ -188,28 +190,29 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const html = displayNews.map(news => {
-            const tagClass = CATEGORY_STYLES[news.category] || 'blue';
-            const dateStr = news.created_at
-                ? new Date(news.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : '';
-            const imageUrl = news.image_url || '../assets/places/corcuera-municipal-hall.jpg';
-            const shortContent = (news.content || '').length > 100
-                ? news.content.substring(0, 100) + '...'
-                : (news.content || '');
+            const html = displayNews.map(news => {
+                const tagClass = CATEGORY_STYLES[news.category] || 'blue';
+                const dateStr = news.created_at
+                    ? new Date(news.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : '';
+                const imageUrl = news.image_url;
+                const hasImage = !!imageUrl;
+                const shortContent = (news.content || '').length > 100
+                    ? news.content.substring(0, 100) + '...'
+                    : (news.content || '');
 
-            return `
-                <div class="news-card" onclick="viewNewsDetail('${news.id}')">
-                    <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(news.title)}" onerror="this.src='../assets/places/corcuera-municipal-hall.jpg'">
-                    <div>
-                        <span class="tag ${tagClass}">${escapeHtml((news.category || 'NEWS').toUpperCase())}</span>
-                        <h4>${escapeHtml(news.title)}</h4>
-                        <p class="date"><i class="fa-regular fa-calendar"></i> ${escapeHtml(dateStr)}</p>
-                        <p class="content-preview">${escapeHtml(shortContent)}</p>
+                return `
+                    <div class="news-card" onclick="viewNewsDetail('${news.id}')">
+                        ${hasImage ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(news.title)}">` : ''}
+                        <div>
+                            <span class="tag ${tagClass}">${escapeHtml((news.category || 'NEWS').toUpperCase())}</span>
+                            <h4>${escapeHtml(news.title)}</h4>
+                            <p class="date"><i class="fa-regular fa-calendar"></i> ${escapeHtml(dateStr)}</p>
+                            <p class="content-preview">${escapeHtml(shortContent)}</p>
+                        </div>
                     </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
 
         newsContainer.innerHTML = html;
     }
@@ -239,12 +242,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const dateStr = news.created_at
             ? new Date(news.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
             : '';
-        const imageUrl = news.image_url || '../assets/generate background image of corquera romblon.jpg';
+        const imageUrl = news.image_url;
+        const hasImage = !!imageUrl;
 
         modal.innerHTML = `
             <div class="news-detail-card">
-                <div class="news-detail-hero">
-                    <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(news.title)}" onerror="this.style.display='none'">
+                <div class="news-detail-hero ${hasImage ? '' : 'no-image'}">
+                    ${hasImage ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(news.title)}">` : ''}
                     <button class="news-detail-close" onclick="this.closest('.news-detail-modal').remove()">×</button>
                 </div>
                 <div class="news-detail-padding">
