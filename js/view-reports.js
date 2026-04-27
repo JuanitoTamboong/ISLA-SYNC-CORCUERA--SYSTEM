@@ -198,47 +198,51 @@ async function fetchReportDetail(reportId) {
 }
 
 function populateModal(report) {
-    document.getElementById('modalTitle').textContent = report.reference || 'Report Details';
-    document.getElementById('modalReference').textContent = report.reference || 'N/A';
+    document.getElementById('modalTitle').textContent = 'Report Details';
     
-    const statusEl = document.getElementById('modalStatus');
-    statusEl.textContent = report.status ? report.status.toUpperCase().replace('_', ' ') : 'PENDING';
-    statusEl.className = `status-badge ${formatStatusClass(report.status)}`;
+    const reference = report.reference || 'N/A';
+    document.getElementById('modalReferenceTitle').textContent = reference;
     
-    document.getElementById('modalDescription').textContent = report.description || 'No description provided.';
+    const status = report.status ? report.status.toUpperCase().replace('_', ' ') : 'PENDING';
+    document.getElementById('modalBadge').textContent = status;
     
     const dateStr = report.created_at ? new Date(report.created_at).toLocaleString('en-US', {
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
     }) : 'Unknown';
-    document.getElementById('modalDate').textContent = dateStr;
+    document.getElementById('modalDateTime').textContent = `Submitted on ${dateStr}`;
+    
+    // Category
+    const category = report.category || detectCategory(report);
+    const categoryTitle = category.toString().toUpperCase().replace(/_/g, ' ');
+    document.getElementById('modalCategory').textContent = categoryTitle;
     
     // Location
-    const locSection = document.getElementById('modalLocationSection');
-    const locText = document.getElementById('modalLocation');
-    const mapLink = document.getElementById('modalMapLink');
-    const location = report.location_address || report.location || '';
-    if (location) {
-        locText.textContent = location;
-        locSection.style.display = 'block';
-        if (report.latitude && report.longitude) {
-            mapLink.href = `https://www.google.com/maps?q=${report.latitude},${report.longitude}`;
-            mapLink.style.display = 'block';
-        } else {
-            mapLink.style.display = 'none';
-        }
-    } else {
-        locSection.style.display = 'none';
-    }
+    const location = report.location_address || report.location || 'Not specified';
+    document.getElementById('modalLocationText').textContent = location.length > 25 ? location.substring(0, 25) + '...' : location;
+    
+    // Description
+    document.getElementById('modalDescription').textContent = report.description || 'No description provided.';
+    
+    // Timeline time
+    const timelineTime = report.created_at ? new Date(report.created_at).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) : 'Recently';
+    document.getElementById('modalTimelineTime').textContent = timelineTime;
     
     // Image
     const imgSection = document.getElementById('modalImageSection');
     const imgEl = document.getElementById('modalImage');
+    const imgName = document.getElementById('modalImageName');
     if (report.image_url && report.image_url.startsWith('data:')) {
         imgEl.src = report.image_url;
+        imgName.textContent = 'UPLOADED IMAGE: REPORT_IMAGE.JPG';
         imgSection.style.display = 'block';
     } else {
         imgSection.style.display = 'none';
