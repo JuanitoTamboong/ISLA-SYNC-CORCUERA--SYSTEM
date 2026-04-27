@@ -232,18 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create a modal to show full news content
         const modal = document.createElement('div');
         modal.className = 'news-detail-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-        `;
 
         const tagClass = CATEGORY_STYLES[news.category] || 'blue';
         const dateStr = news.created_at
@@ -252,37 +240,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const imageUrl = news.image_url || '../assets/generate background image of corquera romblon.jpg';
 
         modal.innerHTML = `
-            <div style="
-                background: white;
-                width: 100%;
-                max-height: 85vh;
-                border-radius: 20px 20px 0 0;
-                overflow-y: auto;
-                animation: slideUp 0.3s ease;
-            ">
-                <div style="position: relative;">
-                    <img src="${escapeHtml(imageUrl)}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 20px 20px 0 0;" onerror="this.style.display='none'">
-                    <button onclick="this.closest('.news-detail-modal').remove()" style="
-                        position: absolute;
-                        top: 15px;
-                        right: 15px;
-                        background: rgba(0,0,0,0.5);
-                        color: white;
-                        border: none;
-                        width: 36px;
-                        height: 36px;
-                        border-radius: 50%;
-                        font-size: 18px;
-                        cursor: pointer;
-                    ">×</button>
+            <div class="news-detail-card">
+                <div class="news-detail-hero">
+                    <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(news.title)}" onerror="this.style.display='none'">
+                    <button class="news-detail-close" onclick="this.closest('.news-detail-modal').remove()">×</button>
                 </div>
-                <div style="padding: 20px;">
+                <div class="news-detail-padding">
                     <span class="tag ${tagClass}" style="margin-bottom: 10px; display: inline-block;">${escapeHtml((news.category || 'NEWS').toUpperCase())}</span>
-                    <h2 style="margin: 0 0 10px 0; font-size: 20px; color: #1a1a2e;">${escapeHtml(news.title)}</h2>
-                    <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    <h2 class="news-detail-title">${escapeHtml(news.title)}</h2>
+                    <p class="news-detail-meta">
                         <i class="fa-regular fa-calendar"></i> ${escapeHtml(dateStr)}
                     </p>
-                    <div style="color: #333; line-height: 1.6; font-size: 14px; white-space: pre-wrap;">
+                    <div class="news-detail-body">
                         ${escapeHtml(news.content || 'No content available.')}
                     </div>
                 </div>
