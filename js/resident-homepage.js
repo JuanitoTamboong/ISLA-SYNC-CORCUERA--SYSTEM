@@ -267,8 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'map':
                 window.location.href = '../pages/map.html'
                 break
-            case 'notifications':
-                window.location.href = '../pages/notif.html'
+case 'notifications':
+                window.location.href = '../pages/news.html'
                 break
             case 'profile':
                 window.location.href = '../pages/profile.html'
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Services
     window.reportIssue = () => { window.location.href = '../pages/report.html'; }
-    window.viewNews = () => showNotification('Latest news feature coming soon!', 'info')
+    window.viewNews = () => { window.location.href = '../pages/news.html'; }
     window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
     window.viewMyReports = () => { window.location.href = '../pages/view-reports.html'; }
     

@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = '../pages/map.html'
                 break
             case 'notifications':
-                window.location.href = '../pages/notif.html'
+                window.location.href = '../pages/news.html'
                 break
             case 'profile':
                 window.location.href = '../pages/profile.html'

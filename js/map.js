@@ -2,7 +2,7 @@
 window.navigateTo = function(page) {
     const navMap = {
         'home': '../pages/resident-homepage.html',
-        'notifications': '../pages/notif.html',
+        'notifications': '../pages/news.html',
         'settings': '../pages/setting.html'
     };
     if (navMap[page]) {
