@@ -53,16 +53,6 @@
     color: #2563eb;
 }
 
-.notif-dot {
-    width: 8px;
-    height: 8px;
-    background: red;
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    border-radius: 50%;
-}
-
 /* SEARCH */
 .search-box {
     margin-top: 15px;
