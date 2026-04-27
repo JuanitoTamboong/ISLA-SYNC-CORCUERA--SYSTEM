@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports Map - Admin</title>
+
+<link rel="stylesheet" href="../../css/admin/admin-shared.css">
+<link rel="stylesheet" href="../../css/admin/admin-map.css">
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="goBack()"></i>
+        <h2>Reports Map</h2>
+        <i class="fa-solid fa-rotate-right refresh" onclick="refreshData()"></i>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="pending">Pending</button>
+        <button class="filter-tab" data-filter="resolved">Resolved</button>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-wrapper">
+        <div id="map"></div>
+    </div>
+
+    <!-- REPORTS LIST -->
+    <div class="reports-section">
+        <div class="section-header">
+            <h3>Reports List</h3>
+            <span id="reportCount">0 reports</span>
+        </div>
+        <div id="reportsList" class="reports-list">
+            <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading reports...</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- REPORT DETAIL MODAL -->
+<div id="reportModal" class="report-modal">
+    <div class="modal-overlay" onclick="closeModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Report Details</h2>
+            <button class="modal-close" onclick="closeModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-section">
+                <label>Reference</label>
+                <p id="modalReference">-</p>
+            </div>
+            <div class="detail-section">
+                <label>Status</label>
+                <span id="modalStatus" class="status-badge status-pending">-</span>
+            </div>
+            <div class="detail-section">
+                <label>Category</label>
+                <p id="modalCategory">-</p>
+            </div>
+            <div class="detail-section">
+                <label>Description</label>
+                <p id="modalDescription">-</p>
+            </div>
+            <div class="detail-section" id="modalLocationSection">
+                <label>Location</label>
+                <p id="modalLocation">-</p>
+                <a id="modalMapLink" href="#" target="_blank" class="map-link">
+                    <i class="fa-solid fa-map-pin"></i> Open in Google Maps
+                </a>
+            </div>
+            <div class="detail-section">
+                <label>Date Submitted</label>
+                <p id="modalDate">-</p>
+            </div>
+            <div class="detail-section" id="modalImageSection" style="display: none;">
+                <label>Photo Evidence</label>
+                <div class="report-image-container">
+                    <img id="modalImage" src="" alt="Report image">
+                </div>
+            </div>
+            <div class="detail-section" id="modalActions">
+                <label>Actions</label>
+                <div class="action-buttons">
+                    <button id="resolveBtn" class="action-btn resolve-btn" onclick="updateReportStatus('resolved')">
+                        <i class="fa-solid fa-check"></i> Mark Resolved
+                    </button>
+                    <button id="pendingBtn" class="action-btn pending-btn" onclick="updateReportStatus('pending')">
+                        <i class="fa-solid fa-clock"></i> Mark Pending
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="navigateTo('home')">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item active" onclick="navigateTo('map')">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="../../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item" onclick="navigateTo('news')">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('profile')">
+        <i class="fa fa-user"></i>
+        <span>Profile</span>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../../js/admin/admin-map.js"></script>
+</body>
+</html>
+

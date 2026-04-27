@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
 
- <link rel="stylesheet" href="../../css/login.css">
+    <link rel="stylesheet" href="../../css/login.css">
 
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -20,39 +20,44 @@
         <!-- Overlay -->
         <div class="overlay">
 
+            <!-- Back Button -->
+            <a href="../welcome.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+
             <!-- Logo -->
             <img src="../../assets/isla-logo.png" class="logo">
 
             <h2>Admin Portal</h2>
             <p class="subtitle">Sign in to manage island operations</p>
 
-            <!-- Email -->
-            <div class="input-group">
-                <label>EMAIL OR USERNAME</label>
-                <div class="input-box">
-                    <i class="fa-regular fa-envelope"></i>
-                    <input type="text" placeholder="Enter your email">
+            <form id="adminLoginForm">
+                <!-- Email -->
+                <div class="input-group">
+                    <label>EMAIL</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="text" id="emailInput" placeholder="Enter your email" autocomplete="username">
+                    </div>
                 </div>
-            </div>
 
-            <!-- Password -->
-            <div class="input-group">
-                <label>PASSWORD</label>
-                <div class="input-box">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" placeholder="Enter Password">
-                    <i class="fa-regular fa-eye toggle"></i>
+                <!-- Password -->
+                <div class="input-group">
+                    <label>PASSWORD</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="passwordInput" placeholder="Enter Password" autocomplete="current-password">
+                        <i class="fa-regular fa-eye toggle" id="togglePassword"></i>
+                    </div>
                 </div>
-            </div>
 
-            <div class="forgot">Forgot Password?</div>
+                <div class="forgot" id="forgotPassword">Forgot Password?</div>
 
-            <!-- Button -->
-            <button class="btn">Admin Log In</button>
+                <!-- Button -->
+                <button type="submit" class="btn" id="loginButton">Admin Log In</button>
+            </form>
 
             <!-- Back to home -->
             <p class="signup">
-                <a href="/pages/welcome.html">← Back to Home</a>
+                <a href="../welcome.html">← Back to Home</a>
             </p>
 
         </div>
@@ -60,6 +65,11 @@
     </div>
 
 </div>
+
+<!-- Load Supabase SDK first -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+<!-- Then load admin login script -->
+<script src="../../js/admin-login.js"></script>
 
 </body>
 </html>

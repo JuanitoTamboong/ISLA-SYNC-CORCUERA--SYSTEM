@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Isla-Sync Corcuera</title>
+
+<link rel="stylesheet" href="../../css/admin/admin-shared.css">
+<link rel="stylesheet" href="../../css/admin/admin-homepage.css">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <p class="greeting" id="greetingText">Good Morning,</p>
+            <h2 id="adminName">Admin</h2>
+        </div>
+        <div class="profile" onclick="goToProfile()" id="profileContainer">
+            <img id="profileImg" class="profile-img" src="" alt="Profile Photo">
+            <i id="profileIcon" class="fa fa-user-shield profile-icon"></i>
+        </div>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <div>
+                <h3 id="totalReports">0</h3>
+                <p>Total Reports</p>
+            </div>
+        </div>
+        <div class="stat-card pending">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+                <h3 id="pendingReports">0</h3>
+                <p>Pending</p>
+            </div>
+        </div>
+        <div class="stat-card resolved">
+            <i class="fa-solid fa-check-circle"></i>
+            <div>
+                <h3 id="resolvedReports">0</h3>
+                <p>Resolved</p>
+            </div>
+        </div>
+        <div class="stat-card users">
+            <i class="fa-solid fa-users"></i>
+            <div>
+                <h3 id="totalUsers">0</h3>
+                <p>Users</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="section">
+        <div class="section-header">
+            <h3>Quick Actions</h3>
+        </div>
+        <div class="actions-grid">
+            <div class="action-card" onclick="goToMap()">
+                <div class="action-icon map-icon">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <p>Reports Map</p>
+                <span>View all reports on map</span>
+            </div>
+            <div class="action-card" onclick="goToNews()">
+                <div class="action-icon news-icon">
+                    <i class="fa-solid fa-newspaper"></i>
+                </div>
+                <p>Manage News</p>
+                <span>Create & edit articles</span>
+            </div>
+            <div class="action-card" onclick="goToAllReports()">
+                <div class="action-icon reports-icon">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <p>All Reports</p>
+                <span>Review & manage reports</span>
+            </div>
+            <div class="action-card" onclick="goToProfile()">
+                <div class="action-icon profile-icon">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <p>Admin Profile</p>
+                <span>Account settings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECENT REPORTS -->
+    <div class="section">
+        <div class="section-header">
+            <h3>Recent Reports</h3>
+            <a href="admin-map.html">View All</a>
+        </div>
+        <div id="recentReportsList" class="recent-reports">
+            <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading reports...</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="navigateTo('home')">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('map')">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="../../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item" onclick="navigateTo('news')">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('profile')">
+        <i class="fa fa-user"></i>
+        <span>Profile</span>
+    </div>
+</div>
+
+<script src="../../js/admin/admin-homepage.js"></script>
+</body>
+</html>
+

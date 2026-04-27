@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage News - Admin</title>
+
+<link rel="stylesheet" href="../../css/admin/admin-shared.css">
+<link rel="stylesheet" href="../../css/admin/admin-news.css">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="goBack()"></i>
+        <h2>Manage News</h2>
+        <i class="fa-solid fa-plus add-btn" onclick="openNewsModal()"></i>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="Advisory">Advisory</button>
+        <button class="filter-tab" data-filter="Tourism">Tourism</button>
+        <button class="filter-tab" data-filter="Events">Events</button>
+        <button class="filter-tab" data-filter="Community">Community</button>
+    </div>
+
+    <!-- NEWS LIST -->
+    <div id="newsList" class="news-list">
+        <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p>Loading news...</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- NEWS MODAL (Create/Edit) -->
+<div id="newsModal" class="news-modal">
+    <div class="modal-overlay" onclick="closeNewsModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Create News</h2>
+            <button class="modal-close" onclick="closeNewsModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="newsForm">
+                <input type="hidden" id="newsId">
+
+                <div class="form-group">
+                    <label>Title <span class="required">*</span></label>
+                    <input type="text" id="newsTitle" placeholder="Enter news title" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Category <span class="required">*</span></label>
+                    <select id="newsCategory" required aria-label="News category">
+                        <option value="Advisory">Advisory</option>
+                        <option value="Tourism">Tourism</option>
+                        <option value="Events">Events</option>
+                        <option value="Community">Community</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Content <span class="required">*</span></label>
+                    <textarea id="newsContent" rows="5" placeholder="Write the news content..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Image URL (Optional)</label>
+                    <input type="text" id="newsImage" placeholder="https://example.com/image.jpg">
+                    <small>Leave empty to use default image</small>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="newsFeatured">
+                        <span class="checkmark"></span>
+                        Mark as Featured
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeNewsModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save News
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteModal" class="news-modal">
+    <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete News?</h3>
+            <p>This action cannot be undone. The news article will be permanently removed.</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="navigateTo('home')">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('map')">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="../../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item active" onclick="navigateTo('news')">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('profile')">
+        <i class="fa fa-user"></i>
+        <span>Profile</span>
+    </div>
+</div>
+
+<script src="../../js/admin/admin-news.js"></script>
+</body>
+</html>
+

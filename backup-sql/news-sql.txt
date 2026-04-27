@@ -1,0 +1,79 @@
+-- ============================================
+-- ISLA-SYNC CORCUERA - NEWS TABLE
+-- ============================================
+
+-- Create the news table
+CREATE TABLE IF NOT EXISTS public.news (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('Advisory', 'Tourism', 'Events', 'Community')),
+    image_url TEXT,
+    featured BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for faster queries
+CREATE INDEX IF NOT EXISTS idx_news_category ON public.news(category);
+CREATE INDEX IF NOT EXISTS idx_news_featured ON public.news(featured);
+CREATE INDEX IF NOT EXISTS idx_news_created_at ON public.news(created_at);
+
+-- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_news_updated_at ON public.news;
+CREATE TRIGGER update_news_updated_at
+    BEFORE UPDATE ON public.news
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Enable Row Level Security
+ALTER TABLE public.news ENABLE ROW LEVEL SECURITY;
+
+-- Policy 1: Admins can manage all news (CRUD)
+CREATE POLICY "admins_manage_news"
+    ON public.news
+    FOR ALL
+    USING (check_is_admin(auth.uid()))
+    WITH CHECK (check_is_admin(auth.uid()));
+
+-- Policy 2: Everyone can view news
+CREATE POLICY "public_view_news"
+    ON public.news
+    FOR SELECT
+    TO anon, authenticated
+    USING (true);
+
+-- Grant permissions
+GRANT ALL ON public.news TO authenticated;
+GRANT SELECT ON public.news TO anon;
+GRANT ALL ON public.news TO service_role;
+
+-- ============================================
+-- HELPER FUNCTION (if not already exists)
+-- ============================================
+
+-- Ensure check_is_admin function exists
+CREATE OR REPLACE FUNCTION check_is_admin(user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = user_id AND user_type = 'admin'
+    );
+END;
+$$;
+
+-- Ensure update_updated_at_column function exists
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
+
