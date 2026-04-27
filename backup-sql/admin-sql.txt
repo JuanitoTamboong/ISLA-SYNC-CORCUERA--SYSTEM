@@ -1,0 +1,23 @@
+INSERT INTO public.profiles (
+    id,
+    full_name,
+    email,
+    user_type,
+    is_active,
+    created_at,
+    updated_at
+) VALUES (
+    '15ab0b06-a1e0-4228-8265-c8d2ba0edf23',
+    'System Administrator',
+    'islasyncorqueraadmin@gmail.com',
+    'admin',
+    true,
+    NOW(),
+    NOW()
+)
+ON CONFLICT (id) DO UPDATE 
+SET 
+    full_name = EXCLUDED.full_name,
+    user_type = 'admin',
+    is_active = true,
+    updated_at = NOW();
