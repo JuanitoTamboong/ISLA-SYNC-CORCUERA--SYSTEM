@@ -80,8 +80,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Image URL (Optional)</label>
-                    <input type="text" id="newsImage" placeholder="https://example.com/image.jpg">
+                    <label>Image (Optional)</label>
+                    <div class="upload-area" id="newsUploadArea">
+                        <div class="upload-box" id="newsUploadBox" onclick="document.getElementById('newsImageInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Tap to upload image</p>
+                        </div>
+                        <div class="preview" id="newsPreviewDiv" style="display: none;">
+                            <img id="newsPreviewImg" src="" alt="Preview">
+                            <span class="remove" id="newsRemoveImgBtn" onclick="removeNewsImage()">×</span>
+                        </div>
+                    </div>
+                    <input type="file" id="newsImageInput" accept="image/jpeg, image/png, image/jpg" style="display: none;">
                     <small>Leave empty to use default image</small>
                 </div>
 

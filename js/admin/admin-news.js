@@ -7,6 +7,8 @@ let allNews = [];
 let filteredNews = [];
 let activeFilter = 'all';
 let deleteTargetId = null;
+window.selectedNewsImage = null;
+window.currentNewsImageUrl = null;
 
 const DEFAULT_IMAGE = '../../assets/generate background image of corquera romblon.jpg';
 
@@ -51,6 +53,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Form submit
     document.getElementById('newsForm').addEventListener('submit', handleFormSubmit);
+
+    // Image upload listener
+    const newsImageInput = document.getElementById('newsImageInput');
+    if (newsImageInput) {
+        newsImageInput.addEventListener('change', handleNewsImageUpload);
+    }
 });
 
 async function loadNews() {
@@ -171,6 +179,18 @@ window.openNewsModal = function(newsId = null) {
 
     form.reset();
     document.getElementById('newsId').value = '';
+    window.selectedNewsImage = null;
+    window.currentNewsImageUrl = null;
+
+    // Reset image UI
+    const uploadBox = document.getElementById('newsUploadBox');
+    const previewDiv = document.getElementById('newsPreviewDiv');
+    const previewImg = document.getElementById('newsPreviewImg');
+    const fileInput = document.getElementById('newsImageInput');
+    if (uploadBox) uploadBox.style.display = 'flex';
+    if (previewDiv) previewDiv.style.display = 'none';
+    if (previewImg) previewImg.src = '';
+    if (fileInput) fileInput.value = '';
 
     if (newsId) {
         const news = allNews.find(n => n.id === newsId);
@@ -181,9 +201,16 @@ window.openNewsModal = function(newsId = null) {
         document.getElementById('newsTitle').value = news.title || '';
         document.getElementById('newsCategory').value = news.category || 'Advisory';
         document.getElementById('newsContent').value = news.content || '';
-        document.getElementById('newsImage').value = news.image_url || '';
         document.getElementById('newsFeatured').checked = news.featured || false;
         saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update News';
+
+        // Show existing image if available
+        if (news.image_url) {
+            window.currentNewsImageUrl = news.image_url;
+            if (uploadBox) uploadBox.style.display = 'none';
+            if (previewDiv) previewDiv.style.display = 'block';
+            if (previewImg) previewImg.src = news.image_url;
+        }
     } else {
         titleEl.textContent = 'Create News';
         saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save News';
@@ -205,7 +232,6 @@ async function handleFormSubmit(e) {
     const title = document.getElementById('newsTitle').value.trim();
     const category = document.getElementById('newsCategory').value;
     const content = document.getElementById('newsContent').value.trim();
-    const imageUrl = document.getElementById('newsImage').value.trim();
     const featured = document.getElementById('newsFeatured').checked;
 
     if (!title || !content) {
@@ -219,11 +245,14 @@ async function handleFormSubmit(e) {
     saveBtn.disabled = true;
 
     try {
+        // Use newly selected image (base64) if available, otherwise keep existing URL
+        let imageUrl = window.selectedNewsImage || window.currentNewsImageUrl || null;
+
         const newsData = {
             title,
             category,
             content,
-            image_url: imageUrl || null,
+            image_url: imageUrl,
             featured
         };
 
@@ -300,6 +329,39 @@ window.confirmDelete = async function() {
         btn.innerHTML = originalHtml;
         btn.disabled = false;
     }
+};
+
+// Image upload helpers
+function handleNewsImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) {
+        showNotification('Please select a valid image file.', 'error');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const previewImg = document.getElementById('newsPreviewImg');
+        const previewDiv = document.getElementById('newsPreviewDiv');
+        const uploadBox = document.getElementById('newsUploadBox');
+        if (previewImg) previewImg.src = ev.target.result;
+        if (previewDiv) previewDiv.style.display = 'block';
+        if (uploadBox) uploadBox.style.display = 'none';
+        window.selectedNewsImage = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+window.removeNewsImage = function() {
+    const previewImg = document.getElementById('newsPreviewImg');
+    const previewDiv = document.getElementById('newsPreviewDiv');
+    const uploadBox = document.getElementById('newsUploadBox');
+    const fileInput = document.getElementById('newsImageInput');
+    if (previewImg) previewImg.src = '';
+    if (previewDiv) previewDiv.style.display = 'none';
+    if (uploadBox) uploadBox.style.display = 'flex';
+    if (fileInput) fileInput.value = '';
+    window.selectedNewsImage = null;
+    window.currentNewsImageUrl = null;
 };
 
 // Navigation

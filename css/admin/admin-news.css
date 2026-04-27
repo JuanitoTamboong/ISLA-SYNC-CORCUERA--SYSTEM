@@ -378,6 +378,83 @@
     min-height: 80px;
 }
 
+/* UPLOAD AREA */
+.upload-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.upload-box {
+    width: 100%;
+    height: 120px;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafafa;
+    color: #6b7280;
+}
+
+.upload-box:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.upload-box i {
+    font-size: 24px;
+}
+
+.upload-box p {
+    font-size: 12px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.preview {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.preview .remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.2s;
+}
+
+.preview .remove:hover {
+    background: #dc2626;
+}
+
 /* CHECKBOX */
 .checkbox-group {
     display: flex;

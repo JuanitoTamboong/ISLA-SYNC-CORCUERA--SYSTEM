@@ -1,5 +1,4 @@
 @import url("../../css/shared.css");
-
 /* Make all nav items equal width so center logo is perfectly centered */
 .bottom-nav .nav-item {
     flex: 1;
