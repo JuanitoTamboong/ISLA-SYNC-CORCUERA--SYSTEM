@@ -1,19 +1,15 @@
 // Wait for DOM and Supabase to load
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
         showNotification('Error: Supabase SDK failed to load. Please refresh the page.', 'error');
         return;
     }
     
-    // Supabase configuration
     const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds'
     
-    // Initialize Supabase client
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     
-    // Check if user is logged in with id validation
     const currentUser = localStorage.getItem('currentUser')
     
     if (!currentUser) {
@@ -35,13 +31,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return
     }
     
-    // Verify user is a resident
     if (user.userType !== 'resident') {
         window.location.href = '../pages/admin-dashboard.html'
         return
     }
     
-    // Verify session with Supabase
     async function verifySession() {
         try {
             const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession()
@@ -64,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Load user data from Supabase
     async function loadUserData() {
         try {
             const { data: profile, error: profileError } = await supabaseClient
@@ -104,10 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Immediately show cached profile image
     updateProfileImage(user)
 
-    // Load latest news for Community Updates
     async function loadCommunityUpdates() {
         try {
             const { data: newsData, error } = await supabaseClient
@@ -124,10 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const updatesContainer = document.getElementById('communityUpdates');
             if (!updatesContainer) return;
 
-            if (!newsData || newsData.length === 0) {
-                // Keep default if no news
-                return;
-            }
+            if (!newsData || newsData.length === 0) return;
 
             const categoryIcons = {
                 'Advisory': 'fa-bullhorn',
@@ -162,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Escape HTML helper
     function escapeHtml(text) {
         if (!text) return '';
         const div = document.createElement('div');
@@ -170,7 +157,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return div.innerHTML;
     }
 
-    // Load community updates after user data is loaded
     verifySession().then(isValid => {
         if (isValid) {
             loadUserData().then(() => {
@@ -179,7 +165,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Banner image shuffle
     const bannerImages = [
         '../assets/generate background image of corquera romblon.jpg',
         '../assets/generate background image of corquera romblon (1).jpg',
@@ -202,13 +187,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Start shuffling
     setTimeout(() => {
         shuffleBanner();
         setInterval(shuffleBanner, 4000);
     }, 2000);
     
-    // Update user interface
     function updateUserInterface(user) {
         const userNameElement = document.getElementById('userName')
         if (userNameElement) {
@@ -217,7 +200,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateProfileImage(user)
     }
 
-    // Update profile image
     function updateProfileImage(user) {
         const img = document.getElementById('profileImg')
         const icon = document.getElementById('profileIcon')
@@ -237,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Update greeting based on time
     function updateGreeting() {
         const greetingElement = document.getElementById('greetingText')
         if (!greetingElement) return
@@ -252,14 +233,12 @@ document.addEventListener('DOMContentLoaded', function() {
         greetingElement.textContent = greeting
     }
     
-    // View profile
     window.viewProfile = function() {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'))
         showNotification(`Name: ${currentUser.fullName}\nEmail: ${currentUser.email}`, 'info')
         closeModal()
     }
     
-    // Change password
     window.changePassword = async function() {
         const currentPassword = prompt('Enter your current password:')
         if (!currentPassword) return
@@ -304,7 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
         closeModal()
     }
     
-    // Logout
     window.logout = async function() {
         try {
             localStorage.removeItem('currentUser')
@@ -323,7 +301,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modal) modal.remove()
     }
     
-    // Navigation
     window.navigateTo = function(page) {
         switch(page) {
             case 'home':
@@ -332,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'map':
                 window.location.href = '../pages/map.html'
                 break
-case 'notifications':
+            case 'notifications':
                 window.location.href = '../pages/news.html'
                 break
             case 'profile':
@@ -344,13 +321,164 @@ case 'notifications':
         }
     }
     
-    // Services
     window.reportIssue = () => { window.location.href = '../pages/report.html'; }
     window.viewNews = () => { window.location.href = '../pages/news.html'; }
     window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
     window.viewMyReports = () => { window.location.href = '../pages/view-reports.html'; }
-    
-    // Notification function
+
+    // ========== NOTIFICATION SYSTEM ==========
+    let notifications = [];
+    let notifReadIds = JSON.parse(localStorage.getItem('notifReadIds') || '[]');
+
+    async function loadNotifications() {
+        try {
+            const { data: reports, error } = await supabaseClient
+                .from('reports')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (error || !reports) return;
+
+            notifications = [];
+
+            reports.forEach(report => {
+                const createdDate = new Date(report.created_at);
+                const dateStr = createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                // Only admin status update notifications (skip self-submitted)
+                if (report.status && report.status.toLowerCase() !== 'pending') {
+                    const statusText = report.status.toUpperCase().replace('_', ' ');
+                    let statusMessage = '';
+                    let iconColor = 'orange';
+
+                    if (report.status.toLowerCase() === 'resolved') {
+                        statusMessage = `Your report ${report.reference || ''} has been resolved.`;
+                        iconColor = 'green';
+                    } else if (report.status.toLowerCase() === 'in_review' || report.status.toLowerCase() === 'in-review') {
+                        statusMessage = `Your report ${report.reference || ''} is now under review.`;
+                        iconColor = 'orange';
+                    } else {
+                        statusMessage = `Your report ${report.reference || ''} status updated to ${statusText}.`;
+                    }
+
+                    notifications.push({
+                        id: `status-${report.id}`,
+                        reportId: report.id,
+                        title: 'Status Update',
+                        message: statusMessage,
+                        time: dateStr,
+                        icon: 'fa-rotate',
+                        iconColor: iconColor,
+                        read: notifReadIds.includes(`status-${report.id}`)
+                    });
+                }
+            });
+
+            renderNotifications();
+        } catch (e) {
+            console.error('Load notifications error:', e);
+        }
+    }
+
+    function renderNotifications() {
+        const notifList = document.getElementById('notifList');
+        const notifBadge = document.getElementById('notifBadge');
+        if (!notifList) return;
+
+        const unreadNotifs = notifications.filter(n => !n.read);
+        const unreadCount = unreadNotifs.length;
+
+        if (notifBadge) {
+            if (unreadCount > 0) {
+                notifBadge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                notifBadge.style.display = 'flex';
+            } else {
+                notifBadge.style.display = 'none';
+            }
+        }
+
+        if (unreadNotifs.length === 0) {
+            notifList.innerHTML = `
+                <div class="notif-empty">
+                    <i class="fa-regular fa-bell-slash"></i>
+                    <p>No new notifications</p>
+                </div>
+            `;
+            return;
+        }
+
+        notifList.innerHTML = unreadNotifs.map(notif => `
+            <div class="notif-item unread" onclick="handleNotifClick(event, '${notif.id}', '${notif.reportId}')">
+                <div class="notif-icon ${notif.iconColor}">
+                    <i class="fa-solid ${notif.icon}"></i>
+                </div>
+                <div class="notif-content">
+                    <p>${escapeHtml(notif.title)}</p>
+                    <span>${escapeHtml(notif.message)} &bull; ${notif.time}</span>
+                </div>
+        `).join('');
+    }
+
+    window.handleNotifClick = function(event, notifId, reportId) {
+        event.stopPropagation();
+
+        if (!notifReadIds.includes(notifId)) {
+            notifReadIds.push(notifId);
+            localStorage.setItem('notifReadIds', JSON.stringify(notifReadIds));
+        }
+        const notif = notifications.find(n => n.id === notifId);
+        if (notif) notif.read = true;
+
+        const notificationPanel = document.getElementById('notificationPanel');
+        if (notificationPanel) notificationPanel.classList.remove('show');
+
+        renderNotifications();
+
+        setTimeout(() => {
+            window.location.href = '../pages/view-reports.html';
+        }, 150);
+    };
+
+    window.markAllRead = function() {
+        notifications.forEach(n => {
+            if (!notifReadIds.includes(n.id)) {
+                notifReadIds.push(n.id);
+            }
+            n.read = true;
+        });
+        localStorage.setItem('notifReadIds', JSON.stringify(notifReadIds));
+        renderNotifications();
+    };
+
+    const notificationBell = document.getElementById('notificationBell');
+    const notificationPanel = document.getElementById('notificationPanel');
+
+    if (notificationBell && notificationPanel) {
+        notificationBell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationPanel.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!notificationBell.contains(e.target)) {
+                notificationPanel.classList.remove('show');
+            }
+        });
+    }
+
+    verifySession().then(isValid => {
+        if (isValid) {
+            loadUserData().then(() => {
+                loadCommunityUpdates();
+                loadNotifications();
+            });
+        }
+    });
+
+    // ========== NOTIFICATION SYSTEM END ==========
+
     function showNotification(message, type = 'info') {
         const existingNotification = document.querySelector('.notification')
         if (existingNotification) existingNotification.remove()

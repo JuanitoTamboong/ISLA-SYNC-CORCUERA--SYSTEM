@@ -24,10 +24,34 @@
             <h2 id="userName">Loading...</h2>
         </div>
 
-        <!-- PROFILE ICON -->
-<div class="profile" onclick="navigateTo('profile')" id="profileContainer">
-            <img id="profileImg" class="profile-img" src="" alt="Profile Photo">
-            <i id="profileIcon" class="fa fa-user profile-icon"></i>
+        <!-- HEADER RIGHT ICONS -->
+        <div class="header-right">
+            <!-- NOTIFICATION WRAPPER -->
+            <div class="notification-wrapper">
+                <div class="notification-bell" id="notificationBell">
+                    <i class="fa fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+                </div>
+                <!-- NOTIFICATION PANEL -->
+                <div class="notification-panel" id="notificationPanel">
+                    <div class="notif-header">
+                        <h3>Notifications</h3>
+                        <span onclick="event.stopPropagation(); markAllRead()">Mark all read</span>
+                    </div>
+                    <div class="notif-list" id="notifList">
+                        <div class="notif-empty">
+                            <i class="fa-regular fa-bell-slash"></i>
+                            <p>No notifications yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE ICON -->
+            <div class="profile" onclick="navigateTo('profile')" id="profileContainer">
+                <img id="profileImg" class="profile-img" src="" alt="Profile Photo">
+                <i id="profileIcon" class="fa fa-user profile-icon"></i>
+            </div>
         </div>
     </div>
 

@@ -19,6 +19,198 @@
     font-weight: 700;
 }
 
+    /* HEADER RIGHT ICONS */
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* NOTIFICATION WRAPPER */
+    .notification-wrapper {
+        position: relative;
+    }
+
+    /* NOTIFICATION BELL */
+    .notification-bell {
+        width: 45px;
+        height: 45px;
+        background: #dbeafe;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .notification-bell:hover {
+        background: #bfdbfe;
+    }
+
+    .notification-bell:hover > i {
+        transform: scale(1.1);
+    }
+
+    .notification-bell i {
+        color: #2563eb;
+        font-size: 20px;
+        transition: transform 0.2s ease;
+    }
+
+    .notif-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #ef4444;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+    }
+
+    /* NOTIFICATION DROPDOWN */
+    .notification-panel {
+        position: absolute;
+        top: 55px;
+        right: 0;
+        width: 300px;
+        max-height: 400px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        z-index: 2000;
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+    }
+
+    .notification-panel.show {
+        display: flex;
+    }
+
+    .notif-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .notif-header h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .notif-header span {
+        font-size: 12px;
+        color: #2563eb;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .notif-list {
+        overflow-y: auto;
+        padding: 8px 0;
+        max-height: 320px;
+    }
+
+    .notif-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .notif-item:last-child {
+        border-bottom: none;
+    }
+
+    .notif-item:hover {
+        background: #f8fafc;
+    }
+
+    .notif-item.unread {
+        background: #eff6ff;
+    }
+
+    .notif-item.unread:hover {
+        background: #dbeafe;
+    }
+
+    .notif-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notif-icon.blue {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .notif-icon.green {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .notif-icon.orange {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .notif-icon i {
+        font-size: 16px;
+    }
+
+    .notif-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notif-content p {
+        font-size: 13px;
+        font-weight: 500;
+        color: #111827;
+        margin: 0 0 4px 0;
+        line-height: 1.4;
+    }
+
+    .notif-content span {
+        font-size: 11px;
+        color: #6b7280;
+    }
+
+    .notif-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6b7280;
+    }
+
+    .notif-empty i {
+        font-size: 2.5rem;
+        color: #d1d5db;
+        margin-bottom: 12px;
+    }
+
+    .notif-empty p {
+        font-size: 13px;
+    }
+
 /* PROFILE */
 .profile {
     width: 45px;
@@ -250,15 +442,22 @@
 }
 
 /* COMMUNITY */
+.updates {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+}
+
 .update-card {
     background: #e5e7eb;
     padding: 15px;
     border-radius: 15px;
     display: flex;
     align-items: center;
-    margin-top: 15px;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 100%;
 }
 
 .update-card:hover {
