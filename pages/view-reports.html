@@ -52,32 +52,64 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="detail-section">
-                    <label>Reference</label>
-                    <p id="modalReference">-</p>
+                <!-- STATUS -->
+                <div class="modal-status-box">
+                    <span class="modal-badge" id="modalBadge">IN PROGRESS</span>
+                    <h2 id="modalReferenceTitle">#ISC-2024-8902</h2>
+                    <p id="modalDateTime">Submitted on Oct 24, 2024 • 09:45 AM</p>
                 </div>
-                <div class="detail-section">
-                    <label>Status</label>
-                    <span id="modalStatus" class="status-badge status-pending">-</span>
-                </div>
-                <div class="detail-section">
-                    <label>Description</label>
-                    <p id="modalDescription">-</p>
-                </div>
-                <div class="detail-section" id="modalLocationSection" style="display: none;">
-                    <label>Location</label>
-                    <p id="modalLocation">-</p>
-                    <a id="modalMapLink" href="#" target="_blank" class="map-link" style="display: none;">View Map</a>
-                </div>
-                <div class="detail-section">
-                    <label>Date</label>
-                    <p id="modalDate">-</p>
-                </div>
-                <div class="detail-section" id="modalImageSection" style="display: none;">
-                    <label>Photo</label>
-                    <div class="report-image-container">
-                        <img id="modalImage" src="" alt="Report image">
+
+                <!-- INFO GRID -->
+                <div class="modal-info-grid">
+                    <div class="modal-info">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <p class="modal-label">CATEGORY</p>
+                        <h4 id="modalCategory">Infrastructure</h4>
                     </div>
+                    <div class="modal-info">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <p class="modal-label">LOCATION</p>
+                        <h4 id="modalLocationText">Corcuera Proper,...</h4>
+                    </div>
+                </div>
+
+                <!-- DESCRIPTION -->
+                <h3 class="modal-section-title">ISSUE DESCRIPTION</h3>
+                <p class="modal-desc" id="modalDescription">No description provided.</p>
+
+                <!-- IMAGE -->
+                <div class="modal-image-box" id="modalImageSection" style="display: none;">
+                    <img id="modalImage" src="" alt="Report image">
+                    <span id="modalImageName">UPLOADED IMAGE</span>
+                </div>
+
+                <!-- TIMELINE -->
+                <h3 class="modal-section-title">ACTION UPDATES</h3>
+                <div class="modal-timeline">
+                    <div class="modal-timeline-item">
+                        <div class="modal-circle blue"><i class="fa-solid fa-paper-plane"></i></div>
+                        <div class="modal-timeline-content">
+                            <p class="modal-time" id="modalTimelineTime">Today, 2:30 PM</p>
+                            <h4>Report Submitted</h4>
+                            <p>Your report has been received and is being processed.</p>
+                        </div>
+                    </div>
+                    <div class="modal-timeline-item">
+                        <div class="modal-circle gray"><i class="fa-solid fa-check"></i></div>
+                        <div class="modal-timeline-content">
+                            <p class="modal-time">Pending Review</p>
+                            <h4>Under Review</h4>
+                            <p>The local department will verify the report details.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM BUTTON -->
+                <div class="modal-bottom">
+                    <button>
+                        <i class="fa-solid fa-comment"></i>
+                        Add Comment
+                    </button>
                 </div>
             </div>
         </div>
