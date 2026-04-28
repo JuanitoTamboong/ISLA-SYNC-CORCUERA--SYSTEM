@@ -1,9 +1,9 @@
-# News Image Fix - TODO
+# Admin Homepage Quick Actions Update
 
-1. [x] Read and analyze relevant files
-2. [x] Modify `js/news.js` - don't render image if no `image_url`
-3. [x] Modify `js/admin/admin-news.js` - don't render image if no `image_url`
-4. [x] Modify `css/news.css` - add fallback styles for empty featured image
-5. [x] Test/verify the changes
-
+## Steps
+- [x] Remove Reports Map card from Quick Actions in admin-homepage.html
+- [x] Rename All Reports → Manage Report in admin-homepage.html
+- [x] Remove Admin Profile card from Quick Actions in admin-homepage.html
+- [x] Remove unused goToMap() function from admin-homepage.js
+- [x] Verify changes render correctly
 

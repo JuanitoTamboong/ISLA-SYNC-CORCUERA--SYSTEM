@@ -53,10 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    window.goToMap = function() {
-        window.location.href = 'admin-map.html';
-    };
-
     window.goToNews = function() {
         window.location.href = 'admin-news.html';
     };
