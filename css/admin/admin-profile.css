@@ -141,9 +141,187 @@
     font-size: 14px;
 }
 
+/* EDIT PROFILE BUTTON */
+.edit-profile-btn {
+    background: #2f80ed;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 12px;
+}
+
+.edit-profile-btn:hover {
+    background: #1a6fd6;
+    transform: translateY(-1px);
+}
+
+/* EDIT PROFILE FORM */
+.edit-profile-form {
+    display: none;
+    padding: 20px;
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    animation: slideDown 0.3s ease;
+}
+
+.edit-profile-form.active {
+    display: block;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-label {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #2f80ed;
+    box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 16px;
+}
+
+/* PHOTO SECTION */
+.form-group.photo-section {
+    text-align: center;
+}
+
+.photo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.photo-preview {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e5e7eb;
+}
+
+#photoPlaceholder {
+    width: 90px;
+    height: 90px;
+    background: #eef2f7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+#photoPlaceholder i {
+    font-size: 24px;
+    color: #9ca3af;
+}
+
+#changePhotoBtn {
+    font-size: 12px;
+    padding: 6px 16px;
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    cursor: pointer;
+}
+
+#changePhotoBtn:hover {
+    background: #2f80ed;
+    color: white;
+    border-color: #2f80ed;
+}
+
+/* BUTTONS */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: #2f80ed;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1a6fd6;
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
     .container {
         padding: 15px 12px 100px;
     }
 }
+

@@ -1,0 +1,177 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #0f172a;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 360px;
+    background: #f5f7fb;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+/* HEADER */
+.header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.header p {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* SEARCH */
+.search {
+    margin: 15px 0;
+    background: #eef2f7;
+    padding: 12px;
+    border-radius: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+/* FILTER */
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.pill {
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: #e5e7eb;
+    font-size: 12px;
+}
+
+.pill.active {
+    background: #2f80ed;
+    color: white;
+}
+
+/* SECTION */
+.section {
+    margin-bottom: 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* SCROLL CARDS */
+.scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+}
+
+.card {
+    min-width: 240px;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card.small {
+    min-width: 160px;
+}
+
+.card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 10px;
+}
+
+.card h4 {
+    font-size: 14px;
+}
+
+.card span {
+    font-size: 11px;
+    color: #2f80ed;
+}
+
+.card p {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+/* DRIVERS */
+.drivers {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.drivers span {
+    background: #e5e7eb;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+}
+
+.drivers .active {
+    background: #dcfce7;
+    color: #22c55e;
+}
+
+/* SUBTITLE */
+.sub {
+    font-size: 12px;
+    color: #2f80ed;
+    margin-bottom: 10px;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.product {
+    background: white;
+    border-radius: 16px;
+    padding: 10px;
+}
+
+.product img {
+    width: 100%;
+    height: 110px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.product h4 {
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.product p {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.price {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-weight: 600;
+    color: #2f80ed;
+}

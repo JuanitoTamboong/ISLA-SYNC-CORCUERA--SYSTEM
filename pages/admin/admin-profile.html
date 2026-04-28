@@ -23,12 +23,12 @@
 
     <!-- PROFILE -->
     <div class="profile">
-        <div class="avatar">
-            <img src="../../assets/isla-logo.png" alt="Admin Avatar">
+    <div class="avatar">
+            <img id="adminAvatar" src="../../assets/isla-logo.png" alt="Admin Avatar">
             <span class="status"></span>
         </div>
 
-        <h2>Admin Maria</h2>
+        <h2 id="adminDisplayName">Admin</h2>
         <p class="role">SYSTEM ADMINISTRATOR</p>
 
         <div class="badges">
@@ -36,6 +36,41 @@
                 <i class="fa-solid fa-shield-halved"></i> VERIFIED ADMIN
             </span>
             <span class="active">ACTIVE</span>
+        </div>
+
+        <button class="edit-profile-btn" id="editProfileBtn">
+            <i class="fa-solid fa-pen"></i> Edit Profile
+        </button>
+    </div>
+
+    <!-- EDIT PROFILE FORM -->
+    <div class="edit-profile-form" id="editProfileForm">
+        <div class="form-group photo-section">
+            <label class="form-label">Profile Photo</label>
+            <div class="photo-container">
+                <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                <img id="photoPreview" class="photo-preview" src="" alt="Preview" style="display: none;">
+                <div id="photoPlaceholder">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <button type="button" id="changePhotoBtn" class="btn btn-secondary">Change Photo</button>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="formFullName" placeholder="Enter your full name">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="formEmail" placeholder="your@email.com">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveProfile">Save Profile</button>
         </div>
     </div>
 
@@ -48,7 +83,7 @@
             <i class="fa-regular fa-user"></i>
             <div>
                 <p class="label">Full Name</p>
-                <h4>Maria Corcuera-Santos</h4>
+                <h4 id="adminFullName">Loading...</h4>
             </div>
         </div>
 
@@ -58,7 +93,7 @@
             <i class="fa-regular fa-envelope"></i>
             <div>
                 <p class="label">Email Address</p>
-                <h4>maria.admin@islasync.gov</h4>
+                <h4 id="adminEmail">Loading...</h4>
             </div>
         </div>
 
@@ -67,8 +102,8 @@
         <div class="row">
             <i class="fa-regular fa-id-badge"></i>
             <div>
-                <p class="label">Employee ID</p>
-                <h4>ISC-2024-0892</h4>
+                <p class="label">Account ID</p>
+                <h4 id="adminAccountId">Loading...</h4>
             </div>
         </div>
 
@@ -105,5 +140,8 @@
 
 </div>
 
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../../js/admin/admin-profile.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Admin Homepage Script
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     if (typeof supabase === 'undefined') {
         showNotification('Error: Supabase SDK failed to load.', 'error');
         return;
@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update UI
     updateGreeting();
     document.getElementById('adminName').textContent = admin.fullName || 'Admin';
+
+    // Load admin profile photo
+    await loadAdminProfilePhoto(supabaseClient, admin.id);
 
     // Load stats and recent reports
     loadDashboardData(supabaseClient);
@@ -64,6 +67,29 @@ document.addEventListener('DOMContentLoaded', function() {
     window.goToProfile = function() {
         window.location.href = 'admin-profile.html';
     };
+
+    async function loadAdminProfilePhoto(supabaseClient, adminId) {
+        try {
+            const { data: profile, error } = await supabaseClient
+                .from('profiles')
+                .select('avatar_url')
+                .eq('id', adminId)
+                .single();
+
+            if (error || !profile) return;
+
+            const profileImg = document.getElementById('profileImg');
+            if (profileImg && profile.avatar_url) {
+                profileImg.src = profile.avatar_url;
+                profileImg.style.display = 'block';
+                profileImg.onerror = function() {
+                    this.style.display = 'none';
+                };
+            }
+        } catch (error) {
+            // Silently fail - keep default icon
+        }
+    }
 
     async function loadDashboardData(supabaseClient) {
         try {
