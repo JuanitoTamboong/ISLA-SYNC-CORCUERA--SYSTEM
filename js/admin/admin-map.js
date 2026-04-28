@@ -12,7 +12,6 @@ let currentMarkers = [];
 let activeFilter = 'all';
 let currentReportId = null;
 let supabaseClient = null;
-let profileMap = {};
 
 // Custom marker icons
 const MARKER_ICONS = {
@@ -97,40 +96,23 @@ function initMap() {
     L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
 }
 
-async function loadProfileMap(supabaseClient, userIds) {
-    if (!userIds || userIds.length === 0) return;
-    try {
-        const { data, error } = await supabaseClient
-            .from('profiles')
-            .select('id, full_name')
-            .in('id', userIds);
-        if (!error && data) {
-            data.forEach(p => { profileMap[p.id] = p.full_name; });
-        }
-    } catch (e) {
-        // Silently fail
-    }
-}
-
-function attachReporterNames(reports) {
-    (reports || []).forEach(r => {
-        r.reporter_name = profileMap[r.user_id] || null;
-    });
-}
-
 async function loadReports() {
     try {
         const { data, error } = await supabaseClient
-            .from('reports')
+            .from('reports_with_users')
             .select('*')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Load reporter names manually
-        const userIds = [...new Set((data || []).map(r => r.user_id).filter(Boolean))];
-        await loadProfileMap(supabaseClient, userIds);
-        attachReporterNames(data);
+        // Debug: log what Supabase returns for reporter_name
+        if (data && data.length > 0) {
+            console.log('Sample report from Supabase:', {
+                id: data[0].id,
+                reporter_name: data[0].reporter_name,
+                keys: Object.keys(data[0])
+            });
+        }
 
         allReports = data || [];
         applyFilter(activeFilter);

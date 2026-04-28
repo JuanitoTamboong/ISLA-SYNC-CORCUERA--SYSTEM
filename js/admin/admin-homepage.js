@@ -1,4 +1,40 @@
 // Admin Homepage Script
+
+// Global navigation handlers (defined early so onclick always works)
+window.navigateTo = function(page) {
+    switch(page) {
+        case 'home':
+            window.location.href = 'admin-homepage.html';
+            break;
+        case 'map':
+            window.location.href = 'admin-map.html';
+            break;
+        case 'news':
+            window.location.href = 'admin-news.html';
+            break;
+        case 'settings':
+            window.location.href = 'admin-settings.html';
+            break;
+    }
+};
+
+window.goToNews = function() {
+    window.location.href = 'admin-news.html';
+};
+
+window.goToAllReports = function() {
+    window.location.href = 'admin-map.html';
+};
+
+window.goToProfile = function() {
+    window.location.href = 'admin-profile.html';
+};
+
+window.viewReportOnMap = function(reportId) {
+    sessionStorage.setItem('highlightReportId', reportId);
+    window.location.href = 'admin-map.html';
+};
+
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof supabase === 'undefined') {
         showNotification('Error: Supabase SDK failed to load.', 'error');
@@ -35,7 +71,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Notification state (must be declared before any await that uses it)
     let notifications = [];
     let notifReadIds = JSON.parse(localStorage.getItem('adminNotifReadIds') || '[]');
-    let profileMap = {};
 
     // Load admin profile photo
     await loadAdminProfilePhoto(supabaseClient, admin.id);
@@ -45,36 +80,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Load stats and recent reports
     loadDashboardData(supabaseClient);
-
-    // Navigation handlers
-    window.navigateTo = function(page) {
-        switch(page) {
-            case 'home':
-                // Already here
-                break;
-            case 'map':
-                window.location.href = 'admin-map.html';
-                break;
-            case 'news':
-                window.location.href = 'admin-news.html';
-                break;
-            case 'settings':
-                window.location.href = 'admin-settings.html';
-                break;
-        }
-    };
-
-    window.goToNews = function() {
-        window.location.href = 'admin-news.html';
-    };
-
-    window.goToAllReports = function() {
-        window.location.href = 'admin-map.html';
-    };
-
-    window.goToProfile = function() {
-        window.location.href = 'admin-profile.html';
-    };
 
     async function loadAdminProfilePhoto(supabaseClient, adminId) {
         try {
@@ -99,43 +104,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    async function loadProfileMap(supabaseClient, userIds) {
-        if (!userIds || userIds.length === 0) return;
-        try {
-            const { data, error } = await supabaseClient
-                .from('profiles')
-                .select('id, full_name')
-                .in('id', userIds);
-            if (!error && data) {
-                data.forEach(p => { profileMap[p.id] = p.full_name; });
-            }
-        } catch (e) {
-            // Silently fail
-        }
-    }
-
-    function attachReporterNames(reports) {
-        (reports || []).forEach(r => {
-            r.reporter_name = profileMap[r.user_id] || null;
-        });
-    }
-
     // ========== NOTIFICATION SYSTEM ==========
 
     async function loadNotifications(supabaseClient) {
         try {
             const { data: reports, error } = await supabaseClient
-                .from('reports')
+                .from('reports_with_users')
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(20);
 
             if (error) throw error;
-
-            // Load reporter names manually
-            const userIds = [...new Set((reports || []).map(r => r.user_id).filter(Boolean))];
-            await loadProfileMap(supabaseClient, userIds);
-            attachReporterNames(reports);
 
             notifications = [];
             const categoryIcons = {
@@ -148,13 +127,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             (reports || []).forEach(report => {
                 const cat = categoryIcons[report.category] || { icon: 'fa-circle-exclamation', color: 'blue' };
                 const timeAgo = getTimeAgo(report.created_at);
-                notifications.push({
+            notifications.push({
                     id: `report-${report.id}`,
                     reportId: report.id,
                     icon: cat.icon,
                     iconColor: cat.color,
-                    title: `New ${report.category || 'Report'}`,
-                    message: report.description || 'No description',
+                    title: escapeHtml(report.reporter_name || 'Unknown'),
+                    message: `${escapeHtml(report.category || 'Report')} &bull; ${escapeHtml(report.description || 'No description')}`,
                     time: timeAgo,
                     read: notifReadIds.includes(`report-${report.id}`)
                 });
@@ -215,9 +194,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                     <i class="fa-solid ${notif.icon}"></i>
                 </div>
                 <div class="notif-content">
-                    <p>${escapeHtml(notif.title)}</p>
-                    <span>${escapeHtml(notif.message.substring(0, 40))}${notif.message.length > 40 ? '...' : ''} &bull; ${notif.time}</span>
+                    <p>${notif.title}</p>
+                    <span>${notif.message} &bull; ${notif.time}</span>
                 </div>
+            </div>
         `).join('');
     }
 
@@ -273,16 +253,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             // Fetch all reports
             const { data: reports, error: reportsError } = await supabaseClient
-                .from('reports')
+                .from('reports_with_users')
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (reportsError) throw reportsError;
-
-            // Load reporter names manually
-            const userIds = [...new Set((reports || []).map(r => r.user_id).filter(Boolean))];
-            await loadProfileMap(supabaseClient, userIds);
-            attachReporterNames(reports);
 
             const allReports = reports || [];
             const pending = allReports.filter(r => r.status !== 'resolved');
@@ -354,6 +329,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 ? `<img src="${escapeHtml(report.image_url)}" alt="Report Image" class="report-image">`
                 : `<div class="report-icon ${cat.class}"><i class="fa-solid ${cat.icon}"></i></div>`;
 
+            // Debug: log the reporter_name value to console
+            console.log('Report ID:', report.id, 'reporter_name:', report.reporter_name);
+
             return `
                 <div class="recent-report-item" onclick="viewReportOnMap('${report.id}')">
                     <div class="report-image-wrapper">
@@ -372,11 +350,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         container.innerHTML = html;
     }
-
-    window.viewReportOnMap = function(reportId) {
-        sessionStorage.setItem('highlightReportId', reportId);
-        window.location.href = 'admin-map.html';
-    };
 
     function animateNumber(elementId, target) {
         const el = document.getElementById(elementId);
