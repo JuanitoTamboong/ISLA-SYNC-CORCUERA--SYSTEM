@@ -365,13 +365,14 @@ window.removeNewsImage = function() {
     window.currentNewsImageUrl = null;
 };
 
+
 // Navigation
 window.navigateTo = function(page) {
     switch(page) {
         case 'home': window.location.href = 'admin-homepage.html'; break;
         case 'map': window.location.href = 'admin-map.html'; break;
         case 'news': break;
-        case 'profile': window.location.href = 'admin-profile.html'; break;
+        case 'settings': window.location.href = 'admin-settings.html'; break;
     }
 };
 

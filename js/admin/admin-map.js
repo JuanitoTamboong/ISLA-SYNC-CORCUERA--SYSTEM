@@ -373,7 +373,7 @@ window.navigateTo = function(page) {
         case 'home': window.location.href = 'admin-homepage.html'; break;
         case 'map': break;
         case 'news': window.location.href = 'admin-news.html'; break;
-        case 'profile': window.location.href = 'admin-profile.html'; break;
+        case 'settings': window.location.href = 'admin-settings.html'; break;
     }
 };
 

@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'news':
                 window.location.href = 'admin-news.html';
                 break;
-            case 'profile':
-                window.location.href = 'admin-profile.html';
+            case 'settings':
+                window.location.href = 'admin-settings.html';
                 break;
         }
     };
