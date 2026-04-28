@@ -235,8 +235,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 latitude: window.currentLatitude || null,
                 longitude: window.currentLongitude || null,
                 status: 'pending',
-                reference: refNum,
-                created_at: new Date().toISOString()
+                reference: refNum
             };
             
             // Debug: Check what we're submitting
