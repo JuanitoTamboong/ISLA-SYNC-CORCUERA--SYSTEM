@@ -32,8 +32,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateGreeting();
     document.getElementById('adminName').textContent = admin.fullName || 'Admin';
 
+    // Notification state (must be declared before any await that uses it)
+    let notifications = [];
+    let notifReadIds = JSON.parse(localStorage.getItem('adminNotifReadIds') || '[]');
+
     // Load admin profile photo
     await loadAdminProfilePhoto(supabaseClient, admin.id);
+
+    // Load notifications (new reports)
+    await loadNotifications(supabaseClient);
 
     // Load stats and recent reports
     loadDashboardData(supabaseClient);
@@ -90,6 +97,151 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Silently fail - keep default icon
         }
     }
+
+    // ========== NOTIFICATION SYSTEM ==========
+
+    async function loadNotifications(supabaseClient) {
+        try {
+            const { data: reports, error } = await supabaseClient
+                .from('reports')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (error) throw error;
+
+            notifications = [];
+            const categoryIcons = {
+                'INFRASTRUCTURE': { icon: 'fa-road', color: 'blue' },
+                'PUBLIC SAFETY': { icon: 'fa-shield-halved', color: 'orange' },
+                'ENGINEERING': { icon: 'fa-people-group', color: 'purple' },
+                'TRAFFIC VIOLATION': { icon: 'fa-traffic-light', color: 'red' }
+            };
+
+            (reports || []).forEach(report => {
+                const cat = categoryIcons[report.category] || { icon: 'fa-circle-exclamation', color: 'blue' };
+                const timeAgo = getTimeAgo(report.created_at);
+                notifications.push({
+                    id: `report-${report.id}`,
+                    reportId: report.id,
+                    icon: cat.icon,
+                    iconColor: cat.color,
+                    title: `New ${report.category || 'Report'}`,
+                    message: report.description || 'No description',
+                    time: timeAgo,
+                    read: notifReadIds.includes(`report-${report.id}`)
+                });
+            });
+
+            renderNotifications();
+            setupNotificationEvents();
+
+        } catch (e) {
+            console.error('Load notifications error:', e);
+        }
+    }
+
+    function getTimeAgo(dateString) {
+        if (!dateString) return 'Just now';
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        if (seconds < 60) return 'Just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
+    }
+
+    function renderNotifications() {
+        const notifList = document.getElementById('notifList');
+        const notifBadge = document.getElementById('notifBadge');
+        if (!notifList) return;
+
+        const unreadNotifs = notifications.filter(n => !n.read);
+        const unreadCount = unreadNotifs.length;
+
+        if (notifBadge) {
+            if (unreadCount > 0) {
+                notifBadge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                notifBadge.style.display = 'flex';
+            } else {
+                notifBadge.style.display = 'none';
+            }
+        }
+
+        if (unreadNotifs.length === 0) {
+            notifList.innerHTML = `
+                <div class="notif-empty">
+                    <i class="fa-regular fa-bell-slash"></i>
+                    <p>No new reports</p>
+                </div>
+            `;
+            return;
+        }
+
+        notifList.innerHTML = unreadNotifs.map(notif => `
+            <div class="notif-item unread" onclick="handleNotifClick(event, '${notif.id}', '${notif.reportId}')">
+                <div class="notif-icon ${notif.iconColor}">
+                    <i class="fa-solid ${notif.icon}"></i>
+                </div>
+                <div class="notif-content">
+                    <p>${escapeHtml(notif.title)}</p>
+                    <span>${escapeHtml(notif.message.substring(0, 40))}${notif.message.length > 40 ? '...' : ''} &bull; ${notif.time}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function setupNotificationEvents() {
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationPanel = document.getElementById('notificationPanel');
+
+        if (notificationBell && notificationPanel) {
+            notificationBell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notificationPanel.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!notificationBell.contains(e.target) && !notificationPanel.contains(e.target)) {
+                    notificationPanel.classList.remove('show');
+                }
+            });
+        }
+    }
+
+    window.handleNotifClick = function(event, notifId, reportId) {
+        event.stopPropagation();
+
+        if (!notifReadIds.includes(notifId)) {
+            notifReadIds.push(notifId);
+            localStorage.setItem('adminNotifReadIds', JSON.stringify(notifReadIds));
+        }
+
+        const notif = notifications.find(n => n.id === notifId);
+        if (notif) notif.read = true;
+
+        const notificationPanel = document.getElementById('notificationPanel');
+        if (notificationPanel) notificationPanel.classList.remove('show');
+
+        // Navigate to report on map
+        if (reportId) {
+            sessionStorage.setItem('highlightReportId', reportId);
+            window.location.href = 'admin-map.html';
+        }
+    };
+
+    window.markAllRead = function() {
+        notifications.forEach(n => {
+            if (!notifReadIds.includes(n.id)) {
+                notifReadIds.push(n.id);
+            }
+        });
+        localStorage.setItem('adminNotifReadIds', JSON.stringify(notifReadIds));
+        renderNotifications();
+    };
 
     async function loadDashboardData(supabaseClient) {
         try {
