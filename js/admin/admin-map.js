@@ -12,6 +12,7 @@ let currentMarkers = [];
 let activeFilter = 'all';
 let currentReportId = null;
 let supabaseClient = null;
+let profileMap = {};
 
 // Custom marker icons
 const MARKER_ICONS = {
@@ -96,6 +97,27 @@ function initMap() {
     L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
 }
 
+async function loadProfileMap(supabaseClient, userIds) {
+    if (!userIds || userIds.length === 0) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', userIds);
+        if (!error && data) {
+            data.forEach(p => { profileMap[p.id] = p.full_name; });
+        }
+    } catch (e) {
+        // Silently fail
+    }
+}
+
+function attachReporterNames(reports) {
+    (reports || []).forEach(r => {
+        r.reporter_name = profileMap[r.user_id] || null;
+    });
+}
+
 async function loadReports() {
     try {
         const { data, error } = await supabaseClient
@@ -104,6 +126,11 @@ async function loadReports() {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
+
+        // Load reporter names manually
+        const userIds = [...new Set((data || []).map(r => r.user_id).filter(Boolean))];
+        await loadProfileMap(supabaseClient, userIds);
+        attachReporterNames(data);
 
         allReports = data || [];
         applyFilter(activeFilter);
@@ -240,6 +267,7 @@ function openReportModal(reportId) {
     statusEl.className = `status-badge ${report.status === 'resolved' ? 'status-resolved' : 'status-pending'}`;
 
     document.getElementById('modalCategory').textContent = report.category || 'N/A';
+    document.getElementById('modalReporter').textContent = report.reporter_name || 'Unknown';
     document.getElementById('modalDescription').textContent = report.description || 'No description provided.';
 
     const dateStr = report.created_at

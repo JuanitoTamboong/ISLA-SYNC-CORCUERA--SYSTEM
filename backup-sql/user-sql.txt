@@ -1,13 +1,11 @@
 -- ============================================
--- ISLA-SYNC CORCUERA - COMPLETE PROFILES TABLE
+-- ISLA-SYNC CORCUERA - PROFILES TABLE FOR USERS
 -- ============================================
 
 -- Drop all existing policies to start fresh
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Allow insert during signup" ON public.profiles;
-DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
-DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 DROP POLICY IF EXISTS "view_own_profile" ON public.profiles;
 DROP POLICY IF EXISTS "update_own_profile" ON public.profiles;
@@ -17,7 +15,7 @@ DROP POLICY IF EXISTS "service_role_access" ON public.profiles;
 -- Temporarily disable RLS to clean up
 ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
 
--- Drop and recreate the profiles table with all columns
+-- Drop and recreate the profiles table
 DROP TABLE IF EXISTS public.profiles CASCADE;
 
 CREATE TABLE public.profiles (
@@ -34,10 +32,10 @@ CREATE TABLE public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create indexes for better performance
+-- Create indexes
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
-CREATE INDEX IF NOT EXISTS idx_profiles_user_type ON public.profiles(user_type);
 CREATE INDEX IF NOT EXISTS idx_profiles_full_name ON public.profiles(full_name);
+CREATE INDEX IF NOT EXISTS idx_profiles_user_type ON public.profiles(user_type);
 
 -- Function to auto-update updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -59,7 +57,7 @@ CREATE TRIGGER update_profiles_updated_at
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
 
--- Recreate the function with all fields
+-- Create function to handle new user signups
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -67,7 +65,6 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    -- Insert into profiles with all required fields
     INSERT INTO public.profiles (
         id, 
         full_name, 
@@ -106,57 +103,41 @@ CREATE TRIGGER on_auth_user_created
 -- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Create SIMPLE policies that avoid recursion
-
--- Policy 1: Users can view their own profile
+-- Policy: Users can view their own profile
 CREATE POLICY "view_own_profile"
     ON public.profiles
     FOR SELECT
     USING (auth.uid() = id);
 
--- Policy 2: Users can update their own profile
+-- Policy: Users can update their own profile
 CREATE POLICY "update_own_profile"
     ON public.profiles
     FOR UPDATE
     USING (auth.uid() = id);
 
--- Policy 3: Users can insert their own profile
+-- Policy: Users can insert their own profile
 CREATE POLICY "insert_own_profile"
     ON public.profiles
     FOR INSERT
     WITH CHECK (auth.uid() = id);
 
--- Policy 4: Allow service role full access (for triggers)
+-- Policy: Allow service role full access
 CREATE POLICY "service_role_access"
     ON public.profiles
     FOR ALL
     USING (auth.role() = 'service_role');
 
--- Grant necessary permissions
+-- Grant permissions
 GRANT ALL ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
 GRANT SELECT ON public.profiles TO anon;
 
--- Create a simple function to check if user is admin
-CREATE OR REPLACE FUNCTION check_is_admin(user_id UUID)
-RETURNS BOOLEAN
-LANGUAGE sql
-SECURITY DEFINER
-STABLE
-AS $$
-    SELECT user_type = 'admin' 
-    FROM public.profiles 
-    WHERE id = user_id
-    LIMIT 1;
-$$;
-
--- Create a view for easier profile management
+-- Create view for user profiles
 CREATE OR REPLACE VIEW public.user_profiles AS
 SELECT 
     id,
     full_name,
     email,
-    user_type,
     phone_number,
     address,
     date_of_birth,

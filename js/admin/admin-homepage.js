@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Notification state (must be declared before any await that uses it)
     let notifications = [];
     let notifReadIds = JSON.parse(localStorage.getItem('adminNotifReadIds') || '[]');
+    let profileMap = {};
 
     // Load admin profile photo
     await loadAdminProfilePhoto(supabaseClient, admin.id);
@@ -98,6 +99,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    async function loadProfileMap(supabaseClient, userIds) {
+        if (!userIds || userIds.length === 0) return;
+        try {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name')
+                .in('id', userIds);
+            if (!error && data) {
+                data.forEach(p => { profileMap[p.id] = p.full_name; });
+            }
+        } catch (e) {
+            // Silently fail
+        }
+    }
+
+    function attachReporterNames(reports) {
+        (reports || []).forEach(r => {
+            r.reporter_name = profileMap[r.user_id] || null;
+        });
+    }
+
     // ========== NOTIFICATION SYSTEM ==========
 
     async function loadNotifications(supabaseClient) {
@@ -109,6 +131,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                 .limit(20);
 
             if (error) throw error;
+
+            // Load reporter names manually
+            const userIds = [...new Set((reports || []).map(r => r.user_id).filter(Boolean))];
+            await loadProfileMap(supabaseClient, userIds);
+            attachReporterNames(reports);
 
             notifications = [];
             const categoryIcons = {
@@ -191,7 +218,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     <p>${escapeHtml(notif.title)}</p>
                     <span>${escapeHtml(notif.message.substring(0, 40))}${notif.message.length > 40 ? '...' : ''} &bull; ${notif.time}</span>
                 </div>
-            </div>
         `).join('');
     }
 
@@ -253,6 +279,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (reportsError) throw reportsError;
 
+            // Load reporter names manually
+            const userIds = [...new Set((reports || []).map(r => r.user_id).filter(Boolean))];
+            await loadProfileMap(supabaseClient, userIds);
+            attachReporterNames(reports);
+
             const allReports = reports || [];
             const pending = allReports.filter(r => r.status !== 'resolved');
             const resolved = allReports.filter(r => r.status === 'resolved');
@@ -311,21 +342,28 @@ document.addEventListener('DOMContentLoaded', async function() {
             const cat = categoryIcons[report.category] || { icon: 'fa-circle-exclamation', class: 'infra' };
             const statusClass = report.status === 'resolved' ? 'resolved' : 'pending';
             const statusText = report.status === 'resolved' ? 'Resolved' : 'Pending';
-            const shortDesc = (report.description || '').length > 40
-                ? report.description.substring(0, 40) + '...'
+            const shortDesc = (report.description || '').length > 90
+                ? report.description.substring(0, 90) + '...'
                 : (report.description || 'No description');
             const dateStr = report.created_at
-                ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                 : '';
+
+            const hasImage = report.image_url && report.image_url.startsWith('data:');
+            const imageHtml = hasImage
+                ? `<img src="${escapeHtml(report.image_url)}" alt="Report Image" class="report-image">`
+                : `<div class="report-icon ${cat.class}"><i class="fa-solid ${cat.icon}"></i></div>`;
 
             return `
                 <div class="recent-report-item" onclick="viewReportOnMap('${report.id}')">
-                    <div class="report-icon ${cat.class}">
-                        <i class="fa-solid ${cat.icon}"></i>
+                    <div class="report-image-wrapper">
+                        ${imageHtml}
                     </div>
                     <div class="report-info">
-                        <h4>${escapeHtml(report.reference || 'Report')}</h4>
-                        <p>${escapeHtml(shortDesc)} &middot; ${dateStr}</p>
+                        <h4 class="report-reporter">${escapeHtml(report.reporter_name || 'Unknown')}</h4>
+                        <p class="report-meta">${escapeHtml(report.category || '')} &middot; ${dateStr}</p>
+                        <p class="report-id">ID: #${escapeHtml(report.reference || 'N/A')}</p>
+                        <p class="report-desc">${escapeHtml(shortDesc)}</p>
                     </div>
                     <span class="report-status-badge ${statusClass}">${statusText}</span>
                 </div>

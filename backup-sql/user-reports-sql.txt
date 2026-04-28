@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS public.reports (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
+    -- Reporter info
+    reporter_name TEXT,
+
     -- Additional useful fields
     latitude NUMERIC(10, 7),
     longitude NUMERIC(10, 7),

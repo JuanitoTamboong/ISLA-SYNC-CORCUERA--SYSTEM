@@ -38,7 +38,6 @@
     <!-- MAP -->
     <div class="map-wrapper">
         <div id="map"></div>
-    </div>
 
     <!-- REPORTS LIST -->
     <div class="reports-section">
@@ -51,10 +50,7 @@
                 <i class="fa-solid fa-spinner fa-spin"></i>
                 <p>Loading reports...</p>
             </div>
-        </div>
     </div>
-
-</div>
 
 <!-- REPORT DETAIL MODAL -->
 <div id="reportModal" class="report-modal">
@@ -74,6 +70,10 @@
             <div class="detail-section">
                 <label>Status</label>
                 <span id="modalStatus" class="status-badge status-pending">-</span>
+            </div>
+            <div class="detail-section">
+                <label>Reported By</label>
+                <p id="modalReporter">-</p>
             </div>
             <div class="detail-section">
                 <label>Category</label>
@@ -99,7 +99,6 @@
                 <div class="report-image-container">
                     <img id="modalImage" src="" alt="Report image">
                 </div>
-            </div>
             <div class="detail-section" id="modalActions">
                 <label>Actions</label>
                 <div class="action-buttons">
@@ -110,9 +109,7 @@
                         <i class="fa-solid fa-clock"></i> Mark Pending
                     </button>
                 </div>
-            </div>
         </div>
-    </div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -136,11 +133,9 @@
         <i class="fa fa-gear"></i>
         <span>Settings</span>
     </div>
-</div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../../js/admin/admin-map.js"></script>
 </body>
 </html>
-
