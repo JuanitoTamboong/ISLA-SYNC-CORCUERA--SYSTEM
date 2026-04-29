@@ -91,14 +91,28 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (error || !profile) return;
 
+            const profileContainer = document.getElementById('profileContainer');
             const profileImg = document.getElementById('profileImg');
-            if (profileImg && profile.avatar_url) {
+            if (profileContainer) {
+                profileContainer.classList.remove('has-image');
+            }
+            if (profileImg && profile.avatar_url && profile.avatar_url.trim() !== '') {
                 profileImg.src = profile.avatar_url;
-                profileImg.style.display = 'block';
+                profileImg.onload = function() {
+                    if (profileContainer) {
+                        profileContainer.classList.add('has-image');
+                    }
+                };
                 profileImg.onerror = function() {
-                    this.style.display = 'none';
+                    console.error('Failed to load avatar:', profile.avatar_url);
+                    if (profileContainer) {
+                        profileContainer.classList.remove('has-image');
+                    }
+                    // Reset src to prevent cached error
+                    this.src = '';
                 };
             }
+            // If no avatar_url, ensure default icon shows (class already removed above)
         } catch (error) {
             // Silently fail - keep default icon
         }

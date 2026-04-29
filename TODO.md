@@ -1,13 +1,15 @@
-# Fix "Failed to load admin profile" Issue
+# Admin Homepage Profile Icon Fix - TODO
 
-## Plan Overview
-Robust frontend fix: Load localStorage data immediately, async Supabase sync in background, auto-create profile if missing, remove blocking error.
+**Status: In Progress**
 
-## Steps to Complete
-- [x] Step 1: Refactor `js/admin/admin-profile.js` - Implement immediate local data display + background sync.
-- [ ] Step 2: Test in browser - Open `pages/admin/admin-profile.html`, verify no error, data shows.
-- [ ] Step 3: Verify console logs - Check admin.id, any remaining errors.
-- [ ] Step 4: Test edit/save - Ensure profile updates work.
-- [ ] Complete: attempt_completion
+## Steps:
+- [x] 1. Create TODO.md with plan breakdown
+- [x] 2. Update css/admin/admin-homepage.css with .has-image class logic
+- [x] 3. Update js/admin/admin-homepage.js to toggle 'has-image' class on profile load/error
+- [x] 4. Test functionality (no avatar → icon; valid avatar → image; broken → icon)
+- [x] 5. Fix green color issue on default icon (removed unwanted green background/gradient from .profile .profile-icon)
+- [x] 6. Mark complete and attempt_completion
 
-**Progress: 1/4**
+**Plan Summary:**
+Fix profile icon fallback on admin-homepage top-right: show default FA user-shield icon when no/empty/broken avatar_url from Supabase profiles table.
+

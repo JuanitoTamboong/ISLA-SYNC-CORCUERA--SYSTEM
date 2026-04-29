@@ -234,8 +234,24 @@
     font-size: 20px;
 }
 
-.profile-img + .profile-icon {
+.profile .profile-img {
     display: none;
+}
+
+.profile .profile-icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: none !important;
+    color: #2563eb !important;
+}
+
+.profile.has-image .profile-img {
+    display: block !important;
+}
+
+.profile.has-image .profile-icon {
+    display: none !important;
 }
 
 /* STATS GRID */
