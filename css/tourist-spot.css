@@ -1,3 +1,5 @@
+@import "../css/shared.css";
+
 * {
     margin: 0;
     padding: 0;
@@ -5,17 +7,8 @@
     font-family: 'Poppins', sans-serif;
 }
 
-body {
-    background: #0f172a;
-    display: flex;
-    justify-content: center;
-}
-
 .container {
-    width: 360px;
-    background: #f5f7fb;
-    border-radius: 20px;
-    padding: 20px;
+    background-color: #ffffff;
 }
 
 /* HEADER */
@@ -30,21 +23,29 @@ body {
     color: #6b7280;
 }
 
-/* SEARCH */
-.search {
-    margin: 15px 0;
-    background: #eef2f7;
-    padding: 12px;
-    border-radius: 20px;
+
+.search-box {
+    margin-top: 15px;
+    background: #e5e7eb;
+    border-radius: 25px;
+    padding: 12px 15px;
     display: flex;
-    gap: 10px;
+    align-items: center;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    margin-left: 10px;
+    width: 100%;
 }
 
 /* FILTER */
 .filters {
     display: flex;
     gap: 10px;
-    margin-bottom: 15px;
+    margin: 15px 0 20px 0;
 }
 
 .pill {
@@ -52,6 +53,9 @@ body {
     border-radius: 20px;
     background: #e5e7eb;
     font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .pill.active {
@@ -78,14 +82,15 @@ body {
 }
 
 .card {
-    min-width: 240px;
+    min-width: 200px;
     background: white;
     border-radius: 16px;
     overflow: hidden;
+    flex: 0 0 auto;
 }
 
 .card.small {
-    min-width: 160px;
+    min-width: 140px;
 }
 
 .card img {

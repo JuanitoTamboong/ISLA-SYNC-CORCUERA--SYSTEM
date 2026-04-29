@@ -1,15 +1,12 @@
-# Admin Homepage Profile Icon Fix - TODO
+Tourist-spot page fixes completed ✅
 
-**Status: In Progress**
+**Summary of changes:**
+- Container: Matches resident pages (shared.css responsive sizing + white background)
+- Filter pills: Font Awesome icons (beach, landmark, store) with proper flex alignment
+- Search box: Exact match to resident-homepage.css (.search-box styling, fa-search icon, updated placeholder)
 
-## Steps:
-- [x] 1. Create TODO.md with plan breakdown
-- [x] 2. Update css/admin/admin-homepage.css with .has-image class logic
-- [x] 3. Update js/admin/admin-homepage.js to toggle 'has-image' class on profile load/error
-- [x] 4. Test functionality (no avatar → icon; valid avatar → image; broken → icon)
-- [x] 5. Fix green color issue on default icon (removed unwanted green background/gradient from .profile .profile-icon)
-- [x] 6. Mark complete and attempt_completion
+**Files updated:** css/tourist-spot.css, pages/tourist-spot.html
 
-**Plan Summary:**
-Fix profile icon fallback on admin-homepage top-right: show default FA user-shield icon when no/empty/broken avatar_url from Supabase profiles table.
+Open `pages/tourist-spot.html` to verify consistent design across resident pages.
+
 
