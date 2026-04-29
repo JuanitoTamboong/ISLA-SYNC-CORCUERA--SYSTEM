@@ -21,6 +21,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Load user data
     await loadUserDataFromSupabase(supabaseClient);
+
+    const currentUserStr = localStorage.getItem('currentUser');
+    if (currentUserStr) {
+        const user = JSON.parse(currentUserStr);
+        if (user.userType === 'admin') {
+            window.location.href = '../pages/admin/admin-profile.html';
+            return;
+        }
+    }
+
     loadAndUpdateProfile();
     await fetchReportCounts(supabaseClient);
 
@@ -41,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         notification.style.fontSize = '14px';
         notification.style.fontWeight = '500';
         notification.style.zIndex = '10000';               
+
         notification.style.maxWidth = '90vw';
         notification.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)';
         notification.style.backgroundColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6';

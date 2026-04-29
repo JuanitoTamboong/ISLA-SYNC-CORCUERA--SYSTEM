@@ -234,8 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginTime: new Date().toISOString()
             }
             localStorage.setItem('currentUser', JSON.stringify(userData))
-            // Clear any admin session
-            localStorage.removeItem('currentAdmin')
             
             showNotification(`Welcome back, ${profile.full_name}!`, 'success')
             

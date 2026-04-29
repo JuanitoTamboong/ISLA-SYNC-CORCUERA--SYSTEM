@@ -1,13 +1,8 @@
-# Fix Admin Notification Design & Content
+# Fix Cross-Login Logout Bug
 
-## Steps
-- [x] 1. Identify issues: broken HTML in `renderNotifications()` and missing reporter name in notification content
-- [x] 2. Edit `js/admin/admin-homepage.js`:
-  - Added `reporterName` to notification data in `loadNotifications()`
-  - Fixed missing closing `</div>` in `renderNotifications()` HTML template
-  - Updated title to show reporter name
-  - Updated message to show `Category • Description • time`
-- [x] 3. Edit `css/admin/admin-homepage.css`:
-  - Added `white-space: nowrap; overflow: hidden; text-overflow: ellipsis;` to `.notif-content p` and `.notif-content span`
-- [x] 4. Verify changes
-
+## Planned Steps:
+- [x] Step 1: Edit js/login.js - Remove localStorage.removeItem('currentAdmin')\n- [x] Step 2: Edit js/admin-login.js - Remove localStorage.removeItem('currentUser')  \n
+- [ ] Step 3: Test resident login doesn't clear admin session
+- [ ] Step 4: Test admin login doesn't clear resident session
+- [ ] Step 5: Verify protected pages still enforce role checks
+- [ ] Step 6: Complete task

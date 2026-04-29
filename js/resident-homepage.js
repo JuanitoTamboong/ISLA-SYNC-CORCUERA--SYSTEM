@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return
     }
     
-    if (user.userType !== 'resident') {
-        window.location.href = '../pages/admin-dashboard.html'
-        return
+    if (user.userType === 'admin') {
+        window.location.href = '../pages/admin/admin-homepage.html';
+        return;
     }
     
     async function verifySession() {
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ========== NOTIFICATION SYSTEM END ==========
+    // ========== NOTIFICATION SYSTEM END ===========
 
     function showNotification(message, type = 'info') {
         const existingNotification = document.querySelector('.notification')

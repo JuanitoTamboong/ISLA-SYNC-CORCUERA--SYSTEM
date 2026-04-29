@@ -124,8 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginTime: new Date().toISOString()
             }
             localStorage.setItem('currentAdmin', JSON.stringify(adminData))
-            // Clear any resident session
-            localStorage.removeItem('currentUser')
             
             showNotification(`Welcome back, Admin ${profile.full_name}!`, 'success')
             
