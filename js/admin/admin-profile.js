@@ -32,11 +32,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // Load fresh admin data from Supabase and update UI
-    await loadAdminData(supabaseClient, admin.id);
+// Immediately display local data
+    displayLocalDataImmediately(admin);
 
-    // Setup edit profile functionality
+    // Setup functionality
     setupEditProfile(supabaseClient);
+    setupPhotoUpload();
+
+    // Background sync from Supabase (non-blocking)
+    syncFromSupabase(supabaseClient, admin.id).catch(console.error);
     setupPhotoUpload();
 
     // Back button navigation
@@ -49,68 +53,89 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-async function loadAdminData(supabaseClient, adminId) {
+async function syncFromSupabase(supabaseClient, adminId) {
+    console.log('Syncing admin profile for ID:', adminId); // Debug
+    
     try {
-        // Fetch fresh admin profile from Supabase
+        // Fetch profile
         const { data: profile, error } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', adminId)
             .single();
 
-        if (error) {
-            console.error('Error fetching admin profile:', error);
-            showNotification('Failed to load admin profile', 'error');
-            useLocalStorageData();
-            return;
+        if (error && error.code !== 'PGRST116') { // Not "not found"
+            console.warn('Supabase fetch warning (non-fatal):', error);
+            // Retry once
+            await new Promise(r => setTimeout(r, 1000));
+            const { data: retryProfile, error: retryError } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', adminId)
+                .single();
+            if (retryError) throw retryError;
+            profile = retryProfile;
         }
 
+        let needsUpsert = false;
         if (!profile) {
-            showNotification('Admin profile not found', 'error');
-            window.location.href = 'admin-login.html';
-            return;
+            console.log('Profile not found, auto-creating...');
+            needsUpsert = true;
+            profile = {
+                id: adminId,
+                full_name: 'System Administrator',
+                email: 'islasyncorqueraadmin@gmail.com',
+                avatar_url: ''
+            };
         }
 
-        // Update localStorage with fresh data
+        // Update/upsert profile
+        if (needsUpsert) {
+            const currentAdmin = JSON.parse(localStorage.getItem('currentAdmin'));
+            profile.full_name = currentAdmin.fullName || profile.full_name;
+            profile.email = currentAdmin.email || profile.email;
+            
+            const { error: upsertError } = await supabaseClient
+                .from('profiles')
+                .upsert(profile);
+            if (upsertError) {
+                console.warn('Auto-create failed:', upsertError);
+            } else {
+                console.log('Profile created successfully');
+            }
+        }
+
+        // Always update localStorage and UI
         const adminData = {
             id: profile.id,
             fullName: profile.full_name || '',
             email: profile.email || '',
             userType: 'admin',
-            is_active: profile.is_active,
+            is_active: profile.is_active || true,
             isLoggedIn: true,
             loginTime: new Date().toISOString()
         };
         localStorage.setItem('currentAdmin', JSON.stringify(adminData));
-
-        // Store current profile data for editing
         currentProfileData = profile;
-
-        // Update DOM with real data
         updateAdminProfileUI(profile);
+        console.log('Profile synced successfully');
 
     } catch (error) {
-        console.error('Unexpected error:', error);
-        showNotification('An error occurred while loading profile', 'error');
-        useLocalStorageData();
+        console.error('Supabase sync failed:', error);
+        // Silent - local data already shown
     }
 }
 
-function useLocalStorageData() {
-    const currentAdminStr = localStorage.getItem('currentAdmin');
-    if (!currentAdminStr) return;
-
-    try {
-        const admin = JSON.parse(currentAdminStr);
-        const profile = {
-            full_name: admin.fullName || 'Admin',
-            email: admin.email || '',
-            id: admin.id || ''
-        };
-        updateAdminProfileUI(profile);
-    } catch (e) {
-        // Silently fail
-    }
+function displayLocalDataImmediately(admin) {
+    const profile = {
+        full_name: admin.fullName || 'Admin',
+        email: admin.email || 'admin@islasync.gov',
+        id: admin.id || '',
+        avatar_url: ''
+    };
+    currentProfileData = profile; // For edit form
+    updateAdminProfileUI(profile);
+    console.log('Displayed local data for admin:', admin.id);
 }
 
 function updateAdminProfileUI(profile) {
@@ -134,11 +159,21 @@ function updateAdminProfileUI(profile) {
 
     // Update avatar if available
     const avatarEl = document.getElementById('adminAvatar');
-    if (avatarEl && profile.avatar_url) {
-        avatarEl.src = profile.avatar_url;
-        avatarEl.onerror = function() {
-            this.src = '../../assets/isla-logo.png';
-        };
+    const avatarContainer = avatarEl.closest('.avatar');
+    if (avatarEl) {
+        if (profile.avatar_url && profile.avatar_url.trim() !== '') {
+            avatarEl.src = profile.avatar_url;
+            avatarEl.onload = function() {
+                avatarContainer.classList.add('has-image');
+            };
+            avatarEl.onerror = function() {
+                console.error('Failed to load avatar:', profile.avatar_url);
+                avatarContainer.classList.remove('has-image');
+                this.src = '';
+            };
+        } else {
+            avatarContainer.classList.remove('has-image');
+        }
     }
 
     // Update account ID (shortened UUID)
@@ -146,6 +181,8 @@ function updateAdminProfileUI(profile) {
     if (accountIdEl && profile.id) {
         const shortId = profile.id.substring(0, 8).toUpperCase();
         accountIdEl.textContent = 'ISC-' + shortId;
+    } else if (accountIdEl) {
+        accountIdEl.textContent = 'ISC-00000000';
     }
 }
 
@@ -225,7 +262,7 @@ function setupEditProfile(supabaseClient) {
             // Reload data to reflect changes
             const currentAdmin = JSON.parse(localStorage.getItem('currentAdmin') || '{}');
             if (currentAdmin.id) {
-                await loadAdminData(supabaseClient, currentAdmin.id);
+                syncFromSupabase(supabaseClient, currentAdmin.id);
             }
         } else {
             showNotification('Failed to update profile. Please try again.', 'error');
