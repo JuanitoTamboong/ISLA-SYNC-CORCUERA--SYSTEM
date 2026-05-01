@@ -22,6 +22,10 @@ window.goToNews = function() {
     window.location.href = 'admin-news.html';
 };
 
+window.goToTouristSpots = function() {
+    window.location.href = 'admin-tourist-spots.html';
+};
+
 window.goToAllReports = function() {
     window.location.href = 'admin-map.html';
 };

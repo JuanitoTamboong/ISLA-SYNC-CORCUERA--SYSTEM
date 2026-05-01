@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Tourist Spots - Admin</title>
+
+<link rel="stylesheet" href="../../css/admin/admin-shared.css">
+<link rel="stylesheet" href="../../css/admin/admin-tourist-spots.css">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="goBack()"></i>
+        <h2>Manage Tourist Spots</h2>
+        <i class="fa-solid fa-plus add-btn" onclick="openSpotModal()"></i>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="Beach">Beaches</button>
+        <button class="filter-tab" data-filter="Landmark">Landmarks</button>
+    </div>
+
+    <!-- SPOT LIST -->
+    <div id="spotList" class="spot-list">
+        <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p>Loading tourist spots...</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- SPOT MODAL (Create/Edit) -->
+<div id="spotModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeSpotModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add Tourist Spot</h2>
+            <button class="modal-close" onclick="closeSpotModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="spotForm">
+                <input type="hidden" id="spotId">
+
+                <div class="form-group">
+                    <label>Name <span class="required">*</span></label>
+                    <input type="text" id="spotName" placeholder="Enter spot name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Category <span class="required">*</span></label>
+                    <select id="spotCategory" required aria-label="Spot category">
+                        <option value="Beach">Beach</option>
+                        <option value="Landmark">Landmark</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="spotLocation" placeholder="e.g., Corcuera North">
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="spotDescription" rows="3" placeholder="Describe the tourist spot..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Image (Optional)</label>
+                    <div class="upload-area" id="spotUploadArea">
+                        <div class="upload-box" id="spotUploadBox" onclick="document.getElementById('spotImageInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Tap to upload image</p>
+                        </div>
+                        <div class="preview" id="spotPreviewDiv" style="display: none;">
+                            <img id="spotPreviewImg" src="" alt="Preview">
+                            <span class="remove" id="spotRemoveImgBtn" onclick="removeSpotImage()">×</span>
+                        </div>
+                    </div>
+                    <input type="file" id="spotImageInput" accept="image/jpeg, image/png, image/jpg" style="display: none;">
+                    <small>Leave empty to use default image</small>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="spotVisible" checked>
+                        <span class="checkmark"></span>
+                        Visible to Residents
+                    </label>
+                </div>
+
+                <!-- SOUVENIRS SECTION IN MODAL -->
+                <div class="souvenir-section" id="souvenirSection" style="display: none;">
+                    <div class="souvenir-section-header">
+                        <h4><i class="fa-solid fa-gift"></i> Souvenirs</h4>
+                        <span class="souvenir-add-btn" onclick="openSouvenirModal()">
+                            <i class="fa-solid fa-plus"></i> Add
+                        </span>
+                    </div>
+                    <div class="souvenir-grid" id="souvenirGrid"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeSpotModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Spot
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SOUVENIR MODAL -->
+<div id="souvenirModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeSouvenirModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="souvenirModalTitle">Add Souvenir</h2>
+            <button class="modal-close" onclick="closeSouvenirModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="souvenirForm">
+                <input type="hidden" id="souvenirId">
+                <input type="hidden" id="souvenirSpotId">
+
+                <div class="form-group">
+                    <label>Souvenir Name <span class="required">*</span></label>
+                    <input type="text" id="souvenirName" placeholder="Enter souvenir name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="souvenirDescription" rows="2" placeholder="Describe the souvenir..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Price (PHP) <span class="required">*</span></label>
+                    <input type="number" id="souvenirPrice" placeholder="0.00" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Image (Optional)</label>
+                    <div class="upload-area" id="souvenirUploadArea">
+                        <div class="upload-box" id="souvenirUploadBox" onclick="document.getElementById('souvenirImageInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Tap to upload image</p>
+                        </div>
+                        <div class="preview" id="souvenirPreviewDiv" style="display: none;">
+                            <img id="souvenirPreviewImg" src="" alt="Preview">
+                            <span class="remove" id="souvenirRemoveImgBtn" onclick="removeSouvenirImage()">×</span>
+                        </div>
+                    </div>
+                    <input type="file" id="souvenirImageInput" accept="image/jpeg, image/png, image/jpg" style="display: none;">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeSouvenirModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="souvenirSaveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Souvenir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete Tourist Spot?</h3>
+            <p>This will also delete all associated souvenirs. This action cannot be undone.</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../js/admin/admin-tourist-spots.js"></script>
+</body>
+</html>
