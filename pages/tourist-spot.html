@@ -8,6 +8,12 @@
 <link rel="stylesheet" href="../css/tourist-spot.css">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Tourist Spot JS -->
+<script src="../js/tourist-spot.js"></script>
 </head>
 <body>
 
@@ -42,24 +48,22 @@
             <span>See all</span>
         </div>
 
-        <div class="scroll">
+<div class="scroll" id="landmarkScroll">
 
-            <!-- CARD -->
+            <!-- Sample cards (will be replaced by database data) -->
             <div class="card">
-                <img src="../assets/generate background image of corquera romblon sea-7.jpg">
+                <img src="../assets/generate background image of corquera romblon sea-7.jpg" alt="Gatub-Gatub Cave">
                 <div class="card-body">
                     <h4>Gatub-Gatub Cave <span>⭐ 4.8</span></h4>
                     <p><i class="fa-solid fa-location-dot"></i> Corcuera North</p>
-
                     <div class="drivers">
-                        <span class="active">Romy M.</span>
-                        <span>Jun S. (Busy)</span>
+                        <span class="active">View Details</span>
                     </div>
                 </div>
             </div>
 
             <div class="card small">
-                <img src="../assets/generate background image of corquera romblon sea-7.jpg">
+                <img src="../assets/generate background image of corquera romblon sea-7.jpg" alt="Payong Beach">
                 <div class="card-body">
                     <h4>Payong Beach</h4>
                     <p><i class="fa-solid fa-location-dot"></i> Corcuera</p>
@@ -78,10 +82,10 @@
 
         <p class="sub">Handcrafted Pandan Products</p>
 
-        <div class="grid">
+        <div class="grid" id="souvenirGrid">
 
             <div class="product">
-                <img src="../assets/7.jpg">
+<img src="../assets/7.jpg" alt="Handwoven Pandan Bag">
                 <h4>Handwoven Pandan Bag</h4>
                 <p>By Simara Weavers</p>
                 <div class="price">₱450 <i class="fa-solid fa-cart-plus"></i></div>

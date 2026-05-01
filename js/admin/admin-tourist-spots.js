@@ -92,7 +92,10 @@ async function loadSpots() {
     }
 }
 
-function renderSpots() {
+// Store souvenirs for each spot
+let spotSouvenirs = {};
+
+async function renderSpots() {
     const container = document.getElementById('spotList');
     
     const filteredSpots = currentFilter === 'all' 
@@ -110,6 +113,22 @@ function renderSpots() {
         return;
     }
 
+    // Load souvenirs for all spots first
+    for (let spot of filteredSpots) {
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('souvenirs')
+                .select('*')
+                .eq('tourist_spot_id', String(spot.id));
+            
+            if (error) throw error;
+            spotSouvenirs[spot.id] = data || [];
+        } catch (err) {
+            console.error('Error loading souvenirs for spot:', spot.id, err);
+            spotSouvenirs[spot.id] = [];
+        }
+    }
+
     container.innerHTML = filteredSpots.map(spot => {
         const categoryClass = spot.category === 'Beach' ? 'beach' : 'landmark';
         const visibilityClass = spot.is_visible ? 'visible' : 'hidden';
@@ -123,8 +142,33 @@ function renderSpots() {
             ? new Date(spot.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             : '';
 
-        const souvenirCount = spot.souvenirCount || 0;
-        const souvenirText = souvenirCount === 1 ? '1 souvenir' : `${souvenirCount} souvenirs`;
+        const souvenirsForSpot = spotSouvenirs[spot.id] || [];
+        
+// Build souvenirs HTML for inline display
+        let souvenirsHtml = '';
+        if (souvenirsForSpot.length > 0) {
+            souvenirsHtml = souvenirsForSpot.map(s => {
+                const priceFormatted = parseFloat(s.price).toFixed(0);
+                const souvenirImage = s.image_url 
+                    ? `<img class="spot-souvenir-img" src="${escapeHtml(s.image_url)}" alt="${escapeHtml(s.name)}" onerror="this.style.display='none'">`
+                    : `<div class="spot-souvenir-img-placeholder"><i class="fa-solid fa-gift"></i></div>`;
+                const souvenirDesc = s.description ? `<p class="spot-souvenir-desc">${escapeHtml(s.description)}</p>` : '';
+                return `
+                    <div class="spot-souvenir-item">
+                        <div class="spot-souvenir-img-wrap">
+                            ${souvenirImage}
+                        </div>
+                        <div class="spot-souvenir-info">
+                            <span class="spot-souvenir-name">${escapeHtml(s.name)}</span>
+                            ${souvenirDesc}
+                            <span class="spot-souvenir-price">₱${priceFormatted}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            souvenirsHtml = '<p class="spot-no-souvenirs">No souvenirs yet</p>';
+        }
 
         const imageHtml = spot.image_url 
             ? `<img class="spot-image" src="${escapeHtml(spot.image_url)}" alt="${escapeHtml(spot.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
@@ -147,7 +191,10 @@ function renderSpots() {
                     ${spot.location ? `<p class="spot-location"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location)}</p>` : ''}
                     <p class="spot-description">${escapeHtml(shortDesc)}</p>
                     ${spot.description ? '' : '<p class="spot-description" style="font-style:italic;color:#9ca3af">No description</p>'}
-                    <p class="spot-souvenir-count"><i class="fa-solid fa-gift"></i> ${souvenirText}</p>
+                    <div class="spot-souvenirs-list">
+                        <p class="spot-souvenirs-label"><i class="fa-solid fa-gift"></i> Souvenirs:</p>
+                        ${souvenirsHtml}
+                    </div>
                     <p class="spot-date"><i class="fa-regular fa-calendar"></i> ${dateStr}</p>
                     <div class="spot-meta">
                         <span></span>
@@ -368,7 +415,9 @@ const spotData = {
             spotData.image_url = spotImageDataUrl;
         }
 
-if (spotId) {
+let isNewSpot = false;
+        
+        if (spotId) {
             // Update existing
             const { error } = await window.supabaseClient
                 .from('tourist_spots')
@@ -377,6 +426,7 @@ if (spotId) {
 
             if (error) throw error;
             showNotification('Tourist spot updated successfully', 'success');
+            closeSpotModal();
         } else {
             // Create new
             const { data: newSpot, error } = await window.supabaseClient
@@ -391,8 +441,20 @@ if (spotId) {
             spotId = newSpot.id;
             currentEditingSpot = newSpot;
             document.getElementById('spotId').value = spotId;
+            isNewSpot = true;
             
-            showNotification('Tourist spot created successfully', 'success');
+            showNotification('Tourist spot created! You can now add souvenirs.', 'success');
+            
+            // Keep modal open and reload souvenirs for the new spot
+            await loadSouvenirs(spotId);
+            
+            // Update modal title to show we're now editing
+            document.getElementById('modalTitle').textContent = 'Edit Tourist Spot';
+            
+            // Don't close modal - let user add souvenirs
+            // Also refresh the spot list in background
+            await loadSpots();
+            return; // Exit early - don't close modal
         }
 
         // Handle souvenirs for new spots (save them using the new spot ID)
@@ -402,7 +464,6 @@ if (spotId) {
             await loadSouvenirs(newSpotId);
         }
 
-        closeSpotModal();
         await loadSpots();
 
     } catch (error) {
@@ -476,53 +537,110 @@ let souvenirs = [];
 
 async function loadSouvenirs(spotId) {
     try {
-        const { data, error } = await window.supabaseClient
-            .from('souvenirs')
-            .select('*')
-            .eq('tourist_spot_id', spotId)
-            .order('created_at', { ascending: false });
+        console.log('Loading souvenirs for spotId:', spotId, 'type:', typeof spotId);
+        
+        let allSouvenirs;
+        
+        // If we have a valid spotId, use Supabase query to filter directly
+        if (spotId) {
+            // Convert spotId to string for proper comparison
+            const spotIdStr = String(spotId);
+            console.log('Filtering by spotIdStr:', spotIdStr);
+            
+            // First, try fetching all souvenirs then filter locally (more reliable for UUIDs)
+            const { data, error } = await window.supabaseClient
+                .from('souvenirs')
+                .select('*');
 
-        if (error) throw error;
+            if (error) {
+                console.error('Error fetching souvenirs:', error);
+                throw error;
+            }
+            
+            // Filter locally by matching tourist_spot_id
+            allSouvenirs = (data || []).filter(s => {
+                const souvenirSpotId = String(s.tourist_spot_id);
+                const targetId = spotIdStr;
+                return souvenirSpotId === targetId || souvenirSpotId === spotId;
+            });
+        } else {
+            // No spotId provided, get all souvenirs
+            const { data, error } = await window.supabaseClient
+                .from('souvenirs')
+                .select('*');
 
-        souvenirs = data || [];
+            if (error) {
+                console.error('Error fetching souvenirs:', error);
+                throw error;
+            }
+            
+            allSouvenirs = data || [];
+        }
+        
+        console.log('Retrieved souvenirs:', allSouvenirs.length);
+        souvenirs = allSouvenirs || [];
+        
+        console.log('Filtered souvenirs for spot', spotId, ':', souvenirs.length);
         renderSouvenirs();
     } catch (error) {
         console.error('Load souvenirs error:', error);
+        souvenirs = [];
+        renderSouvenirs();
     }
 }
 
 function renderSouvenirs() {
     const grid = document.getElementById('souvenirGrid');
     
+    if (!grid) {
+        console.error('Souvenir grid element not found');
+        return;
+    }
+    
+    console.log('Rendering souvenirs, count:', souvenirs.length);
+    
     if (souvenirs.length === 0) {
         grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 16px; color: #9ca3af; font-size: 12px;">
-                No souvenirs yet. Click + Add to add one.
+            <div class="souvenir-empty">
+                <i class="fa-solid fa-gift"></i>
+                <p>No souvenirs yet</p>
+                <p class="souvenir-hint">Click + Add to add souvenirs</p>
             </div>
         `;
         return;
     }
 
-    grid.innerHTML = souvenirs.map(souvenir => `
-        <div class="souvenir-item">
-            ${souvenir.image_url 
-                ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}" onerror="this.style.display='none'">`
-                : `<div style="width:50px;height:50px;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af"><i class="fa-solid fa-gift"></i></div>`
-            }
-            <div class="souvenir-info">
-                <p class="souvenir-name">${escapeHtml(souvenir.name)}</p>
-                <p class="souvenir-price">PHP ${parseFloat(souvenir.price).toFixed(2)}</p>
+    // Render as a list with better visibility
+    grid.innerHTML = souvenirs.map(souvenir => {
+        const souvenirId = String(souvenir.id);
+        const priceFormatted = parseFloat(souvenir.price).toFixed(0);
+        
+        return `
+            <div class="souvenir-item" data-id="${souvenirId}">
+                <div class="souvenir-image">
+                    ${souvenir.image_url 
+                        ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fa-solid fa-gift\\'></i>'">`
+                        : `<i class="fa-solid fa-gift"></i>`
+                    }
+                </div>
+                <div class="souvenir-details">
+                    <p class="souvenir-name">${escapeHtml(souvenir.name)}</p>
+                    ${souvenir.description ? `<p class="souvenir-desc">${escapeHtml(souvenir.description)}</p>` : ''}
+                    <p class="souvenir-price">₱${priceFormatted}</p>
+                </div>
+                <div class="souvenir-actions">
+                    <button onclick="editSouvenir('${souvenirId}')" title="Edit">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button onclick="deleteSouvenir('${souvenirId}')" title="Delete">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:4px;margin-left:auto;">
-                <button onclick="editSouvenir('${souvenir.id}')" style="background:none;border:none;cursor:pointer;color:#2563eb;font-size:12px;">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button onclick="deleteSouvenir('${souvenir.id}')" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:12px;">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+    
+    console.log('Souvenirs rendered:', souvenirs.length, 'items');
 }
 
 window.openSouvenirModal = function(souvenirId = null) {

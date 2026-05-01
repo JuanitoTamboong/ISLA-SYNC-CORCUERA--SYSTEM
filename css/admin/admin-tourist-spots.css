@@ -204,6 +204,103 @@
     margin-bottom: 12px;
 }
 
+/* Inline souvenirs in spot cards */
+.spot-souvenirs-list {
+    margin-bottom: 12px;
+}
+
+.spot-souvenirs-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.spot-souvenir-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    border: 1px solid #e5e7eb;
+}
+
+.spot-souvenir-item:last-child {
+    margin-bottom: 0;
+}
+
+.spot-souvenir-img-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e7eb;
+}
+
+.spot-souvenir-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.spot-souvenir-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.spot-souvenir-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.spot-souvenir-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spot-souvenir-desc {
+    font-size: 11px;
+    color: #6b7280;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spot-souvenir-price {
+    font-size: 12px;
+    font-weight: 700;
+    color: #059669;
+}
+
+.spot-no-souvenirs {
+    font-size: 12px;
+    color: #9ca3af;
+    font-style: italic;
+    margin: 0;
+}
+
 .spot-meta {
     display: flex;
     justify-content: space-between;
@@ -283,48 +380,159 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    padding: 6px 10px;
+    background: #ecfdf5;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.souvenir-add-btn:hover {
+    background: #d1fae5;
 }
 
 .souvenir-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
+/* Improved souvenir item styling */
 .souvenir-item {
     background: #f9fafb;
     border-radius: 12px;
-    padding: 10px;
+    padding: 12px;
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
 }
 
-.souvenir-item img {
+.souvenir-item:hover {
+    background: #f0fdf4;
+    border-color: #a7f3d0;
+}
+
+.souvenir-image {
     width: 50px;
     height: 50px;
-    border-radius: 8px;
+    border-radius: 10px;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.souvenir-image img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
-.souvenir-info {
+.souvenir-image i {
+    font-size: 20px;
+    color: #9ca3af;
+}
+
+.souvenir-details {
     flex: 1;
     min-width: 0;
 }
 
 .souvenir-name {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: #374151;
+    color: #1f2937;
     margin: 0 0 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.souvenir-price {
+.souvenir-desc {
     font-size: 11px;
+    color: #6b7280;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.souvenir-price {
+    font-size: 14px;
     color: #059669;
-    font-weight: 600;
+    font-weight: 700;
+    margin: 0;
+}
+
+.souvenir-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.souvenir-actions button {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.souvenir-actions button:first-child {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.souvenir-actions button:first-child:hover {
+    background: #dbeafe;
+}
+
+.souvenir-actions button:last-child {
+    color: #ef4444;
+    background: #fef2f2;
+}
+
+.souvenir-actions button:last-child:hover {
+    background: #fee2e2;
+}
+
+/* Empty state for souvenirs */
+.souvenir-empty {
+    text-align: center;
+    padding: 24px 16px;
+    color: #9ca3af;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px dashed #d1d5db;
+}
+
+.souvenir-empty i {
+    font-size: 32px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.souvenir-empty p {
+    font-size: 13px;
+    margin: 0;
+}
+
+.souvenir-hint {
+    font-size: 11px !important;
+    color: #9ca3af;
+    margin-top: 4px !important;
 }
 
 /* LOADING & EMPTY */
