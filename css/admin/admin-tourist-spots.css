@@ -859,6 +859,37 @@
     background: #dc2626;
 }
 
+/* SAVE SUCCESS MESSAGE IN MODAL */
+.save-success-message {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #059669;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.save-success-message i {
+    font-size: 18px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* DELETE CONTENT */
 .delete-content {
     text-align: center;

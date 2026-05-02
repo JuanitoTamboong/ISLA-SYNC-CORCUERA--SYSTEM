@@ -6,7 +6,11 @@ let currentFilter = 'all';
 let currentEditingSpot = null;
 let spotImageFile = null;
 let souvenirImageFile = null;
-
+let spotImageDataUrl = null;
+let souvenirImageDataUrl = null;
+let spotSouvenirs = {};
+let souvenirs = [];
+let deleteSpotId = null;
 
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
@@ -23,7 +27,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Check admin session
     const currentAdminStr = localStorage.getItem('currentAdmin');
     if (!currentAdminStr) {
         window.location.href = 'admin-login.html';
@@ -42,19 +45,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // Set Supabase client globally for this page
     window.supabaseClient = supabaseClient;
-
-    // Load spots
     await loadSpots();
-
-    // Setup filter tabs
     setupFilterTabs();
-
-    // Setup form submissions
     setupForms();
-
-    // Setup image uploads
     setupImageUploads();
 });
 
@@ -70,7 +64,6 @@ async function loadSpots() {
 
         spots = data || [];
         
-        // Load souvenir counts for each spot
         for (let spot of spots) {
             const { count } = await window.supabaseClient
                 .from('souvenirs')
@@ -81,7 +74,6 @@ async function loadSpots() {
         
         renderSpots();
     } catch (error) {
-        console.error('Load spots error:', error);
         showNotification('Failed to load tourist spots', 'error');
         document.getElementById('spotList').innerHTML = `
             <div class="empty-state">
@@ -91,9 +83,6 @@ async function loadSpots() {
         `;
     }
 }
-
-// Store souvenirs for each spot
-let spotSouvenirs = {};
 
 async function renderSpots() {
     const container = document.getElementById('spotList');
@@ -113,7 +102,6 @@ async function renderSpots() {
         return;
     }
 
-    // Load souvenirs for all spots first
     for (let spot of filteredSpots) {
         try {
             const { data, error } = await window.supabaseClient
@@ -124,7 +112,6 @@ async function renderSpots() {
             if (error) throw error;
             spotSouvenirs[spot.id] = data || [];
         } catch (err) {
-            console.error('Error loading souvenirs for spot:', spot.id, err);
             spotSouvenirs[spot.id] = [];
         }
     }
@@ -144,7 +131,6 @@ async function renderSpots() {
 
         const souvenirsForSpot = spotSouvenirs[spot.id] || [];
         
-// Build souvenirs HTML for inline display
         let souvenirsHtml = '';
         if (souvenirsForSpot.length > 0) {
             souvenirsHtml = souvenirsForSpot.map(s => {
@@ -233,19 +219,16 @@ window.openSpotModal = function(spotId = null) {
     const title = document.getElementById('modalTitle');
     const souvenirSection = document.getElementById('souvenirSection');
     
-// Reset form
     form.reset();
     document.getElementById('spotId').value = '';
     spotImageDataUrl = null;
     spotImageFile = null;
     
-    // Reset image preview
     document.getElementById('spotUploadBox').style.display = 'flex';
     document.getElementById('spotPreviewDiv').style.display = 'none';
     document.getElementById('spotPreviewImg').src = '';
     
-if (spotId) {
-        // Edit mode
+    if (spotId) {
         const spot = spots.find(s => s.id === spotId);
         if (!spot) {
             showNotification('Spot not found', 'error');
@@ -261,23 +244,18 @@ if (spotId) {
         document.getElementById('spotDescription').value = spot.description || '';
         document.getElementById('spotVisible').checked = spot.is_visible !== false;
         
-        // Show image if exists
         if (spot.image_url) {
             document.getElementById('spotUploadBox').style.display = 'none';
             document.getElementById('spotPreviewDiv').style.display = 'block';
             document.getElementById('spotPreviewImg').src = spot.image_url;
         }
         
-        // Show souvenirs section (for existing spot, load souvenirs)
         souvenirSection.style.display = 'block';
         loadSouvenirs(spotId);
     } else {
-        // Create mode - show empty souvenirs section
         currentEditingSpot = null;
         title.textContent = 'Add Tourist Spot';
-        // Show souvenirs section even when creating new spot
         souvenirSection.style.display = 'block';
-        // Clear the souvenirs grid for new spot
         souvenirs = [];
         renderSouvenirs();
     }
@@ -300,13 +278,11 @@ window.removeSpotImage = function() {
 
 // ========== FORMS ==========
 function setupForms() {
-    // Spot form
     document.getElementById('spotForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         await saveSpot();
     });
 
-    // Souvenir form
     document.getElementById('souvenirForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         await saveSouvenir();
@@ -314,12 +290,7 @@ function setupForms() {
 }
 
 // ========== IMAGE UPLOADS ==========
-// Store the data URL instead of File object for direct database storage
-let spotImageDataUrl = null;
-let souvenirImageDataUrl = null;
-
 function setupImageUploads() {
-    // Spot image upload
     const spotImageInput = document.getElementById('spotImageInput');
     spotImageInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -335,13 +306,9 @@ function setupImageUploads() {
             return;
         }
         
-        // Store as data URL for direct database storage (base64)
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Store the data URL, not the File object
             spotImageDataUrl = e.target.result;
-            
-            // Preview
             document.getElementById('spotPreviewImg').src = e.target.result;
             document.getElementById('spotUploadBox').style.display = 'none';
             document.getElementById('spotPreviewDiv').style.display = 'block';
@@ -349,7 +316,6 @@ function setupImageUploads() {
         reader.readAsDataURL(file);
     });
 
-    // Souvenir image upload
     const souvenirImageInput = document.getElementById('souvenirImageInput');
     souvenirImageInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -365,13 +331,9 @@ function setupImageUploads() {
             return;
         }
         
-        // Store as data URL for direct database storage (base64)
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Store the data URL, not the File object
             souvenirImageDataUrl = e.target.result;
-            
-            // Preview
             document.getElementById('souvenirPreviewImg').src = e.target.result;
             document.getElementById('souvenirUploadBox').style.display = 'none';
             document.getElementById('souvenirPreviewDiv').style.display = 'block';
@@ -388,7 +350,7 @@ async function saveSpot() {
     saveBtn.disabled = true;
 
     try {
-let spotId = document.getElementById('spotId').value;
+        let spotId = document.getElementById('spotId').value;
         const name = document.getElementById('spotName').value.trim();
         const category = document.getElementById('spotCategory').value;
         const location = document.getElementById('spotLocation').value.trim();
@@ -402,10 +364,9 @@ let spotId = document.getElementById('spotId').value;
             return;
         }
 
-        // Get the current spot data if editing (to preserve existing image)
         const currentSpot = spotId ? spots.find(s => s.id === spotId) : null;
 
-const spotData = {
+        const spotData = {
             name: name,
             category: category,
             location: location || null,
@@ -413,30 +374,45 @@ const spotData = {
             is_visible: isVisible
         };
 
-        // Use data URL (base64) for image storage
         if (spotImageDataUrl) {
-            // New image uploaded - use the new image
             spotData.image_url = spotImageDataUrl;
         } else if (!spotImageDataUrl && currentSpot && currentSpot.image_url) {
-            // No new image uploaded but there was an existing image - keep the old one
             spotData.image_url = currentSpot.image_url;
         }
-        // If no new image and no existing image (new spot), don't include image_url
-
-let isNewSpot = false;
         
         if (spotId) {
-            // Update existing
             const { error } = await window.supabaseClient
                 .from('tourist_spots')
                 .update(spotData)
                 .eq('id', spotId);
 
             if (error) throw error;
-            showNotification('Tourist spot updated successfully', 'success');
-            closeSpotModal();
+            
+            const existingMsg = document.querySelector('#spotModal .save-success-message');
+            if (existingMsg) existingMsg.remove();
+            
+            const form = document.getElementById('spotForm');
+            const firstFormGroup = form.querySelector('.form-group');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'save-success-message';
+            successMsg.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tourist spot updated successfully!';
+            
+            if (firstFormGroup) {
+                firstFormGroup.parentNode.insertBefore(successMsg, firstFormGroup.nextSibling);
+            } else {
+                form.insertBefore(successMsg, form.firstChild);
+            }
+            
+            const modalContent = document.querySelector('#spotModal .modal-content');
+            modalContent.scrollTop = 0;
+            
+            await loadSpots();
+            
+            setTimeout(() => {
+                if (successMsg && successMsg.parentNode) successMsg.remove();
+            }, 3000);
+            return;
         } else {
-            // Create new
             const { data: newSpot, error } = await window.supabaseClient
                 .from('tourist_spots')
                 .insert([spotData])
@@ -445,37 +421,18 @@ let isNewSpot = false;
 
             if (error) throw error;
             
-            // Store the new spot ID for souvenirs
             spotId = newSpot.id;
             currentEditingSpot = newSpot;
             document.getElementById('spotId').value = spotId;
-            isNewSpot = true;
             
             showNotification('Tourist spot created! You can now add souvenirs.', 'success');
             
-            // Keep modal open and reload souvenirs for the new spot
             await loadSouvenirs(spotId);
-            
-            // Update modal title to show we're now editing
             document.getElementById('modalTitle').textContent = 'Edit Tourist Spot';
-            
-            // Don't close modal - let user add souvenirs
-            // Also refresh the spot list in background
             await loadSpots();
-            return; // Exit early - don't close modal
+            return;
         }
-
-        // Handle souvenirs for new spots (save them using the new spot ID)
-        if (!document.getElementById('spotId').value && souvenirs.length > 0) {
-            const newSpotId = spotId;
-            // Reload souvenirs with the new spot ID
-            await loadSouvenirs(newSpotId);
-        }
-
-        await loadSpots();
-
     } catch (error) {
-        console.error('Save spot error:', error);
         showNotification('Failed to save tourist spot: ' + error.message, 'error');
     } finally {
         saveBtn.innerHTML = originalText;
@@ -489,8 +446,6 @@ window.editSpot = function(spotId) {
 };
 
 // ========== DELETE SPOT ==========
-let deleteSpotId = null;
-
 window.deleteSpot = function(spotId) {
     deleteSpotId = spotId;
     const modal = document.getElementById('deleteModal');
@@ -511,7 +466,6 @@ window.confirmDelete = async function() {
     confirmBtn.disabled = true;
 
     try {
-        // Delete souvenirs first (due to foreign key)
         const { error: souvenirError } = await window.supabaseClient
             .from('souvenirs')
             .delete()
@@ -519,7 +473,6 @@ window.confirmDelete = async function() {
 
         if (souvenirError) throw souvenirError;
 
-        // Delete the spot
         const { error } = await window.supabaseClient
             .from('tourist_spots')
             .delete()
@@ -532,7 +485,6 @@ window.confirmDelete = async function() {
         await loadSpots();
 
     } catch (error) {
-        console.error('Delete error:', error);
         showNotification('Failed to delete tourist spot', 'error');
     } finally {
         confirmBtn.innerHTML = originalText;
@@ -541,57 +493,36 @@ window.confirmDelete = async function() {
 };
 
 // ========== SOUVENIRS ==========
-let souvenirs = [];
-
 async function loadSouvenirs(spotId) {
     try {
-        console.log('Loading souvenirs for spotId:', spotId, 'type:', typeof spotId);
-        
         let allSouvenirs;
         
-        // If we have a valid spotId, use Supabase query to filter directly
         if (spotId) {
-            // Convert spotId to string for proper comparison
             const spotIdStr = String(spotId);
-            console.log('Filtering by spotIdStr:', spotIdStr);
             
-            // First, try fetching all souvenirs then filter locally (more reliable for UUIDs)
             const { data, error } = await window.supabaseClient
                 .from('souvenirs')
                 .select('*');
 
-            if (error) {
-                console.error('Error fetching souvenirs:', error);
-                throw error;
-            }
+            if (error) throw error;
             
-            // Filter locally by matching tourist_spot_id
             allSouvenirs = (data || []).filter(s => {
                 const souvenirSpotId = String(s.tourist_spot_id);
                 const targetId = spotIdStr;
                 return souvenirSpotId === targetId || souvenirSpotId === spotId;
             });
         } else {
-            // No spotId provided, get all souvenirs
             const { data, error } = await window.supabaseClient
                 .from('souvenirs')
                 .select('*');
 
-            if (error) {
-                console.error('Error fetching souvenirs:', error);
-                throw error;
-            }
-            
+            if (error) throw error;
             allSouvenirs = data || [];
         }
         
-        console.log('Retrieved souvenirs:', allSouvenirs.length);
         souvenirs = allSouvenirs || [];
-        
-        console.log('Filtered souvenirs for spot', spotId, ':', souvenirs.length);
         renderSouvenirs();
     } catch (error) {
-        console.error('Load souvenirs error:', error);
         souvenirs = [];
         renderSouvenirs();
     }
@@ -600,12 +531,7 @@ async function loadSouvenirs(spotId) {
 function renderSouvenirs() {
     const grid = document.getElementById('souvenirGrid');
     
-    if (!grid) {
-        console.error('Souvenir grid element not found');
-        return;
-    }
-    
-    console.log('Rendering souvenirs, count:', souvenirs.length);
+    if (!grid) return;
     
     if (souvenirs.length === 0) {
         grid.innerHTML = `
@@ -618,7 +544,6 @@ function renderSouvenirs() {
         return;
     }
 
-    // Render as a list with better visibility
     grid.innerHTML = souvenirs.map(souvenir => {
         const souvenirId = String(souvenir.id);
         const priceFormatted = parseFloat(souvenir.price).toFixed(0);
@@ -647,8 +572,6 @@ function renderSouvenirs() {
             </div>
         `;
     }).join('');
-    
-    console.log('Souvenirs rendered:', souvenirs.length, 'items');
 }
 
 window.openSouvenirModal = function(souvenirId = null) {
@@ -656,14 +579,12 @@ window.openSouvenirModal = function(souvenirId = null) {
     const form = document.getElementById('souvenirForm');
     const title = document.getElementById('souvenirModalTitle');
     
-// Reset form
     form.reset();
     document.getElementById('souvenirId').value = '';
     document.getElementById('souvenirSpotId').value = currentEditingSpot?.id || '';
     souvenirImageDataUrl = null;
     souvenirImageFile = null;
     
-    // Reset preview
     document.getElementById('souvenirUploadBox').style.display = 'flex';
     document.getElementById('souvenirPreviewDiv').style.display = 'none';
     document.getElementById('souvenirPreviewImg').src = '';
@@ -733,7 +654,6 @@ async function saveSouvenir() {
             return;
         }
 
-// Get the current souvenir data if editing (to preserve existing image)
         const currentSouvenir = souvenirId ? souvenirs.find(s => s.id === souvenirId) : null;
 
         const souvenirData = {
@@ -744,18 +664,13 @@ async function saveSouvenir() {
             is_available: true
         };
 
-        // Use data URL (base64) for image storage
         if (souvenirImageDataUrl) {
-            // New image uploaded - use the new image
             souvenirData.image_url = souvenirImageDataUrl;
         } else if (!souvenirImageDataUrl && currentSouvenir && currentSouvenir.image_url) {
-            // No new image uploaded but there was an existing image - keep the old one
             souvenirData.image_url = currentSouvenir.image_url;
         }
-        // If no new image and no existing image (new souvenir), don't include image_url
 
         if (souvenirId) {
-            // Update
             const { error } = await window.supabaseClient
                 .from('souvenirs')
                 .update(souvenirData)
@@ -764,7 +679,6 @@ async function saveSouvenir() {
             if (error) throw error;
             showNotification('Souvenir updated successfully', 'success');
         } else {
-            // Create
             const { error } = await window.supabaseClient
                 .from('souvenirs')
                 .insert([souvenirData]);
@@ -777,7 +691,6 @@ async function saveSouvenir() {
         await loadSouvenirs(spotId);
 
     } catch (error) {
-        console.error('Save souvenir error:', error);
         showNotification('Failed to save souvenir: ' + error.message, 'error');
     } finally {
         saveBtn.innerHTML = originalText;
@@ -809,7 +722,6 @@ window.deleteSouvenir = async function(souvenirId) {
         }
 
     } catch (error) {
-        console.error('Delete souvenir error:', error);
         showNotification('Failed to delete souvenir', 'error');
     }
 };
