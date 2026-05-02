@@ -402,6 +402,9 @@ let spotId = document.getElementById('spotId').value;
             return;
         }
 
+        // Get the current spot data if editing (to preserve existing image)
+        const currentSpot = spotId ? spots.find(s => s.id === spotId) : null;
+
 const spotData = {
             name: name,
             category: category,
@@ -412,8 +415,13 @@ const spotData = {
 
         // Use data URL (base64) for image storage
         if (spotImageDataUrl) {
+            // New image uploaded - use the new image
             spotData.image_url = spotImageDataUrl;
+        } else if (!spotImageDataUrl && currentSpot && currentSpot.image_url) {
+            // No new image uploaded but there was an existing image - keep the old one
+            spotData.image_url = currentSpot.image_url;
         }
+        // If no new image and no existing image (new spot), don't include image_url
 
 let isNewSpot = false;
         
@@ -725,7 +733,10 @@ async function saveSouvenir() {
             return;
         }
 
-const souvenirData = {
+// Get the current souvenir data if editing (to preserve existing image)
+        const currentSouvenir = souvenirId ? souvenirs.find(s => s.id === souvenirId) : null;
+
+        const souvenirData = {
             tourist_spot_id: spotId,
             name: name,
             description: description || null,
@@ -735,8 +746,13 @@ const souvenirData = {
 
         // Use data URL (base64) for image storage
         if (souvenirImageDataUrl) {
+            // New image uploaded - use the new image
             souvenirData.image_url = souvenirImageDataUrl;
+        } else if (!souvenirImageDataUrl && currentSouvenir && currentSouvenir.image_url) {
+            // No new image uploaded but there was an existing image - keep the old one
+            souvenirData.image_url = currentSouvenir.image_url;
         }
+        // If no new image and no existing image (new souvenir), don't include image_url
 
         if (souvenirId) {
             // Update
