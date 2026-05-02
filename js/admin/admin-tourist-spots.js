@@ -380,7 +380,7 @@ async function saveSpot() {
             spotData.image_url = currentSpot.image_url;
         }
         
-        if (spotId) {
+if (spotId) {
             const { error } = await window.supabaseClient
                 .from('tourist_spots')
                 .update(spotData)
@@ -388,29 +388,14 @@ async function saveSpot() {
 
             if (error) throw error;
             
-            const existingMsg = document.querySelector('#spotModal .save-success-message');
-            if (existingMsg) existingMsg.remove();
-            
-            const form = document.getElementById('spotForm');
-            const firstFormGroup = form.querySelector('.form-group');
-            const successMsg = document.createElement('div');
-            successMsg.className = 'save-success-message';
-            successMsg.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tourist spot updated successfully!';
-            
-            if (firstFormGroup) {
-                firstFormGroup.parentNode.insertBefore(successMsg, firstFormGroup.nextSibling);
-            } else {
-                form.insertBefore(successMsg, form.firstChild);
-            }
+            // Show success notification in spot modal container
+            showInContainerNotification('spotModalNotification', 'Tourist spot updated successfully!', 'success');
             
             const modalContent = document.querySelector('#spotModal .modal-content');
             modalContent.scrollTop = 0;
             
             await loadSpots();
             
-            setTimeout(() => {
-                if (successMsg && successMsg.parentNode) successMsg.remove();
-            }, 3000);
             return;
         } else {
             const { data: newSpot, error } = await window.supabaseClient
@@ -670,25 +655,30 @@ async function saveSouvenir() {
             souvenirData.image_url = currentSouvenir.image_url;
         }
 
-        if (souvenirId) {
+if (souvenirId) {
             const { error } = await window.supabaseClient
                 .from('souvenirs')
                 .update(souvenirData)
                 .eq('id', souvenirId);
 
             if (error) throw error;
-            showNotification('Souvenir updated successfully', 'success');
+            // Show success notification in souvenir modal container
+            showInContainerNotification('souvenirModalNotification', 'Souvenir updated successfully!', 'success');
         } else {
             const { error } = await window.supabaseClient
                 .from('souvenirs')
                 .insert([souvenirData]);
 
             if (error) throw error;
-            showNotification('Souvenir added successfully', 'success');
+            // Show success notification in souvenir modal container
+            showInContainerNotification('souvenirModalNotification', 'Souvenir added successfully!', 'success');
         }
 
-        closeSouvenirModal();
-        await loadSouvenirs(spotId);
+        // Close modal after notification is shown (3 seconds to match auto-dismiss)
+        setTimeout(() => {
+            closeSouvenirModal();
+            loadSouvenirs(spotId);
+        }, 1500);
 
     } catch (error) {
         showNotification('Failed to save souvenir: ' + error.message, 'error');
@@ -741,7 +731,40 @@ function showNotification(message, type = 'info') {
 
     setTimeout(() => {
         if (notification && notification.parentNode) notification.remove();
-    }, 4000);
+    }, 3000);
+}
+
+// Container-specific notification function
+function showInContainerNotification(containerId, message, type = 'success') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Clear any existing notification in this container
+    container.innerHTML = '';
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `in-container-notification ${type}`;
+    
+    const iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+    notification.innerHTML = `
+        <i class="fas ${iconClass}"></i>
+        <span>${message}</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+        if (notification && notification.parentNode) {
+            notification.style.animation = 'fadeOut 0.3s ease-out forwards';
+            setTimeout(() => {
+                if (notification && notification.parentNode) {
+                    container.innerHTML = '';
+                }
+            }, 300);
+        }
+    }, 3000);
 }
 
 // ========== HELPERS ==========

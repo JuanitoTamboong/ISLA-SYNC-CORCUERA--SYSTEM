@@ -19,6 +19,9 @@
 
 <div class="container">
 
+    <!-- MAIN PAGE NOTIFICATION CONTAINER -->
+    <div id="mainPageNotification" class="page-notification"></div>
+
     <!-- HEADER -->
     <div class="header">
         <i class="fa-solid fa-arrow-left" onclick="goBack()"></i>
@@ -47,13 +50,16 @@
 <div id="spotModal" class="spot-modal">
     <div class="modal-overlay" onclick="closeSpotModal()"></div>
     <div class="modal-content">
-        <div class="modal-header">
+<div class="modal-header">
             <h2 id="modalTitle">Add Tourist Spot</h2>
             <button class="modal-close" onclick="closeSpotModal()" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div class="modal-body">
+            <!-- SPOT MODAL NOTIFICATION CONTAINER -->
+            <div id="spotModalNotification" class="modal-notification"></div>
+            
             <form id="spotForm">
                 <input type="hidden" id="spotId">
 
@@ -130,13 +136,16 @@
 <div id="souvenirModal" class="spot-modal">
     <div class="modal-overlay" onclick="closeSouvenirModal()"></div>
     <div class="modal-content">
-        <div class="modal-header">
+<div class="modal-header">
             <h2 id="souvenirModalTitle">Add Souvenir</h2>
             <button class="modal-close" onclick="closeSouvenirModal()" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div class="modal-body">
+            <!-- SOUVENIR MODAL NOTIFICATION CONTAINER -->
+            <div id="souvenirModalNotification" class="modal-notification"></div>
+            
             <form id="souvenirForm">
                 <input type="hidden" id="souvenirId">
                 <input type="hidden" id="souvenirSpotId">
