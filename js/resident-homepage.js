@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.reportIssue = () => { window.location.href = '../pages/report.html'; }
     window.viewNews = () => { window.location.href = '../pages/news.html'; }
-    window.viewTouristSpots = () => showNotification('Tourist spots feature coming soon!', 'info')
+window.viewTouristSpots = () => { window.location.href = '../pages/tourist-spot.html'; }
     window.viewMyReports = () => { window.location.href = '../pages/view-reports.html'; }
 
     // ========== NOTIFICATION SYSTEM ==========
