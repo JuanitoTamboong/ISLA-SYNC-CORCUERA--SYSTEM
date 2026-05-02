@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Background sync from Supabase (non-blocking)
     syncFromSupabase(supabaseClient, admin.id).catch(console.error);
-    setupPhotoUpload();
 
     // Back button navigation
     const backBtn = document.querySelector('.header i.fa-arrow-left');
@@ -317,13 +316,17 @@ function populateEditForm() {
 
 async function saveProfileToSupabase(formData, supabaseClient) {
     try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
+        // Get admin from localStorage (admin doesn't use Supabase auth)
+        const currentAdminStr = localStorage.getItem('currentAdmin');
+        const currentAdmin = JSON.parse(currentAdminStr);
+        
+        if (!currentAdmin || !currentAdmin.id) {
+            showNotification('Admin session not found. Please login again.', 'error');
             return false;
         }
 
         const profileData = {
-            id: session.user.id,
+            id: currentAdmin.id,
             full_name: formData.fullName,
             email: formData.email,
             avatar_url: formData.photo || null,
@@ -341,8 +344,18 @@ async function saveProfileToSupabase(formData, supabaseClient) {
             return false;
         }
 
+        // Update localStorage with new data
+        const updatedAdmin = {
+            ...currentAdmin,
+            fullName: formData.fullName,
+            email: formData.email
+        };
+        localStorage.setItem('currentAdmin', JSON.stringify(updatedAdmin));
+
         return true;
     } catch (error) {
+        console.error('Save profile error:', error);
+        showNotification('Failed to save profile. Please try again.', 'error');
         return false;
     }
 }
@@ -354,15 +367,38 @@ function setupPhotoUpload() {
     const photoPlaceholder = document.getElementById('photoPlaceholder');
 
     if (photoInput) {
-        photoInput.addEventListener('change', handlePhotoUpload);
+        // Remove any existing listeners by cloning and replacing the element
+        const newPhotoInput = photoInput.cloneNode(true);
+        photoInput.parentNode.replaceChild(newPhotoInput, photoInput);
+        
+        newPhotoInput.addEventListener('change', handlePhotoUpload);
     }
 
     if (changePhotoBtn) {
-        changePhotoBtn.addEventListener('click', () => photoInput.click());
+        // Remove existing listeners and add fresh one
+        const newChangeBtn = changePhotoBtn.cloneNode(true);
+        changePhotoBtn.parentNode.replaceChild(newChangeBtn, changePhotoBtn);
+        
+        newChangeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('photoInput').click();
+        });
     }
 
     if (photoPlaceholder) {
-        photoPlaceholder.addEventListener('click', () => photoInput.click());
+        // Remove existing listeners and add fresh one
+        const newPlaceholder = photoPlaceholder.cloneNode(true);
+        photoPlaceholder.parentNode.replaceChild(newPlaceholder, photoPlaceholder);
+        
+        newPlaceholder.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('photoInput').click();
+        });
+        
+        // Also update the global reference
+        window.photoPlaceholder = newPlaceholder;
     }
 
     function handlePhotoUpload(e) {
