@@ -11,6 +11,7 @@ let souvenirImageDataUrl = null;
 let spotSouvenirs = {};
 let souvenirs = [];
 let deleteSpotId = null;
+let pendingSouvenirs = []; // Store souvenirs to be added after spot is created
 
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
@@ -223,6 +224,7 @@ window.openSpotModal = function(spotId = null) {
     document.getElementById('spotId').value = '';
     spotImageDataUrl = null;
     spotImageFile = null;
+    pendingSouvenirs = []; // Clear pending souvenirs when opening modal
     
     document.getElementById('spotUploadBox').style.display = 'flex';
     document.getElementById('spotPreviewDiv').style.display = 'none';
@@ -266,6 +268,7 @@ window.openSpotModal = function(spotId = null) {
 window.closeSpotModal = function() {
     document.getElementById('spotModal').classList.remove('show');
     currentEditingSpot = null;
+    pendingSouvenirs = [];
 };
 
 window.removeSpotImage = function() {
@@ -342,7 +345,7 @@ function setupImageUploads() {
     });
 }
 
-// ========== SAVE SPOT ==========
+// ========== SAVE SPOT (with pending souvenirs) ==========
 async function saveSpot() {
     const saveBtn = document.getElementById('saveBtn');
     const originalText = saveBtn.innerHTML;
@@ -380,7 +383,8 @@ async function saveSpot() {
             spotData.image_url = currentSpot.image_url;
         }
         
-if (spotId) {
+        if (spotId) {
+            // Update existing spot
             const { error } = await window.supabaseClient
                 .from('tourist_spots')
                 .update(spotData)
@@ -388,16 +392,13 @@ if (spotId) {
 
             if (error) throw error;
             
-            // Show success notification in spot modal container
             showInContainerNotification('spotModalNotification', 'Tourist spot updated successfully!', 'success');
-            
-            const modalContent = document.querySelector('#spotModal .modal-content');
-            modalContent.scrollTop = 0;
             
             await loadSpots();
             
             return;
         } else {
+            // Create new spot
             const { data: newSpot, error } = await window.supabaseClient
                 .from('tourist_spots')
                 .insert([spotData])
@@ -410,11 +411,46 @@ if (spotId) {
             currentEditingSpot = newSpot;
             document.getElementById('spotId').value = spotId;
             
-            showNotification('Tourist spot created! You can now add souvenirs.', 'success');
+            // Update souvenirSpotId field
+            const souvenirField = document.getElementById('souvenirSpotId');
+            if (souvenirField) {
+                souvenirField.value = String(spotId);
+            }
             
+            // Save any pending souvenirs that were added before spot creation
+            if (pendingSouvenirs.length > 0) {
+                showNotification(`Saving ${pendingSouvenirs.length} souvenir(s) for the new spot...`, 'info');
+                
+                for (const pendingSouvenir of pendingSouvenirs) {
+                    const souvenirData = {
+                        tourist_spot_id: String(spotId),
+                        name: pendingSouvenir.name,
+                        description: pendingSouvenir.description || null,
+                        price: pendingSouvenir.price,
+                        is_available: true,
+                        image_url: pendingSouvenir.image_url || null
+                    };
+                    
+                    const { error: souvenirError } = await window.supabaseClient
+                        .from('souvenirs')
+                        .insert([souvenirData]);
+                    
+                    if (souvenirError) {
+                        console.error('Failed to save pending souvenir:', souvenirError);
+                    }
+                }
+                
+                pendingSouvenirs = []; // Clear pending souvenirs
+                showNotification('Spot and souvenirs saved successfully!', 'success');
+            } else {
+                showNotification('Tourist spot created successfully!', 'success');
+            }
+            
+            // Load souvenirs for the new spot
             await loadSouvenirs(spotId);
             document.getElementById('modalTitle').textContent = 'Edit Tourist Spot';
             await loadSpots();
+            
             return;
         }
     } catch (error) {
@@ -518,7 +554,7 @@ function renderSouvenirs() {
     
     if (!grid) return;
     
-    if (souvenirs.length === 0) {
+    if (souvenirs.length === 0 && pendingSouvenirs.length === 0) {
         grid.innerHTML = `
             <div class="souvenir-empty">
                 <i class="fa-solid fa-gift"></i>
@@ -528,18 +564,23 @@ function renderSouvenirs() {
         `;
         return;
     }
-
-    grid.innerHTML = souvenirs.map(souvenir => {
-        const souvenirId = String(souvenir.id);
+    
+    // Display both saved souvenirs and pending souvenirs
+    const allSouvenirs = [...souvenirs, ...pendingSouvenirs];
+    
+    grid.innerHTML = allSouvenirs.map(souvenir => {
+        const souvenirId = souvenir.pending ? souvenir.tempId : String(souvenir.id);
         const priceFormatted = parseFloat(souvenir.price).toFixed(0);
+        const isPending = souvenir.pending === true;
         
         return `
-            <div class="souvenir-item" data-id="${souvenirId}">
+            <div class="souvenir-item ${isPending ? 'pending-souvenir' : ''}" data-id="${souvenirId}">
                 <div class="souvenir-image">
                     ${souvenir.image_url 
                         ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fa-solid fa-gift\\'></i>'">`
                         : `<i class="fa-solid fa-gift"></i>`
                     }
+                    ${isPending ? '<span class="pending-badge">Pending</span>' : ''}
                 </div>
                 <div class="souvenir-details">
                     <p class="souvenir-name">${escapeHtml(souvenir.name)}</p>
@@ -547,18 +588,41 @@ function renderSouvenirs() {
                     <p class="souvenir-price">₱${priceFormatted}</p>
                 </div>
                 <div class="souvenir-actions">
-                    <button onclick="editSouvenir('${souvenirId}')" title="Edit">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
-                    <button onclick="deleteSouvenir('${souvenirId}')" title="Delete">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    ${!isPending ? `
+                        <button onclick="editSouvenir('${souvenir.id}')" title="Edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteSouvenir('${souvenir.id}')" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    ` : `
+                        <button onclick="removePendingSouvenir('${souvenir.tempId}')" title="Remove">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    `}
                 </div>
             </div>
         `;
     }).join('');
 }
 
+// Remove pending souvenir from the list
+window.removePendingSouvenir = function(tempId) {
+    console.log('Removing pending souvenir with tempId:', tempId);
+    
+    const index = pendingSouvenirs.findIndex(s => s.tempId === tempId);
+    
+    if (index !== -1) {
+        pendingSouvenirs.splice(index, 1);
+        renderSouvenirs();
+        showNotification('Pending souvenir removed', 'success');
+    } else {
+        console.error('Could not find pending souvenir with tempId:', tempId);
+        showNotification('Failed to remove souvenir', 'error');
+    }
+};
+
+// Open souvenir modal
 window.openSouvenirModal = function(souvenirId = null) {
     const modal = document.getElementById('souvenirModal');
     const form = document.getElementById('souvenirForm');
@@ -566,15 +630,21 @@ window.openSouvenirModal = function(souvenirId = null) {
     
     form.reset();
     document.getElementById('souvenirId').value = '';
-    document.getElementById('souvenirSpotId').value = currentEditingSpot?.id || '';
     souvenirImageDataUrl = null;
     souvenirImageFile = null;
+    
+    // Set the spot ID if available
+    const spotId = document.getElementById('spotId')?.value;
+    if (spotId && spotId !== '') {
+        document.getElementById('souvenirSpotId').value = String(spotId);
+    }
     
     document.getElementById('souvenirUploadBox').style.display = 'flex';
     document.getElementById('souvenirPreviewDiv').style.display = 'none';
     document.getElementById('souvenirPreviewImg').src = '';
     
     if (souvenirId) {
+        // Check if it's from existing souvenirs
         const souvenir = souvenirs.find(s => s.id === souvenirId);
         if (!souvenir) {
             showNotification('Souvenir not found', 'error');
@@ -611,6 +681,7 @@ window.removeSouvenirImage = function() {
     document.getElementById('souvenirPreviewImg').src = '';
 };
 
+// Save souvenir - can save as pending if spot not saved yet
 async function saveSouvenir() {
     const saveBtn = document.getElementById('souvenirSaveBtn');
     const originalText = saveBtn.innerHTML;
@@ -619,15 +690,9 @@ async function saveSouvenir() {
 
     try {
         const souvenirId = document.getElementById('souvenirId').value;
-        const spotId = document.getElementById('souvenirSpotId').value;
         const name = document.getElementById('souvenirName').value.trim();
         const description = document.getElementById('souvenirDescription').value.trim();
         const price = parseFloat(document.getElementById('souvenirPrice').value);
-
-        if (!spotId) {
-            showNotification('No tourist spot selected', 'error');
-            return;
-        }
 
         if (!name) {
             showNotification('Please enter a souvenir name', 'error');
@@ -635,10 +700,48 @@ async function saveSouvenir() {
         }
 
         if (isNaN(price) || price < 0) {
-            showNotification('Please enter a valid price', 'error');
+            showNotification('Please enter a valid price (non-negative number)', 'error');
             return;
         }
-
+        
+        // Check if spot exists
+        let spotId = document.getElementById('spotId')?.value;
+        
+        if (!spotId || spotId === '') {
+            // Spot not saved yet - store as pending souvenir with unique tempId
+            const tempId = 'pending_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            const pendingSouvenir = {
+                tempId: tempId,
+                name: name,
+                description: description,
+                price: price,
+                image_url: souvenirImageDataUrl || null,
+                pending: true
+            };
+            
+            console.log('Adding pending souvenir:', pendingSouvenir);
+            
+            pendingSouvenirs.push(pendingSouvenir);
+            renderSouvenirs();
+            
+            // Reset form and close modal
+            document.getElementById('souvenirName').value = '';
+            document.getElementById('souvenirDescription').value = '';
+            document.getElementById('souvenirPrice').value = '';
+            souvenirImageDataUrl = null;
+            document.getElementById('souvenirUploadBox').style.display = 'flex';
+            document.getElementById('souvenirPreviewDiv').style.display = 'none';
+            document.getElementById('souvenirPreviewImg').src = '';
+            
+            showNotification('Souvenir added to pending list. It will be saved when you save the tourist spot.', 'success');
+            closeSouvenirModal();
+            return;
+        }
+        
+        // Spot exists - save directly to database
+        spotId = String(spotId);
+        
         const currentSouvenir = souvenirId ? souvenirs.find(s => s.id === souvenirId) : null;
 
         const souvenirData = {
@@ -655,32 +758,32 @@ async function saveSouvenir() {
             souvenirData.image_url = currentSouvenir.image_url;
         }
 
-if (souvenirId) {
+        if (souvenirId) {
             const { error } = await window.supabaseClient
                 .from('souvenirs')
                 .update(souvenirData)
                 .eq('id', souvenirId);
 
-            if (error) throw error;
-            // Show success notification in souvenir modal container
+            if (error) throw new Error(`Update failed: ${error.message}`);
             showInContainerNotification('souvenirModalNotification', 'Souvenir updated successfully!', 'success');
         } else {
             const { error } = await window.supabaseClient
                 .from('souvenirs')
                 .insert([souvenirData]);
 
-            if (error) throw error;
-            // Show success notification in souvenir modal container
+            if (error) throw new Error(`Insert failed: ${error.message}`);
             showInContainerNotification('souvenirModalNotification', 'Souvenir added successfully!', 'success');
         }
 
-        // Close modal after notification is shown (3 seconds to match auto-dismiss)
         setTimeout(() => {
             closeSouvenirModal();
-            loadSouvenirs(spotId);
+            if (currentEditingSpot) {
+                loadSouvenirs(currentEditingSpot.id);
+            }
         }, 1500);
 
     } catch (error) {
+        console.error('saveSouvenir error:', error);
         showNotification('Failed to save souvenir: ' + error.message, 'error');
     } finally {
         saveBtn.innerHTML = originalText;
@@ -724,7 +827,7 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
         <span>${message}</span>
     `;
     document.body.appendChild(notification);
@@ -739,10 +842,8 @@ function showInContainerNotification(containerId, message, type = 'success') {
     const container = document.getElementById(containerId);
     if (!container) return;
     
-    // Clear any existing notification in this container
     container.innerHTML = '';
     
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `in-container-notification ${type}`;
     
@@ -754,7 +855,6 @@ function showInContainerNotification(containerId, message, type = 'success') {
     
     container.appendChild(notification);
     
-    // Auto-dismiss after 3 seconds
     setTimeout(() => {
         if (notification && notification.parentNode) {
             notification.style.animation = 'fadeOut 0.3s ease-out forwards';
@@ -773,25 +873,11 @@ function escapeHtml(str) {
     return str.replace(/[&<>"']/g, function(m) {
         const map = {
             '&': '&amp;',
-            '<': '<',
-            '>': '>',
-            '"': '"',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
             "'": '&#039;'
         };
         return map[m] || m;
     });
-}
-
-function getTimeAgo(dateString) {
-    if (!dateString) return 'Just now';
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
-    if (seconds < 60) return 'Just now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
 }
