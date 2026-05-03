@@ -31,9 +31,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function loadData() {
     try {
-        // Show loading state
-        document.getElementById('landmarkScroll').innerHTML = '<div class="loading-placeholder">Loading spots...</div>';
-        document.getElementById('souvenirGrid').innerHTML = '<div class="loading-placeholder">Loading souvenirs...</div>';
+        // Skeleton loaders already in HTML, no need to set loading text
         
         // Fetch tourist spots (only visible ones)
         const { data: spots, error: spotsError } = await window.supabaseClient
@@ -166,12 +164,11 @@ function renderSpots(searchQuery = '') {
     }
     
     container.innerHTML = filteredSpots.map(spot => {
-        const imageSrc = spot.image_url || '../assets/sea.jpg';
+        const hasImage = spot.image_url && spot.image_url.trim() !== '';
         
         return `
             <div class="card">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(spot.name)}" 
-                     onerror="this.src='../assets/sea.jpg'">
+                ${hasImage ? `<img src="${escapeHtml(spot.image_url)}" alt="${escapeHtml(spot.name)}">` : '<div class="no-image"><i class="fa-solid fa-image"></i></div>'}
                 <div class="card-body">
                     <h4>${escapeHtml(spot.name)} <span>⭐ ${getRating(spot)}</span></h4>
                     <p><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location || 'Corcuera')}</p>
@@ -211,13 +208,12 @@ function renderSouvenirs(searchQuery = '') {
     }
     
     grid.innerHTML = filteredSouvenirs.map(souvenir => {
-        const imageSrc = souvenir.image_url || '../assets/7.jpg';
+        const hasImage = souvenir.image_url && souvenir.image_url.trim() !== '';
         const price = parseFloat(souvenir.price).toFixed(0);
         
         return `
             <div class="product">
-                <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(souvenir.name)}"
-                     onerror="this.src='../assets/7.jpg'">
+                ${hasImage ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}">` : '<div class="no-image"><i class="fa-solid fa-image"></i></div>'}
                 <h4>${escapeHtml(souvenir.name)}</h4>
                 <p>${escapeHtml(souvenir.tourist_spots?.name || 'Local Artisan')}</p>
                 <div class="price">₱${price} <i class="fa-solid fa-cart-plus"></i></div>

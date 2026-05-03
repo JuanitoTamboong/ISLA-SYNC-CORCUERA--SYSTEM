@@ -47,28 +47,18 @@
             <h3>Landmark Spots</h3>
             <span>See all</span>
         </div>
-
 <div class="scroll" id="landmarkScroll">
-
-            <!-- Sample cards (will be replaced by database data) -->
-            <div class="card">
-                <img src="../assets/generate background image of corquera romblon sea-7.jpg" alt="Gatub-Gatub Cave">
-                <div class="card-body">
-                    <h4>Gatub-Gatub Cave <span>⭐ 4.8</span></h4>
-                    <p><i class="fa-solid fa-location-dot"></i> Corcuera North</p>
-                    <div class="drivers">
-                        <span class="active">View Details</span>
-                    </div>
-                </div>
+    <!-- Skeleton Loaders -->
+    ${Array(5).fill().map(() => `
+        <div class="card skeleton-item">
+            <div class="skeleton skeleton-img"></div>
+            <div class="card-body">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-location"></div>
+                <div class="skeleton skeleton-driver"></div>
             </div>
-
-            <div class="card small">
-                <img src="../assets/generate background image of corquera romblon sea-7.jpg" alt="Payong Beach">
-                <div class="card-body">
-                    <h4>Payong Beach</h4>
-                    <p><i class="fa-solid fa-location-dot"></i> Corcuera</p>
-                </div>
-            </div>
+        </div>
+    `).join('')}
 
         </div>
     </div>
@@ -79,38 +69,16 @@
             <h3>Local Souvenirs</h3>
             <i class="fa-solid fa-sliders"></i>
         </div>
-
-
-
-        <div class="grid" id="souvenirGrid">
-
-            <div class="product">
-<img src="../assets/7.jpg" alt="Handwoven Pandan Bag">
-                <h4>Handwoven Pandan Bag</h4>
-                <p>By Simara Weavers</p>
-                <div class="price">₱450 <i class="fa-solid fa-cart-plus"></i></div>
-            </div>
-
-            <div class="product">
-                <img src="../assets/sea.jpg" alt="Simara Sun Hat">
-                <h4>Simara Sun Hat</h4>
-                <p>Artisan Collection</p>
-                <div class="price">₱280 <i class="fa-solid fa-cart-plus"></i></div>
-            </div>
-
-            <div class="product">
-                <img src="../assets/generate background image of corquera romblon sea-7.jpg" alt="Pandan Banig Mat">
-                <h4>Pandan Banig Mat</h4>
-                <p>Traditional 4x6</p>
-                <div class="price">₱850 <i class="fa-solid fa-cart-plus"></i></div>
-            </div>
-
-            <div class="product">
-                <img src="../assets/generate background of corquera romblon (1).jpg" alt="Decorative Box Set">
-                <h4>Decorative Box Set</h4>
-                <p>Sustainable Home</p>
-                <div class="price">₱320 <i class="fa-solid fa-cart-plus"></i></div>
-            </div>
+<div class="grid" id="souvenirGrid">
+    <!-- Skeleton Loaders -->
+    ${Array(4).fill().map(() => `
+        <div class="product skeleton-item">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-desc"></div>
+            <div class="skeleton skeleton-price"></div>
+        </div>
+    `).join('')}
 
         </div>
     </div>
