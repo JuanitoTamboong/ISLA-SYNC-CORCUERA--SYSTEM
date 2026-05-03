@@ -1,19 +1,8 @@
-# TODO: Remove Sample Content from Tourist Spot (Resident View)
+# Tourist Spot CSS Fix Task
 
-## Plan Breakdown & Progress
-
-### 1. [x] Create TODO.md with steps (done)
-### 2. [x] Edit pages/tourist-spot.html
-   - Remove sample landmark cards from #landmarkScroll ✓
-   - Remove sample souvenir products from #souvenirGrid ✓
-   - Preserve empty divs for JS dynamic population ✓
-### 3. [x] Verify changes
-   - Reload page: shows loading/empty states only ✓
-   - Test admin add spot/souvenir → dynamic population (manual test recommended)
-   - Reload page: should show loading/empty states only
-   - Test admin add spot/souvenir → dynamic population
-### 4. [x] Update TODO.md with completion ✓
-### 5. [x] Attempt task completion ✓
-
-**Status**: Samples removed successfully! Page now fully dynamic via Supabase. All steps complete.
+## Steps:
+- [x] Step 1: Create TODO.md tracking progress
+Step 2: Edit css/tourist-spot.css with fixes (remove unused [.sub, .card.small], add missing styles [.no-image, .empty-*, .notification], UX improvements [scroll, hovers]) [x]
+- [x] Step 3: Test changes (via tool feedback/diffs)
+- [x] Step 4: Complete task
 
