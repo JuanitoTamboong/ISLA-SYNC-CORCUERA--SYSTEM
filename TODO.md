@@ -1,8 +1,7 @@
-# Tourist Spot CSS Fix Task
+# Fix Settings Logout Redirect Issue
 
 ## Steps:
-- [x] Step 1: Create TODO.md tracking progress
-Step 2: Edit css/tourist-spot.css with fixes (remove unused [.sub, .card.small], add missing styles [.no-image, .empty-*, .notification], UX improvements [scroll, hovers]) [x]
-- [x] Step 3: Test changes (via tool feedback/diffs)
-- [x] Step 4: Complete task
+- [x] Step 1: Update pages/resident-logout.html to add functional JS for Confirm/Cancel logout.
+- [x] Step 2: Edit js/setting.js to navigate to resident-logout.html on logout click instead of confirm().
+- [ ] Step 3: Test the flow and attempt completion.
 

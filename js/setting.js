@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.logout').addEventListener('click', function(e) {
         e.preventDefault()
         e.stopPropagation()
-        window.logout()
+        window.location.href = 'resident-logout.html'
     })
     
     // Notification function
