@@ -1,7 +1,7 @@
-# Fix Settings Logout Redirect Issue
+# Admin Logout Implementation
 
-## Steps:
-- [x] Step 1: Update pages/resident-logout.html to add functional JS for Confirm/Cancel logout.
-- [x] Step 2: Edit js/setting.js to navigate to resident-logout.html on logout click instead of confirm().
-- [ ] Step 3: Test the flow and attempt completion.
-
+## Completed:
+- [x] Created `pages/admin/admin-logout.html` (confirmation page with inline Supabase logout, clears 'currentAdmin' etc., redirects to admin-login.html)
+- [x] Created `css/admin/admin-logout.css` (exact mirror of resident-logout.css with admin-shared import, fixed Safari backdrop-filter)
+- [x] Updated `js/admin/admin-settings.js` window.logout() to navigate to admin-logout.html (matches resident pattern)
+- [x] Minor formatting/CSS fixes

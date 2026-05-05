@@ -59,27 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Logout
-    window.logout = async function() {
-        try {
-            const confirmed = confirm('Are you sure you want to log out?');
-            if (!confirmed) return;
-
-            localStorage.removeItem('currentAdmin');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userSession');
-
-            await supabaseClient.auth.signOut();
-
-            showNotification('Logged out successfully', 'success');
-
-            setTimeout(() => {
-                window.location.href = 'admin-login.html';
-            }, 500);
-        } catch (error) {
-            setTimeout(() => {
-                window.location.href = 'admin-login.html';
-            }, 500);
-        }
+    window.logout = function() {
+        window.location.href = 'admin-logout.html';
     };
 
     // Back button
