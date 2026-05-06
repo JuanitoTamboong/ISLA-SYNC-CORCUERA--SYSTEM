@@ -185,9 +185,22 @@
 
 .card span {
     font-size: 11px;
-    color: #2f80ed;
+    color: #10b981;
     font-weight: 500;
 }
+
+.drivers span {
+    font-size: 11px;
+    color: #10b981;
+    font-weight: 500;
+}
+
+.drivers {
+    margin-top: 6px;
+}
+
+
+
 
 .card p {
     font-size: 11px;
@@ -257,6 +270,7 @@
     height: 100%;
     background-color: rgba(0,0,0,0.75);
     backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     animation: fadeIn 0.3s ease;
 }
 

@@ -259,6 +259,9 @@ function renderSouvenirs(searchQuery = '') {
                 <h4>${escapeHtml(souvenir.name)}</h4>
                 <p>${escapeHtml(souvenir.tourist_spots?.name || 'Local Vendor')}</p>
                 <div class="price">₱${price} <i class="fa-solid fa-cart-plus"></i></div>
+                <div class="drivers" style="margin-top:6px;">
+                    <span><i class="fa-regular fa-eye"></i> View Details</span>
+                </div>
             </div>
         `;
     }).join('');
