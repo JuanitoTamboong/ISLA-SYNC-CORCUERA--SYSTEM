@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
     
     window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Event delegation for tourist spot clicks (prevents stale listener issues)
+    setupSpotCardDelegation();
     
     showSkeletonLoaders();
     setupNavigation();
@@ -74,6 +77,7 @@ async function loadData() {
         renderAllViews();
         
     } catch (error) {
+        console.error('Load error:', error);
         isLoading = false;
         showNotification('Unable to load data. Please check your connection.', 'error');
         renderAllViews();
@@ -130,6 +134,7 @@ function renderBeaches(searchQuery = '') {
     }
     
     container.innerHTML = beaches.map(spot => generateSpotCard(spot)).join('');
+    // click handling uses event delegation
 }
 
 function renderLandmarks(searchQuery = '') {
@@ -153,6 +158,7 @@ function renderLandmarks(searchQuery = '') {
     }
     
     container.innerHTML = landmarks.map(spot => generateSpotCard(spot)).join('');
+    // click handling uses event delegation
 }
 
 function generateSpotCard(spot) {
@@ -160,7 +166,7 @@ function generateSpotCard(spot) {
     const rating = spot.rating ? parseFloat(spot.rating).toFixed(1) : '4.5';
     
     return `
-        <div class="card" onclick="viewSpotDetails(${spot.id})">
+        <div class="card" data-spot-id="${spot.id}">
             ${hasImage ? `<img src="${escapeHtml(spot.image_url)}" alt="${escapeHtml(spot.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E'">` : '<div class="no-image"><i class="fa-solid fa-image"></i></div>'}
             <div class="card-body">
                 <h4>${escapeHtml(spot.name)} <span>⭐ ${rating}</span></h4>
@@ -170,6 +176,59 @@ function generateSpotCard(spot) {
         </div>
     `;
 }
+
+// click handling for spot cards is handled via event delegation
+function attachCardClickEvents() {
+    // Attach click events to souvenir products
+    const products = document.querySelectorAll('.product');
+    products.forEach(product => {
+        product.removeEventListener('click', handleProductClick);
+        product.addEventListener('click', handleProductClick);
+    });
+}
+
+function handleCardClick(event) {
+    // Deprecated: spot clicks are handled by event delegation.
+    const card = event.currentTarget;
+    const spotId = card && card.getAttribute ? card.getAttribute('data-spot-id') : null;
+    if (spotId) viewSpotDetails(parseInt(spotId));
+}
+
+function handleProductClick(event) {
+    const product = event.currentTarget;
+    const souvenirId = product.getAttribute('data-souvenir-id');
+    if (souvenirId) {
+        viewSouvenirDetails(parseInt(souvenirId));
+    }
+}
+
+function setupSpotCardDelegation() {
+    const beachesContainer = document.getElementById('beachesScroll');
+    const landmarkContainer = document.getElementById('landmarkScroll');
+
+    const handler = (event) => {
+        const card = event.target.closest('.card');
+        if (!card) return;
+
+        const spotId = card.getAttribute('data-spot-id');
+        if (!spotId) return;
+
+        // Keep as string (Supabase id might be UUID)
+        viewSpotDetails(String(spotId));
+    };
+
+    if (beachesContainer) {
+        beachesContainer.removeEventListener('click', handler);
+        beachesContainer.addEventListener('click', handler);
+    }
+
+    if (landmarkContainer) {
+        landmarkContainer.removeEventListener('click', handler);
+        landmarkContainer.addEventListener('click', handler);
+    }
+}
+
+
 
 function renderSouvenirs(searchQuery = '') {
     const grid = document.getElementById('souvenirGrid');
@@ -195,7 +254,7 @@ function renderSouvenirs(searchQuery = '') {
         const hasImage = souvenir.image_url && souvenir.image_url.trim() !== '';
         const price = parseFloat(souvenir.price).toFixed(0);
         return `
-            <div class="product" onclick="viewSouvenirDetails(${souvenir.id})">
+            <div class="product" data-souvenir-id="${souvenir.id}">
                 ${hasImage ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E'">` : '<div class="no-image"><i class="fa-solid fa-bag-shopping"></i></div>'}
                 <h4>${escapeHtml(souvenir.name)}</h4>
                 <p>${escapeHtml(souvenir.tourist_spots?.name || 'Local Vendor')}</p>
@@ -203,6 +262,8 @@ function renderSouvenirs(searchQuery = '') {
             </div>
         `;
     }).join('');
+    
+    attachCardClickEvents();
 }
 
 function setupModals() {
@@ -237,13 +298,7 @@ function setupModals() {
     });
 }
 
-window.viewSpotDetails = function(spotId) {
-    const spot = allSpots.find(s => s.id === spotId);
-    if (!spot) {
-        showNotification('Spot not found', 'error');
-        return;
-    }
-    
+async function viewSpotDetails(spotId) {
     const modal = document.getElementById('spotModal');
     const modalName = document.getElementById('modalSpotName');
     const modalImage = document.getElementById('modalSpotImage');
@@ -251,9 +306,30 @@ window.viewSpotDetails = function(spotId) {
     const modalLocation = document.querySelector('#modalSpotLocation span');
     const modalCategory = document.querySelector('#modalSpotCategory span');
     const modalDescription = document.querySelector('#modalSpotDescription span');
-    
+
+    // Try from already-loaded list first
+    let spot = allSpots.find(s => String(s.id) === String(spotId));
+
+    // Fallback: fetch from Supabase if not in allSpots yet
+    if (!spot) {
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('tourist_spots')
+                .select('*')
+                .eq('id', spotId)
+                .single();
+
+            if (error || !data) throw error || new Error('No spot data');
+            spot = data;
+        } catch (err) {
+            console.error('Spot fetch error:', err);
+            showNotification('Spot not found', 'error');
+            return;
+        }
+    }
+
     modalName.textContent = spot.name || 'Unnamed Spot';
-    
+
     if (spot.image_url && spot.image_url.trim() !== '') {
         modalImage.src = spot.image_url;
         modalImage.alt = spot.name;
@@ -264,19 +340,20 @@ window.viewSpotDetails = function(spotId) {
         modalImage.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E';
         modalImage.alt = 'No image available';
     }
-    
+
     const rating = spot.rating ? parseFloat(spot.rating).toFixed(1) : '4.5';
     modalRating.textContent = `${rating} / 5.0`;
     modalLocation.textContent = spot.location || 'Corcuera, Romblon';
     modalCategory.textContent = spot.category || 'Tourist Spot';
     modalDescription.textContent = spot.description || 'No description available.';
-    
+
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
-};
+}
 
-window.viewSouvenirDetails = function(souvenirId) {
-    const souvenir = allSouvenirs.find(s => s.id === souvenirId);
+function viewSouvenirDetails(souvenirId) {
+    const souvenir = allSouvenirs.find(s => String(s.id) === String(souvenirId));
+
     if (!souvenir) {
         showNotification('Souvenir not found', 'error');
         return;
@@ -318,7 +395,7 @@ window.viewSouvenirDetails = function(souvenirId) {
     
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
-};
+}
 
 function setupFilters() {
     const pills = document.querySelectorAll('.pill');
@@ -432,3 +509,7 @@ function showNotification(message, type = 'info') {
         }
     }, 3000);
 }
+
+// Make functions available globally for any inline handlers (though we now use event listeners)
+window.viewSpotDetails = viewSpotDetails;
+window.viewSouvenirDetails = viewSouvenirDetails;
