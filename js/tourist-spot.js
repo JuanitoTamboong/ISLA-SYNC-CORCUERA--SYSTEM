@@ -2,12 +2,12 @@
 
 let allSpots = [];
 let allSouvenirs = [];
-let currentFilter = 'all'; // 'all', 'beaches', 'landmarks', 'souvenirs'
+let currentFilter = 'all';
 let isLoading = true;
 
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof supabase === 'undefined') {
-        showNotification('Supabase SDK failed to load', 'error');
+        showNotification('Connection error. Please refresh the page.', 'error');
         return;
     }
     
@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupNavigation();
     setupFilters();
     setupSearch();
+    setupModals();
     await loadData();
 });
 
@@ -71,53 +72,40 @@ async function loadData() {
         
         isLoading = false;
         renderAllViews();
+        
     } catch (error) {
-        console.error('Load error:', error);
-        loadMockData();
+        isLoading = false;
+        showNotification('Unable to load data. Please check your connection.', 'error');
+        renderAllViews();
     }
-}
-
-function loadMockData() {
-    allSpots = [
-        { id: 1, name: 'Bonbon Beach', category: 'Beach', rating: 4.8, location: 'Corcuera North, Romblon', image_url: null, description: 'Powdery white sand and crystal waters' },
-        { id: 2, name: 'Tugdan Beach', category: 'Beach', rating: 4.6, location: 'Corcuera South', image_url: null, description: 'Serene cove with sunset views' },
-        { id: 3, name: 'White Sand Cove', category: 'Beach', rating: 4.7, location: 'Corcuera East', image_url: null, description: 'Pristine shoreline' },
-        { id: 4, name: 'St. Vincent Church', category: 'Landmark', rating: 4.5, location: 'Corcuera Centro', image_url: null, description: 'Historic 1800s church' },
-        { id: 5, name: 'Simara Lighthouse', category: 'Landmark', rating: 4.9, location: 'Corcuera East', image_url: null, description: 'Panoramic ocean view' },
-        { id: 6, name: 'Old Spanish Bridge', category: 'Landmark', rating: 4.4, location: 'Corcuera West', image_url: null, description: 'Colonial era stone bridge' }
-    ];
-    
-    allSouvenirs = [
-        { id: 1, name: 'Handwoven Basket', price: 250, image_url: null, tourist_spots: { name: 'Local Artisan' }, description: 'Traditional weave' },
-        { id: 2, name: 'Seashell Necklace', price: 150, image_url: null, tourist_spots: { name: 'Beach Souvenirs' }, description: 'Handmade shells' },
-        { id: 3, name: 'Banana Chips', price: 80, image_url: null, tourist_spots: { name: 'Delights Store' }, description: 'Sweet & crispy' },
-        { id: 4, name: 'Romblon Marble', price: 350, image_url: null, tourist_spots: { name: 'Craft Shop' }, description: 'Polished souvenir' }
-    ];
-    
-    renderAllViews();
 }
 
 function renderAllViews(searchQuery = '') {
-    // Always render beaches & landmarks separately (when filter is 'all' or specific)
     if (currentFilter === 'all' || currentFilter === 'beaches') {
-        document.getElementById('beachesSection').style.display = 'block';
+        const beachesSection = document.getElementById('beachesSection');
+        if (beachesSection) beachesSection.style.display = 'block';
         renderBeaches(searchQuery);
     } else {
-        document.getElementById('beachesSection').style.display = 'none';
+        const beachesSection = document.getElementById('beachesSection');
+        if (beachesSection) beachesSection.style.display = 'none';
     }
     
     if (currentFilter === 'all' || currentFilter === 'landmarks') {
-        document.getElementById('landmarkSection').style.display = 'block';
+        const landmarkSection = document.getElementById('landmarkSection');
+        if (landmarkSection) landmarkSection.style.display = 'block';
         renderLandmarks(searchQuery);
     } else {
-        document.getElementById('landmarkSection').style.display = 'none';
+        const landmarkSection = document.getElementById('landmarkSection');
+        if (landmarkSection) landmarkSection.style.display = 'none';
     }
     
     if (currentFilter === 'all' || currentFilter === 'souvenirs') {
-        document.getElementById('souvenirSection').style.display = 'block';
+        const souvenirSection = document.getElementById('souvenirSection');
+        if (souvenirSection) souvenirSection.style.display = 'block';
         renderSouvenirs(searchQuery);
     } else {
-        document.getElementById('souvenirSection').style.display = 'none';
+        const souvenirSection = document.getElementById('souvenirSection');
+        if (souvenirSection) souvenirSection.style.display = 'none';
     }
 }
 
@@ -131,7 +119,8 @@ function renderBeaches(searchQuery = '') {
         const q = searchQuery.toLowerCase();
         beaches = beaches.filter(spot => 
             spot.name.toLowerCase().includes(q) || 
-            (spot.location && spot.location.toLowerCase().includes(q))
+            (spot.location && spot.location.toLowerCase().includes(q)) ||
+            (spot.description && spot.description.toLowerCase().includes(q))
         );
     }
     
@@ -153,7 +142,8 @@ function renderLandmarks(searchQuery = '') {
         const q = searchQuery.toLowerCase();
         landmarks = landmarks.filter(spot => 
             spot.name.toLowerCase().includes(q) || 
-            (spot.location && spot.location.toLowerCase().includes(q))
+            (spot.location && spot.location.toLowerCase().includes(q)) ||
+            (spot.description && spot.description.toLowerCase().includes(q))
         );
     }
     
@@ -167,14 +157,13 @@ function renderLandmarks(searchQuery = '') {
 
 function generateSpotCard(spot) {
     const hasImage = spot.image_url && spot.image_url.trim() !== '';
-    const rating = spot.rating || (4.0 + Math.random() * 1.0).toFixed(1);
-    const displayRating = parseFloat(rating).toFixed(1);
+    const rating = spot.rating ? parseFloat(spot.rating).toFixed(1) : '4.5';
     
     return `
         <div class="card" onclick="viewSpotDetails(${spot.id})">
             ${hasImage ? `<img src="${escapeHtml(spot.image_url)}" alt="${escapeHtml(spot.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E'">` : '<div class="no-image"><i class="fa-solid fa-image"></i></div>'}
             <div class="card-body">
-                <h4>${escapeHtml(spot.name)} <span>⭐ ${displayRating}</span></h4>
+                <h4>${escapeHtml(spot.name)} <span>⭐ ${rating}</span></h4>
                 <p><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location || 'Corcuera, Romblon')}</p>
                 <div class="drivers"><span><i class="fa-regular fa-eye"></i> View Details</span></div>
             </div>
@@ -192,6 +181,7 @@ function renderSouvenirs(searchQuery = '') {
         const q = searchQuery.toLowerCase();
         filtered = filtered.filter(s => 
             s.name.toLowerCase().includes(q) ||
+            (s.description && s.description.toLowerCase().includes(q)) ||
             (s.tourist_spots?.name && s.tourist_spots.name.toLowerCase().includes(q))
         );
     }
@@ -208,12 +198,127 @@ function renderSouvenirs(searchQuery = '') {
             <div class="product" onclick="viewSouvenirDetails(${souvenir.id})">
                 ${hasImage ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E'">` : '<div class="no-image"><i class="fa-solid fa-bag-shopping"></i></div>'}
                 <h4>${escapeHtml(souvenir.name)}</h4>
-                <p>${escapeHtml(souvenir.tourist_spots?.name || 'Local Artisan')}</p>
+                <p>${escapeHtml(souvenir.tourist_spots?.name || 'Local Vendor')}</p>
                 <div class="price">₱${price} <i class="fa-solid fa-cart-plus"></i></div>
             </div>
         `;
     }).join('');
 }
+
+function setupModals() {
+    const closeButtons = document.querySelectorAll('.close-modal');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('spotModal').style.display = 'none';
+            document.getElementById('souvenirModal').style.display = 'none';
+            document.body.style.overflow = '';
+        });
+    });
+    
+    window.addEventListener('click', function(event) {
+        const spotModal = document.getElementById('spotModal');
+        const souvenirModal = document.getElementById('souvenirModal');
+        if (event.target === spotModal) {
+            spotModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        if (event.target === souvenirModal) {
+            souvenirModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+    
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            document.getElementById('spotModal').style.display = 'none';
+            document.getElementById('souvenirModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+}
+
+window.viewSpotDetails = function(spotId) {
+    const spot = allSpots.find(s => s.id === spotId);
+    if (!spot) {
+        showNotification('Spot not found', 'error');
+        return;
+    }
+    
+    const modal = document.getElementById('spotModal');
+    const modalName = document.getElementById('modalSpotName');
+    const modalImage = document.getElementById('modalSpotImage');
+    const modalRating = document.querySelector('#modalSpotRating span');
+    const modalLocation = document.querySelector('#modalSpotLocation span');
+    const modalCategory = document.querySelector('#modalSpotCategory span');
+    const modalDescription = document.querySelector('#modalSpotDescription span');
+    
+    modalName.textContent = spot.name || 'Unnamed Spot';
+    
+    if (spot.image_url && spot.image_url.trim() !== '') {
+        modalImage.src = spot.image_url;
+        modalImage.alt = spot.name;
+        modalImage.onerror = function() {
+            this.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E';
+        };
+    } else {
+        modalImage.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E';
+        modalImage.alt = 'No image available';
+    }
+    
+    const rating = spot.rating ? parseFloat(spot.rating).toFixed(1) : '4.5';
+    modalRating.textContent = `${rating} / 5.0`;
+    modalLocation.textContent = spot.location || 'Corcuera, Romblon';
+    modalCategory.textContent = spot.category || 'Tourist Spot';
+    modalDescription.textContent = spot.description || 'No description available.';
+    
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+};
+
+window.viewSouvenirDetails = function(souvenirId) {
+    const souvenir = allSouvenirs.find(s => s.id === souvenirId);
+    if (!souvenir) {
+        showNotification('Souvenir not found', 'error');
+        return;
+    }
+    
+    const modal = document.getElementById('souvenirModal');
+    const modalName = document.getElementById('modalSouvenirName');
+    const modalImage = document.getElementById('modalSouvenirImage');
+    const modalPrice = document.querySelector('#modalSouvenirPrice span');
+    const modalShop = document.querySelector('#modalSouvenirShop span');
+    const modalDescription = document.querySelector('#modalSouvenirDescription span');
+    const buyBtn = document.getElementById('buyNowBtn');
+    
+    modalName.textContent = souvenir.name || 'Unnamed Souvenir';
+    
+    if (souvenir.image_url && souvenir.image_url.trim() !== '') {
+        modalImage.src = souvenir.image_url;
+        modalImage.alt = souvenir.name;
+        modalImage.onerror = function() {
+            this.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E';
+        };
+    } else {
+        modalImage.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E';
+        modalImage.alt = 'No image available';
+    }
+    
+    const price = souvenir.price ? parseFloat(souvenir.price).toFixed(2) : '0.00';
+    modalPrice.textContent = `₱${price}`;
+    modalShop.textContent = souvenir.tourist_spots?.name || 'Local Vendor';
+    modalDescription.textContent = souvenir.description || 'No description available.';
+    
+    if (buyBtn) {
+        const newBuyBtn = buyBtn.cloneNode(true);
+        buyBtn.parentNode.replaceChild(newBuyBtn, buyBtn);
+        newBuyBtn.addEventListener('click', function() {
+            showNotification(`Inquiry sent for ${souvenir.name}`, 'success');
+        });
+    }
+    
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+};
 
 function setupFilters() {
     const pills = document.querySelectorAll('.pill');
@@ -227,43 +332,49 @@ function setupFilters() {
             const filter = this.dataset.filter;
             currentFilter = filter;
             
-            // Clear search input when changing filters (optional)
             if (searchInput) searchInput.value = '';
             
             if (filter === 'all') {
                 renderAllViews('');
             } else if (filter === 'beaches') {
-                document.getElementById('beachesSection').style.display = 'block';
-                document.getElementById('landmarkSection').style.display = 'none';
-                document.getElementById('souvenirSection').style.display = 'none';
+                const beachesSection = document.getElementById('beachesSection');
+                const landmarkSection = document.getElementById('landmarkSection');
+                const souvenirSection = document.getElementById('souvenirSection');
+                if (beachesSection) beachesSection.style.display = 'block';
+                if (landmarkSection) landmarkSection.style.display = 'none';
+                if (souvenirSection) souvenirSection.style.display = 'none';
                 renderBeaches('');
             } else if (filter === 'landmarks') {
-                document.getElementById('beachesSection').style.display = 'none';
-                document.getElementById('landmarkSection').style.display = 'block';
-                document.getElementById('souvenirSection').style.display = 'none';
+                const beachesSection = document.getElementById('beachesSection');
+                const landmarkSection = document.getElementById('landmarkSection');
+                const souvenirSection = document.getElementById('souvenirSection');
+                if (beachesSection) beachesSection.style.display = 'none';
+                if (landmarkSection) landmarkSection.style.display = 'block';
+                if (souvenirSection) souvenirSection.style.display = 'none';
                 renderLandmarks('');
             } else if (filter === 'souvenirs') {
-                document.getElementById('beachesSection').style.display = 'none';
-                document.getElementById('landmarkSection').style.display = 'none';
-                document.getElementById('souvenirSection').style.display = 'block';
+                const beachesSection = document.getElementById('beachesSection');
+                const landmarkSection = document.getElementById('landmarkSection');
+                const souvenirSection = document.getElementById('souvenirSection');
+                if (beachesSection) beachesSection.style.display = 'none';
+                if (landmarkSection) landmarkSection.style.display = 'none';
+                if (souvenirSection) souvenirSection.style.display = 'block';
                 renderSouvenirs('');
             }
         });
     });
     
-    // "See all" functionality for each section
     const seeAllBtns = document.querySelectorAll('.see-all');
     seeAllBtns.forEach(btn => {
         btn.addEventListener('click', function(e) {
             const section = this.dataset.section;
             if (section === 'beaches') {
                 const beachCount = allSpots.filter(s => s.category === 'Beach').length;
-                showNotification(`${beachCount} beautiful beaches in Corcuera`, 'info');
-                // Scroll to beaches section
+                showNotification(`${beachCount} beaches in Corcuera`, 'info');
                 document.getElementById('beachesSection').scrollIntoView({ behavior: 'smooth' });
             } else if (section === 'landmarks') {
                 const landmarkCount = allSpots.filter(s => s.category === 'Landmark').length;
-                showNotification(`${landmarkCount} historic landmarks to explore`, 'info');
+                showNotification(`${landmarkCount} landmarks to explore`, 'info');
                 document.getElementById('landmarkSection').scrollIntoView({ behavior: 'smooth' });
             }
         });
@@ -298,16 +409,6 @@ function setupNavigation() {
     }
 }
 
-window.viewSpotDetails = function(spotId) {
-    const spot = allSpots.find(s => s.id === spotId);
-    if (spot) showNotification(`📍 ${spot.name} - Tap for full details`, 'info');
-};
-
-window.viewSouvenirDetails = function(souvenirId) {
-    const souvenir = allSouvenirs.find(s => s.id === souvenirId);
-    if (souvenir) showNotification(`🛍️ ${souvenir.name} - ₱${souvenir.price}`, 'info');
-};
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -321,8 +422,13 @@ function showNotification(message, type = 'info') {
     
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${escapeHtml(message)}</span>`;
+    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+    notification.innerHTML = `<i class="fas ${icon}"></i><span>${escapeHtml(message)}</span>`;
     document.body.appendChild(notification);
     
-    setTimeout(() => notification.remove(), 3000);
+    setTimeout(() => {
+        if (notification && notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
 }

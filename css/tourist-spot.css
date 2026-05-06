@@ -246,6 +246,151 @@
     font-size: 12px;
 }
 
+/* ========== MODAL STYLES ========== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.75);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 5% auto;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 28px;
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 22px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.close-modal {
+    font-size: 32px;
+    font-weight: 300;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: #ef4444;
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 20px 22px 28px;
+}
+
+.modal-body img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 20px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+}
+
+.modal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-info p {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #374151;
+    margin: 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-info p i {
+    width: 22px;
+    color: #2f80ed;
+    font-size: 16px;
+}
+
+.modal-info p span {
+    flex: 1;
+    color: #4b5563;
+    line-height: 1.4;
+}
+
+.buy-now-btn {
+    background: linear-gradient(135deg, #2f80ed, #2563eb);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    width: 100%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.buy-now-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(47,128,237,0.3);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.buy-now-btn:active {
+    transform: translateY(0);
+}
+
+/* Rating stars styling */
+.modal-info p:first-child i.fa-star {
+    color: #fbbf24;
+}
+
 /* ========== SKELETON LOADING ANIMATION ========== */
 .skeleton {
     background: linear-gradient(
@@ -407,7 +552,7 @@
     padding: 12px 24px;
     border-radius: 8px;
     font-size: 14px;
-    z-index: 3000;
+    z-index: 10000;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -433,4 +578,20 @@
 
 .notification i {
     font-size: 18px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 92%;
+        margin: 10% auto;
+    }
+    
+    .modal-body img {
+        height: 180px;
+    }
+    
+    .modal-header h2 {
+        font-size: 18px;
+    }
 }
