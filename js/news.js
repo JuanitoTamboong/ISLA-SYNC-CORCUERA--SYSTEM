@@ -85,15 +85,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const newsContainer = document.getElementById('newsContainer');
         const featuredContainer = document.getElementById('featuredContainer');
 
-        // Show loading state
+        // Show skeleton loader (matches tourist-spot skeleton-card style)
         if (newsContainer) {
-            newsContainer.innerHTML = `
-                <div class="loading-state">
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p>Loading news...</p>
-                </div>
-            `;
+            const skeletonCount = 5;
+            const skeletonHtml = Array.from({ length: skeletonCount }).map(() => {
+                return `
+                    <div class="skeleton-card">
+                        <div class="skeleton-image skeleton"></div>
+                        <div class="skeleton-body">
+                            <div class="skeleton-tag skeleton"></div>
+                            <div class="skeleton-title skeleton"></div>
+                            <div class="skeleton-date skeleton"></div>
+                            <div class="skeleton-preview skeleton"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            newsContainer.innerHTML = skeletonHtml;
         }
+
 
         try {
             const { data, error } = await supabaseClient

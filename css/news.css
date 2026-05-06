@@ -272,6 +272,75 @@
     margin: 0;
 }
 
+/* NEWS SKELETON CARDS (same style as tourist-spot skeleton) */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e0e0e0 50%,
+        #f0f0f0 75%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+    display: flex;
+    gap: 14px;
+    background: #ffffff;
+    padding: 18px 20px;
+    border-radius: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid #f8fafc;
+    overflow: hidden;
+}
+
+.skeleton-card .skeleton-image {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+}
+
+.skeleton-card .skeleton-body {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.skeleton-card .skeleton-title {
+    height: 16px;
+    width: 85%;
+    border-radius: 4px;
+    margin: 6px 0 10px 0;
+}
+
+.skeleton-card .skeleton-tag {
+    height: 20px;
+    width: 110px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.skeleton-card .skeleton-date {
+    height: 13px;
+    width: 55%;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.skeleton-card .skeleton-preview {
+    height: 34px;
+    width: 100%;
+    border-radius: 6px;
+}
+
+
 /* CONTENT PREVIEW */
 .content-preview {
     font-size: 13px;
