@@ -80,7 +80,7 @@
     white-space: nowrap;
     flex-shrink: 0;
     transition: all 0.2s ease;
-    border: 1px solid #e2e8f0;
+
 }
 
 .pill.active {
@@ -92,7 +92,13 @@
 .pill:hover {
     background: #e2e8f0;
     transform: translateY(-1px);
+    color: #1f2937;
 }
+
+.pill:not(.active):hover {
+    color: #1f2937;
+}
+
 
 /* FEATURED */
 .featured {
