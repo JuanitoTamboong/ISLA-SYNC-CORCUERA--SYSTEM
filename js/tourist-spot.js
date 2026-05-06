@@ -198,7 +198,7 @@ function handleProductClick(event) {
     const product = event.currentTarget;
     const souvenirId = product.getAttribute('data-souvenir-id');
     if (souvenirId) {
-        viewSouvenirDetails(parseInt(souvenirId));
+        viewSouvenirDetails(String(souvenirId));
     }
 }
 
@@ -351,13 +351,28 @@ async function viewSpotDetails(spotId) {
     document.body.style.overflow = 'hidden';
 }
 
-function viewSouvenirDetails(souvenirId) {
-    const souvenir = allSouvenirs.find(s => String(s.id) === String(souvenirId));
+async function viewSouvenirDetails(souvenirId) {
+    // Try from already-loaded list first
+    let souvenir = allSouvenirs.find(s => String(s.id) === String(souvenirId));
 
+    // Fallback: fetch from Supabase if not in allSouvenirs yet
     if (!souvenir) {
-        showNotification('Souvenir not found', 'error');
-        return;
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('souvenirs')
+                .select('*')
+                .eq('id', souvenirId)
+                .single();
+
+            if (error || !data) throw error || new Error('No souvenir data');
+            souvenir = data;
+        } catch (err) {
+            console.error('Souvenir fetch error:', err);
+            showNotification('Souvenir not found', 'error');
+            return;
+        }
     }
+
     
     const modal = document.getElementById('souvenirModal');
     const modalName = document.getElementById('modalSouvenirName');
