@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Explore</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>IslaSync Corcuera | Explore Simara Island</title>
 
-<link rel="stylesheet" href="../css/tourist-spot.css">
-
+<!-- Font Awesome 6 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Main CSS -->
+<link rel="stylesheet" href="../css/tourist-spot.css">
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Tourist Spot JS -->
-<script src="../js/tourist-spot.js"></script>
+<!-- Main JavaScript -->
+<script src="../js/tourist-spot.js" defer></script>
 </head>
 <body>
 
@@ -21,7 +23,7 @@
 
     <!-- HEADER -->
     <div class="header">
-        <i class="fa-solid fa-arrow-left"></i>
+        <i class="fa-solid fa-arrow-left" id="backButton"></i>
         <div>
             <h2>Isla-Sync-Corcuera</h2>
             <p>Explore Simara Island</p>
@@ -31,37 +33,61 @@
     <!-- SEARCH BOX -->
     <div class="search-box">
         <i class="fa fa-search"></i>
-        <input type="text" placeholder="Find spots in corcuera...">
+        <input type="text" id="searchInput" placeholder="Find spots in corcuera..." autocomplete="off">
     </div>
 
-    <!-- FILTER -->
-    <div class="filters">
-        <div class="pill active"><i class="fas fa-umbrella-beach"></i> Beaches</div>
-        <div class="pill"><i class="fas fa-landmark"></i> Landmarks</div>
-        <div class="pill"><i class="fas fa-store"></i> Souvenirs</div>
+    <!-- FILTER PILLS -->
+    <div class="filters" id="filterContainer">
+        <div class="pill active" data-filter="all">
+            <i class="fas fa-list"></i> All
+        </div>
+        <div class="pill" data-filter="beaches">
+            <i class="fas fa-umbrella-beach"></i> Beaches
+        </div>
+        <div class="pill" data-filter="landmarks">
+            <i class="fas fa-landmark"></i> Landmarks
+        </div>
+        <div class="pill" data-filter="souvenirs">
+            <i class="fas fa-store"></i> Souvenirs
+        </div>
     </div>
 
-    <!-- LANDMARK -->
-    <div class="section">
+    <!-- BEACHES SECTION (separate) -->
+    <div class="section" id="beachesSection">
         <div class="section-header">
-            <h3>Landmark Spots</h3>
-            <span>See all</span>
+            <h3><i class="fas fa-umbrella-beach"></i> Beaches</h3>
+            <span class="see-all" data-section="beaches">See all</span>
         </div>
-    <div class="scroll" id="landmarkScroll">
+        <div class="scroll" id="beachesScroll">
+            <!-- Skeleton cards will appear here -->
         </div>
     </div>
 
-    <!-- SOUVENIRS -->
-    <div class="section">
+    <!-- LANDMARK SPOTS SECTION (separate) -->
+    <div class="section" id="landmarkSection">
         <div class="section-header">
-            <h3>Local Souvenirs</h3>
-            <i class="fa-solid fa-sliders"></i>
+            <h3><i class="fas fa-landmark"></i> Landmark Spots</h3>
+            <span class="see-all" data-section="landmarks">See all</span>
         </div>
-    <div class="grid" id="souvenirGrid">
+        <div class="scroll" id="landmarkScroll">
+            <!-- Skeleton cards will appear here -->
+        </div>
+    </div>
+
+    <!-- LOCAL SOUVENIRS SECTION -->
+    <div class="section" id="souvenirSection">
+        <div class="section-header">
+            <h3><i class="fas fa-store"></i> Local Souvenirs</h3>
+            <i class="fa-solid fa-sliders" id="filterSouvenirIcon"></i>
+        </div>
+        <div class="grid" id="souvenirGrid">
+            <!-- Skeleton products will appear here -->
         </div>
     </div>
 
 </div>
+
+<div id="notificationContainer"></div>
 
 </body>
 </html>

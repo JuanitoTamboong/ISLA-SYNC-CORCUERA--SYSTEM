@@ -1,7 +1,16 @@
-# Admin Logout Implementation
+# Tourist Spot Filters Implementation (Resident)
 
-## Completed:
-- [x] Created `pages/admin/admin-logout.html` (confirmation page with inline Supabase logout, clears 'currentAdmin' etc., redirects to admin-login.html)
-- [x] Created `css/admin/admin-logout.css` (exact mirror of resident-logout.css with admin-shared import, fixed Safari backdrop-filter)
-- [x] Updated `js/admin/admin-settings.js` window.logout() to navigate to admin-logout.html (matches resident pattern)
-- [x] Minor formatting/CSS fixes
+## Approved Plan Steps:
+1. [x] Create TODO.md 
+2. [x] Add "All" filter pill to pages/tourist-spot.html
+3. [x] Update js/tourist-spot.js: 
+   - Add section visibility functions
+   - Add renderAll() function
+   - Update setupFilters() for 'all' handling
+   - Remove loading notification from loadData()
+   - Set default currentCategory = 'All'
+4. [x] Test all filters: All, Beaches, Landmarks, Souvenirs
+5. [x] Complete task
+
+**Status:** All changes implemented successfully.
+

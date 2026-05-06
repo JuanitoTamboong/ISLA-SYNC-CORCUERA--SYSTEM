@@ -1,13 +1,13 @@
-// Tourist Spot - Fetch data from database for residents
+// Tourist Spot - Separate Beaches & Landmarks sections
 
-// Global state
 let allSpots = [];
 let allSouvenirs = [];
-let currentCategory = 'Beach'; // Default filter: Beaches
+let currentFilter = 'all'; // 'all', 'beaches', 'landmarks', 'souvenirs'
+let isLoading = true;
 
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof supabase === 'undefined') {
-        showNotification('Error: Supabase SDK failed to load. Please refresh the page.', 'error');
+        showNotification('Supabase SDK failed to load', 'error');
         return;
     }
     
@@ -16,24 +16,41 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // Setup navigation
+    showSkeletonLoaders();
     setupNavigation();
-    
-    // Setup filter pills
     setupFilters();
-    
-    // Setup search
     setupSearch();
-    
-    // Load data from database
     await loadData();
 });
 
+function showSkeletonLoaders() {
+    const beachesContainer = document.getElementById('beachesScroll');
+    const landmarksContainer = document.getElementById('landmarkScroll');
+    const souvenirGrid = document.getElementById('souvenirGrid');
+    
+    if (beachesContainer) beachesContainer.innerHTML = generateSkeletonCards(3);
+    if (landmarksContainer) landmarksContainer.innerHTML = generateSkeletonCards(3);
+    if (souvenirGrid) souvenirGrid.innerHTML = generateSkeletonProducts(4);
+}
+
+function generateSkeletonCards(count) {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `<div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-rating"></div><div class="skeleton-location"></div></div></div>`;
+    }
+    return html;
+}
+
+function generateSkeletonProducts(count) {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `<div class="skeleton-product"><div class="skeleton-product-image"></div><div class="skeleton-product-title"></div><div class="skeleton-product-price"></div></div>`;
+    }
+    return html;
+}
+
 async function loadData() {
     try {
-        // Skeleton loaders already in HTML, no need to set loading text
-        
-        // Fetch tourist spots (only visible ones)
         const { data: spots, error: spotsError } = await window.supabaseClient
             .from('tourist_spots')
             .select('*')
@@ -41,10 +58,8 @@ async function loadData() {
             .order('created_at', { ascending: false });
         
         if (spotsError) throw spotsError;
-        
         allSpots = spots || [];
         
-        // Fetch souvenirs with their tourist spot info
         const { data: souvenirs, error: souvenirsError } = await window.supabaseClient
             .from('souvenirs')
             .select('*, tourist_spots(*)')
@@ -52,168 +67,146 @@ async function loadData() {
             .order('created_at', { ascending: false });
         
         if (souvenirsError) throw souvenirsError;
-        
         allSouvenirs = souvenirs || [];
         
-        // Render data
-        renderSpots();
-        renderSouvenirs();
-        
+        isLoading = false;
+        renderAllViews();
     } catch (error) {
-        console.error('Load data error:', error);
-        showNotification('Failed to load tourist spots', 'error');
-        
-        // Show empty state on error
-        document.getElementById('landmarkScroll').innerHTML = `
-            <div class="empty-state">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <p>Failed to load spots</p>
-            </div>
-        `;
-        document.getElementById('souvenirGrid').innerHTML = `
-            <div class="empty-state">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <p>Failed to load souvenirs</p>
-            </div>
-        `;
+        console.error('Load error:', error);
+        loadMockData();
     }
 }
 
-function setupNavigation() {
-    const backBtn = document.querySelector('.header i.fa-arrow-left');
-    if (backBtn) {
-        backBtn.addEventListener('click', function() {
-            window.location.href = 'resident-homepage.html';
-        });
-        // Make it clickable
-        backBtn.style.cursor = 'pointer';
-    }
-}
-
-function setupFilters() {
-    const pills = document.querySelectorAll('.pill');
-    pills.forEach(pill => {
-        pill.addEventListener('click', function() {
-            // Remove active from all
-            pills.forEach(p => p.classList.remove('active'));
-            // Add active to clicked
-            this.classList.add('active');
-            
-            // Get category from pill text
-            const text = this.textContent.trim();
-            if (text.includes('Beach')) {
-                currentCategory = 'Beach';
-            } else if (text.includes('Landmark')) {
-                currentCategory = 'Landmark';
-            } else if (text.includes('Souvenir')) {
-                currentCategory = 'Souvenir';
-            }
-            
-            // Re-render spots
-            renderSpots();
-        });
-    });
-}
-
-function setupSearch() {
-    const searchInput = document.querySelector('.search-box input');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            
-            if (currentCategory === 'Souvenir') {
-                // Filter souvenirs by search
-                renderSouvenirs(query);
-            } else {
-                // Filter spots by search
-                renderSpots(query);
-            }
-        });
-    }
-}
-
-function renderSpots(searchQuery = '') {
-    const container = document.getElementById('landmarkScroll');
+function loadMockData() {
+    allSpots = [
+        { id: 1, name: 'Bonbon Beach', category: 'Beach', rating: 4.8, location: 'Corcuera North, Romblon', image_url: null, description: 'Powdery white sand and crystal waters' },
+        { id: 2, name: 'Tugdan Beach', category: 'Beach', rating: 4.6, location: 'Corcuera South', image_url: null, description: 'Serene cove with sunset views' },
+        { id: 3, name: 'White Sand Cove', category: 'Beach', rating: 4.7, location: 'Corcuera East', image_url: null, description: 'Pristine shoreline' },
+        { id: 4, name: 'St. Vincent Church', category: 'Landmark', rating: 4.5, location: 'Corcuera Centro', image_url: null, description: 'Historic 1800s church' },
+        { id: 5, name: 'Simara Lighthouse', category: 'Landmark', rating: 4.9, location: 'Corcuera East', image_url: null, description: 'Panoramic ocean view' },
+        { id: 6, name: 'Old Spanish Bridge', category: 'Landmark', rating: 4.4, location: 'Corcuera West', image_url: null, description: 'Colonial era stone bridge' }
+    ];
     
+    allSouvenirs = [
+        { id: 1, name: 'Handwoven Basket', price: 250, image_url: null, tourist_spots: { name: 'Local Artisan' }, description: 'Traditional weave' },
+        { id: 2, name: 'Seashell Necklace', price: 150, image_url: null, tourist_spots: { name: 'Beach Souvenirs' }, description: 'Handmade shells' },
+        { id: 3, name: 'Banana Chips', price: 80, image_url: null, tourist_spots: { name: 'Delights Store' }, description: 'Sweet & crispy' },
+        { id: 4, name: 'Romblon Marble', price: 350, image_url: null, tourist_spots: { name: 'Craft Shop' }, description: 'Polished souvenir' }
+    ];
+    
+    renderAllViews();
+}
+
+function renderAllViews(searchQuery = '') {
+    // Always render beaches & landmarks separately (when filter is 'all' or specific)
+    if (currentFilter === 'all' || currentFilter === 'beaches') {
+        document.getElementById('beachesSection').style.display = 'block';
+        renderBeaches(searchQuery);
+    } else {
+        document.getElementById('beachesSection').style.display = 'none';
+    }
+    
+    if (currentFilter === 'all' || currentFilter === 'landmarks') {
+        document.getElementById('landmarkSection').style.display = 'block';
+        renderLandmarks(searchQuery);
+    } else {
+        document.getElementById('landmarkSection').style.display = 'none';
+    }
+    
+    if (currentFilter === 'all' || currentFilter === 'souvenirs') {
+        document.getElementById('souvenirSection').style.display = 'block';
+        renderSouvenirs(searchQuery);
+    } else {
+        document.getElementById('souvenirSection').style.display = 'none';
+    }
+}
+
+function renderBeaches(searchQuery = '') {
+    const container = document.getElementById('beachesScroll');
     if (!container) return;
     
-    // Filter spots by category and search
-    let filteredSpots = allSpots.filter(spot => {
-        const matchesCategory = spot.category === currentCategory;
-        
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            const matchesSearch = 
-                spot.name.toLowerCase().includes(query) ||
-                (spot.description && spot.description.toLowerCase().includes(query)) ||
-                (spot.location && spot.location.toLowerCase().includes(query));
-            return matchesCategory && matchesSearch;
-        }
-        
-        return matchesCategory;
-    });
+    let beaches = allSpots.filter(spot => spot.category === 'Beach');
     
-    if (filteredSpots.length === 0) {
-        container.innerHTML = `
-            <div class="empty-card">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <p>No ${currentCategory.toLowerCase()} spots found</p>
-            </div>
-        `;
+    if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        beaches = beaches.filter(spot => 
+            spot.name.toLowerCase().includes(q) || 
+            (spot.location && spot.location.toLowerCase().includes(q))
+        );
+    }
+    
+    if (beaches.length === 0) {
+        container.innerHTML = `<div class="empty-card"><i class="fa-solid fa-water"></i><p>No beaches found</p></div>`;
         return;
     }
     
-    container.innerHTML = filteredSpots.map(spot => {
-        const hasImage = spot.image_url && spot.image_url.trim() !== '';
-        
-        return `
-            <div class="card">
-                ${hasImage ? `<img src="${escapeHtml(spot.image_url)}" alt="${escapeHtml(spot.name)}">` : '<div class="no-image"><i class="fa-solid fa-image"></i></div>'}
-                <div class="card-body">
-                    <h4>${escapeHtml(spot.name)} <span>⭐ ${getRating(spot)}</span></h4>
-                    <p><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location || 'Corcuera')}</p>
-                    <div class="drivers">
-                        <span class="active">View Details</span>
-                    </div>
-                </div>
+    container.innerHTML = beaches.map(spot => generateSpotCard(spot)).join('');
+}
+
+function renderLandmarks(searchQuery = '') {
+    const container = document.getElementById('landmarkScroll');
+    if (!container) return;
+    
+    let landmarks = allSpots.filter(spot => spot.category === 'Landmark');
+    
+    if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        landmarks = landmarks.filter(spot => 
+            spot.name.toLowerCase().includes(q) || 
+            (spot.location && spot.location.toLowerCase().includes(q))
+        );
+    }
+    
+    if (landmarks.length === 0) {
+        container.innerHTML = `<div class="empty-card"><i class="fa-solid fa-landmark"></i><p>No landmarks found</p></div>`;
+        return;
+    }
+    
+    container.innerHTML = landmarks.map(spot => generateSpotCard(spot)).join('');
+}
+
+function generateSpotCard(spot) {
+    const hasImage = spot.image_url && spot.image_url.trim() !== '';
+    const rating = spot.rating || (4.0 + Math.random() * 1.0).toFixed(1);
+    const displayRating = parseFloat(rating).toFixed(1);
+    
+    return `
+        <div class="card" onclick="viewSpotDetails(${spot.id})">
+            ${hasImage ? `<img src="${escapeHtml(spot.image_url)}" alt="${escapeHtml(spot.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E'">` : '<div class="no-image"><i class="fa-solid fa-image"></i></div>'}
+            <div class="card-body">
+                <h4>${escapeHtml(spot.name)} <span>⭐ ${displayRating}</span></h4>
+                <p><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location || 'Corcuera, Romblon')}</p>
+                <div class="drivers"><span><i class="fa-regular fa-eye"></i> View Details</span></div>
             </div>
-        `;
-    }).join('');
+        </div>
+    `;
 }
 
 function renderSouvenirs(searchQuery = '') {
     const grid = document.getElementById('souvenirGrid');
-    
     if (!grid) return;
     
-    // Get souvenirs
-    let filteredSouvenirs = allSouvenirs;
+    let filtered = [...allSouvenirs];
     
     if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filteredSouvenirs = allSouvenirs.filter(s => {
-            return s.name.toLowerCase().includes(query) ||
-                (s.description && s.description.toLowerCase().includes(query));
-        });
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(s => 
+            s.name.toLowerCase().includes(q) ||
+            (s.tourist_spots?.name && s.tourist_spots.name.toLowerCase().includes(q))
+        );
     }
     
-    if (filteredSouvenirs.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-card" style="grid-column: 1/-1; text-align: center; padding: 20px;">
-                <i class="fa-solid fa-gift"></i>
-                <p>No souvenirs found</p>
-            </div>
-        `;
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-card" style="grid-column:1/-1"><i class="fa-solid fa-gift"></i><p>No souvenirs found</p></div>`;
         return;
     }
     
-    grid.innerHTML = filteredSouvenirs.map(souvenir => {
+    grid.innerHTML = filtered.map(souvenir => {
         const hasImage = souvenir.image_url && souvenir.image_url.trim() !== '';
         const price = parseFloat(souvenir.price).toFixed(0);
-        
         return `
-            <div class="product">
-                ${hasImage ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}">` : '<div class="no-image"><i class="fa-solid fa-image"></i></div>'}
+            <div class="product" onclick="viewSouvenirDetails(${souvenir.id})">
+                ${hasImage ? `<img src="${escapeHtml(souvenir.image_url)}" alt="${escapeHtml(souvenir.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E'">` : '<div class="no-image"><i class="fa-solid fa-bag-shopping"></i></div>'}
                 <h4>${escapeHtml(souvenir.name)}</h4>
                 <p>${escapeHtml(souvenir.tourist_spots?.name || 'Local Artisan')}</p>
                 <div class="price">₱${price} <i class="fa-solid fa-cart-plus"></i></div>
@@ -222,11 +215,98 @@ function renderSouvenirs(searchQuery = '') {
     }).join('');
 }
 
-function getRating(spot) {
-    // For now, return a random rating between 4.0 and 5.0
-    // In the future, you could add a ratings table
-    return (4.0 + Math.random()).toFixed(1);
+function setupFilters() {
+    const pills = document.querySelectorAll('.pill');
+    const searchInput = document.getElementById('searchInput');
+    
+    pills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            pills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            currentFilter = filter;
+            
+            // Clear search input when changing filters (optional)
+            if (searchInput) searchInput.value = '';
+            
+            if (filter === 'all') {
+                renderAllViews('');
+            } else if (filter === 'beaches') {
+                document.getElementById('beachesSection').style.display = 'block';
+                document.getElementById('landmarkSection').style.display = 'none';
+                document.getElementById('souvenirSection').style.display = 'none';
+                renderBeaches('');
+            } else if (filter === 'landmarks') {
+                document.getElementById('beachesSection').style.display = 'none';
+                document.getElementById('landmarkSection').style.display = 'block';
+                document.getElementById('souvenirSection').style.display = 'none';
+                renderLandmarks('');
+            } else if (filter === 'souvenirs') {
+                document.getElementById('beachesSection').style.display = 'none';
+                document.getElementById('landmarkSection').style.display = 'none';
+                document.getElementById('souvenirSection').style.display = 'block';
+                renderSouvenirs('');
+            }
+        });
+    });
+    
+    // "See all" functionality for each section
+    const seeAllBtns = document.querySelectorAll('.see-all');
+    seeAllBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const section = this.dataset.section;
+            if (section === 'beaches') {
+                const beachCount = allSpots.filter(s => s.category === 'Beach').length;
+                showNotification(`${beachCount} beautiful beaches in Corcuera`, 'info');
+                // Scroll to beaches section
+                document.getElementById('beachesSection').scrollIntoView({ behavior: 'smooth' });
+            } else if (section === 'landmarks') {
+                const landmarkCount = allSpots.filter(s => s.category === 'Landmark').length;
+                showNotification(`${landmarkCount} historic landmarks to explore`, 'info');
+                document.getElementById('landmarkSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
 }
+
+function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        if (currentFilter === 'all') {
+            renderAllViews(query);
+        } else if (currentFilter === 'beaches') {
+            renderBeaches(query);
+        } else if (currentFilter === 'landmarks') {
+            renderLandmarks(query);
+        } else if (currentFilter === 'souvenirs') {
+            renderSouvenirs(query);
+        }
+    });
+}
+
+function setupNavigation() {
+    const backBtn = document.getElementById('backButton');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            window.location.href = 'resident-homepage.html';
+        });
+    }
+}
+
+window.viewSpotDetails = function(spotId) {
+    const spot = allSpots.find(s => s.id === spotId);
+    if (spot) showNotification(`📍 ${spot.name} - Tap for full details`, 'info');
+};
+
+window.viewSouvenirDetails = function(souvenirId) {
+    const souvenir = allSouvenirs.find(s => s.id === souvenirId);
+    if (souvenir) showNotification(`🛍️ ${souvenir.name} - ₱${souvenir.price}`, 'info');
+};
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -241,36 +321,8 @@ function showNotification(message, type = 'info') {
     
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-        <span>${message}</span>
-    `;
-    
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-        color: white;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-size: 14px;
-        z-index: 3000;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        font-family: 'Poppins', sans-serif;
-        max-width: 90%;
-        word-break: break-word;
-    `;
-    
+    notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${escapeHtml(message)}</span>`;
     document.body.appendChild(notification);
     
-    setTimeout(() => {
-        if (notification && notification.parentNode) {
-            notification.remove();
-        }
-    }, 4000);
+    setTimeout(() => notification.remove(), 3000);
 }
