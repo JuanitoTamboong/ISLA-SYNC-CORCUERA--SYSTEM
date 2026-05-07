@@ -1,4 +1,4 @@
-// Admin Reports Map Script
+// Admin Reports Map Script (No Bottom Navigation)
 const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
 
@@ -371,29 +371,28 @@ function highlightReport(reportId) {
 
 function refreshData() {
     const icon = document.querySelector('.header .refresh');
-    icon.style.animation = 'spin 0.6s linear';
-    setTimeout(() => icon.style.animation = '', 600);
+    if (icon) {
+        icon.style.animation = 'spin 0.6s linear';
+        setTimeout(() => {
+            if (icon) icon.style.animation = '';
+        }, 600);
+    }
     loadReports();
     showNotification('Refreshing data...', 'info');
 }
 
-// Navigation
-window.navigateTo = function(page) {
-    switch(page) {
-        case 'home': window.location.href = 'admin-homepage.html'; break;
-        case 'map': break;
-        case 'news': window.location.href = 'admin-news.html'; break;
-        case 'settings': window.location.href = 'admin-settings.html'; break;
-    }
-};
-
+// Simplified navigation - only back button functionality
+// Removed bottom nav functions to prevent errors
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
 };
 
+// Keep modal functions global
 window.openReportModal = openReportModal;
 window.closeModal = closeModal;
 window.updateReportStatus = updateReportStatus;
+window.refreshData = refreshData;
+window.goBack = goBack;
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -449,4 +448,3 @@ spinStyle.textContent = `
     }
 `;
 document.head.appendChild(spinStyle);
-
