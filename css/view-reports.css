@@ -268,7 +268,45 @@
     animation: fadeSlide 0.4s ease-out;
 }
 
+/* LOADING (center/front for report details) */
+#loadingState {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.loader-overlay {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-box {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    border-radius: 18px;
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #374151;
+    font-weight: 600;
+}
+
 /* MODAL STYLES */
+
 .report-modal {
     display: none;
     position: fixed;

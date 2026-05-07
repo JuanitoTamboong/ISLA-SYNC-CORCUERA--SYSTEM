@@ -319,13 +319,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const reportItem = e.target.closest('.report-item');
         if (reportItem && reportItem.dataset.id && supabaseClient) {
             const reportId = reportItem.dataset.id;
-            document.getElementById('loadingState').innerHTML = '<i class="fa-solid fa-spinner fa-pulse"></i> Loading details...';
-            document.getElementById('loadingState').style.display = 'flex';
-            
+            const loadingDiv = document.getElementById('loadingState');
+            loadingDiv.innerHTML = '<div class="loader-overlay">'
+                + '<div class="loader-box">'
+                + '<i class="fa-solid fa-spinner fa-pulse"></i>'
+                + '<div>Loading details...</div>'
+                + '</div>'
+                + '</div>';
+            loadingDiv.style.display = 'flex';
+
             const report = await fetchReportDetail(reportId);
-            document.getElementById('loadingState').style.display = 'none';
-            
+
+            loadingDiv.style.display = 'none';
+            loadingDiv.innerHTML = '';
+
             if (report) {
+
                 populateModal(report);
                 showModal();
             }
