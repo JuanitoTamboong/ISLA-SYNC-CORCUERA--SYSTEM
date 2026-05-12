@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
-        showNotification('Error: Supabase SDK failed to load. Please refresh the page.', 'error');
+showNotification('Connection issue: Please check your internet and try again.', 'error');
         return;
     }
     
