@@ -1,4 +1,4 @@
-// Admin Reports Map Script (No Bottom Navigation)
+// Admin Reports Map Script
 const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
 
@@ -31,7 +31,7 @@ const MARKER_ICONS = {
 
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof supabase === 'undefined') {
-        showNotification('Error: Supabase SDK failed to load.', 'error');
+        showNotification('Error: Configuration failed to load.', 'error');
         return;
     }
 
@@ -105,20 +105,10 @@ async function loadReports() {
 
         if (error) throw error;
 
-        // Debug: log what Supabase returns for reporter_name
-        if (data && data.length > 0) {
-            console.log('Sample report from Supabase:', {
-                id: data[0].id,
-                reporter_name: data[0].reporter_name,
-                keys: Object.keys(data[0])
-            });
-        }
-
         allReports = data || [];
         applyFilter(activeFilter);
 
     } catch (error) {
-        console.error('Load reports error:', error);
         showNotification('Failed to load reports', 'error');
         document.getElementById('reportsList').innerHTML = `
             <div class="empty-state">
@@ -346,7 +336,6 @@ async function updateReportStatus(newStatus) {
         applyFilter(activeFilter);
 
     } catch (error) {
-        console.error('Update status error:', error);
         showNotification('Failed to update status', 'error');
         btn.innerHTML = originalHtml;
         btn.disabled = false;
@@ -381,8 +370,7 @@ function refreshData() {
     showNotification('Refreshing data...', 'info');
 }
 
-// Simplified navigation - only back button functionality
-// Removed bottom nav functions to prevent errors
+// Navigation functions
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
 };
@@ -397,7 +385,7 @@ window.goBack = goBack;
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"]/g, function(m) {
-        const map = { '&': '&amp;', '<': '<', '>': '>', '"': '"' };
+        const map = { '&': '&amp;', '<': '<', '>': '>', '"': '&quot;' };
         return map[m];
     });
 }
