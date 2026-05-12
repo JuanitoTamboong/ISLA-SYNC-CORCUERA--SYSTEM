@@ -309,12 +309,103 @@ function setupImageUploads() {
             return;
         }
         
+        const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
+
+        const estimateBytesFromDataUrl = (dataUrl) => {
+            const base64 = dataUrl.split(',')[1] || '';
+            const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
+            return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+        };
+
+        const compressToTarget = (imgEl) => {
+            const dimensionSteps = [1024, 768, 512, 384, 256];
+            const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
+
+            for (const maxDim of dimensionSteps) {
+                let w = imgEl.width;
+                let h = imgEl.height;
+
+                if (w > h) {
+                    if (w > maxDim) {
+                        h = (h * maxDim) / w;
+                        w = maxDim;
+                    }
+                } else {
+                    if (h > maxDim) {
+                        w = (w * maxDim) / h;
+                        h = maxDim;
+                    }
+                }
+
+                w = Math.round(w);
+                h = Math.round(h);
+
+                const tryCanvas = document.createElement('canvas');
+                const tryCtx = tryCanvas.getContext('2d');
+                tryCanvas.width = w;
+                tryCanvas.height = h;
+                tryCtx.drawImage(imgEl, 0, 0, w, h);
+
+                for (const q of qualitySteps) {
+                    const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
+                    const bytes = estimateBytesFromDataUrl(dataUrl);
+                    if (bytes <= MAX_UPLOAD_BYTES) return dataUrl;
+                }
+            }
+
+            // Aggressive final attempt
+            const finalMaxDim = 256;
+            let w = imgEl.width;
+            let h = imgEl.height;
+            if (w > h) {
+                if (w > finalMaxDim) {
+                    h = (h * finalMaxDim) / w;
+                    w = finalMaxDim;
+                }
+            } else {
+                if (h > finalMaxDim) {
+                    w = (w * finalMaxDim) / h;
+                    h = finalMaxDim;
+                }
+            }
+
+            w = Math.round(w);
+            h = Math.round(h);
+
+            const finalCanvas = document.createElement('canvas');
+            const finalCtx = finalCanvas.getContext('2d');
+            finalCanvas.width = w;
+            finalCanvas.height = h;
+            finalCtx.drawImage(imgEl, 0, 0, w, h);
+            return finalCanvas.toDataURL('image/jpeg', 0.1);
+        };
+
         const reader = new FileReader();
         reader.onload = function(e) {
-            spotImageDataUrl = e.target.result;
-            document.getElementById('spotPreviewImg').src = e.target.result;
-            document.getElementById('spotUploadBox').style.display = 'none';
-            document.getElementById('spotPreviewDiv').style.display = 'block';
+            const originalDataUrl = e.target.result;
+            const img = new Image();
+            img.onload = () => {
+                const compressedDataUrl = compressToTarget(img);
+                const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
+
+                spotImageDataUrl = compressedDataUrl;
+                document.getElementById('spotPreviewImg').src = compressedDataUrl;
+                document.getElementById('spotUploadBox').style.display = 'none';
+                document.getElementById('spotPreviewDiv').style.display = 'block';
+
+                if (estimatedBytes > MAX_UPLOAD_BYTES) {
+                    showNotification('Spot image selected, but it may still be larger than 70KB after compression.', 'error');
+                }
+            };
+            img.onerror = () => {
+                // fallback to original
+                spotImageDataUrl = originalDataUrl;
+                document.getElementById('spotPreviewImg').src = originalDataUrl;
+                document.getElementById('spotUploadBox').style.display = 'none';
+                document.getElementById('spotPreviewDiv').style.display = 'block';
+                showNotification('Spot image selected. Compression may have failed.', 'error');
+            };
+            img.src = originalDataUrl;
         };
         reader.readAsDataURL(file);
     });
@@ -334,12 +425,102 @@ function setupImageUploads() {
             return;
         }
         
+        const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
+
+        const estimateBytesFromDataUrl = (dataUrl) => {
+            const base64 = dataUrl.split(',')[1] || '';
+            const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
+            return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+        };
+
+        const compressToTarget = (imgEl) => {
+            const dimensionSteps = [1024, 768, 512, 384, 256];
+            const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
+
+            for (const maxDim of dimensionSteps) {
+                let w = imgEl.width;
+                let h = imgEl.height;
+
+                if (w > h) {
+                    if (w > maxDim) {
+                        h = (h * maxDim) / w;
+                        w = maxDim;
+                    }
+                } else {
+                    if (h > maxDim) {
+                        w = (w * maxDim) / h;
+                        h = maxDim;
+                    }
+                }
+
+                w = Math.round(w);
+                h = Math.round(h);
+
+                const tryCanvas = document.createElement('canvas');
+                const tryCtx = tryCanvas.getContext('2d');
+                tryCanvas.width = w;
+                tryCanvas.height = h;
+                tryCtx.drawImage(imgEl, 0, 0, w, h);
+
+                for (const q of qualitySteps) {
+                    const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
+                    const bytes = estimateBytesFromDataUrl(dataUrl);
+                    if (bytes <= MAX_UPLOAD_BYTES) return dataUrl;
+                }
+            }
+
+            // Aggressive final attempt
+            const finalMaxDim = 256;
+            let w = imgEl.width;
+            let h = imgEl.height;
+            if (w > h) {
+                if (w > finalMaxDim) {
+                    h = (h * finalMaxDim) / w;
+                    w = finalMaxDim;
+                }
+            } else {
+                if (h > finalMaxDim) {
+                    w = (w * finalMaxDim) / h;
+                    h = finalMaxDim;
+                }
+            }
+
+            w = Math.round(w);
+            h = Math.round(h);
+
+            const finalCanvas = document.createElement('canvas');
+            const finalCtx = finalCanvas.getContext('2d');
+            finalCanvas.width = w;
+            finalCanvas.height = h;
+            finalCtx.drawImage(imgEl, 0, 0, w, h);
+            return finalCanvas.toDataURL('image/jpeg', 0.1);
+        };
+
         const reader = new FileReader();
         reader.onload = function(e) {
-            souvenirImageDataUrl = e.target.result;
-            document.getElementById('souvenirPreviewImg').src = e.target.result;
-            document.getElementById('souvenirUploadBox').style.display = 'none';
-            document.getElementById('souvenirPreviewDiv').style.display = 'block';
+            const originalDataUrl = e.target.result;
+            const img = new Image();
+            img.onload = () => {
+                const compressedDataUrl = compressToTarget(img);
+                const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
+
+                souvenirImageDataUrl = compressedDataUrl;
+                document.getElementById('souvenirPreviewImg').src = compressedDataUrl;
+                document.getElementById('souvenirUploadBox').style.display = 'none';
+                document.getElementById('souvenirPreviewDiv').style.display = 'block';
+
+                if (estimatedBytes > MAX_UPLOAD_BYTES) {
+                    showNotification('Souvenir image selected, but it may still be larger than 70KB after compression.', 'error');
+                }
+            };
+            img.onerror = () => {
+                souvenirImageDataUrl = originalDataUrl;
+                document.getElementById('souvenirPreviewImg').src = originalDataUrl;
+                document.getElementById('souvenirUploadBox').style.display = 'none';
+                document.getElementById('souvenirPreviewDiv').style.display = 'block';
+                showNotification('Souvenir image selected. Compression may have failed.', 'error');
+            };
+            img.src = originalDataUrl;
         };
         reader.readAsDataURL(file);
     });

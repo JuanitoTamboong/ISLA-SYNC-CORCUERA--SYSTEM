@@ -339,15 +339,109 @@ function handleNewsImageUpload(e) {
         showNotification('Please select a valid image file.', 'error');
         return;
     }
+
+    const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
+
+    const estimateBytesFromDataUrl = (dataUrl) => {
+        const base64 = dataUrl.split(',')[1] || '';
+        const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
+        return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+    };
+
+    const compressToTarget = (imgEl) => {
+        const dimensionSteps = [1024, 768, 512, 384, 256];
+        const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
+
+        for (const maxDim of dimensionSteps) {
+            let w = imgEl.width;
+            let h = imgEl.height;
+
+            if (w > h) {
+                if (w > maxDim) {
+                    h = (h * maxDim) / w;
+                    w = maxDim;
+                }
+            } else {
+                if (h > maxDim) {
+                    w = (w * maxDim) / h;
+                    h = maxDim;
+                }
+            }
+
+            w = Math.round(w);
+            h = Math.round(h);
+
+            const tryCanvas = document.createElement('canvas');
+            const tryCtx = tryCanvas.getContext('2d');
+            tryCanvas.width = w;
+            tryCanvas.height = h;
+            tryCtx.drawImage(imgEl, 0, 0, w, h);
+
+            for (const q of qualitySteps) {
+                const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
+                const bytes = estimateBytesFromDataUrl(dataUrl);
+                if (bytes <= MAX_UPLOAD_BYTES) return dataUrl;
+            }
+        }
+
+        // Aggressive final attempt
+        const finalMaxDim = 256;
+        let w = imgEl.width;
+        let h = imgEl.height;
+        if (w > h) {
+            if (w > finalMaxDim) {
+                h = (h * finalMaxDim) / w;
+                w = finalMaxDim;
+            }
+        } else {
+            if (h > finalMaxDim) {
+                w = (w * finalMaxDim) / h;
+                h = finalMaxDim;
+            }
+        }
+
+        w = Math.round(w);
+        h = Math.round(h);
+
+        const finalCanvas = document.createElement('canvas');
+        const finalCtx = finalCanvas.getContext('2d');
+        finalCanvas.width = w;
+        finalCanvas.height = h;
+        finalCtx.drawImage(imgEl, 0, 0, w, h);
+        return finalCanvas.toDataURL('image/jpeg', 0.1);
+    };
+
     const reader = new FileReader();
     reader.onload = function(ev) {
-        const previewImg = document.getElementById('newsPreviewImg');
-        const previewDiv = document.getElementById('newsPreviewDiv');
-        const uploadBox = document.getElementById('newsUploadBox');
-        if (previewImg) previewImg.src = ev.target.result;
-        if (previewDiv) previewDiv.style.display = 'block';
-        if (uploadBox) uploadBox.style.display = 'none';
-        window.selectedNewsImage = ev.target.result;
+        const originalDataUrl = ev.target.result;
+        const img = new Image();
+        img.onload = () => {
+            const compressedDataUrl = compressToTarget(img);
+            const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
+
+            const previewImg = document.getElementById('newsPreviewImg');
+            const previewDiv = document.getElementById('newsPreviewDiv');
+            const uploadBox = document.getElementById('newsUploadBox');
+            if (previewImg) previewImg.src = compressedDataUrl;
+            if (previewDiv) previewDiv.style.display = 'block';
+            if (uploadBox) uploadBox.style.display = 'none';
+            window.selectedNewsImage = compressedDataUrl;
+
+            if (estimatedBytes > MAX_UPLOAD_BYTES) {
+                showNotification('News image selected, but it may still be larger than 70KB after compression.', 'error');
+            }
+        };
+        img.onerror = () => {
+            const previewImg = document.getElementById('newsPreviewImg');
+            const previewDiv = document.getElementById('newsPreviewDiv');
+            const uploadBox = document.getElementById('newsUploadBox');
+            if (previewImg) previewImg.src = originalDataUrl;
+            if (previewDiv) previewDiv.style.display = 'block';
+            if (uploadBox) uploadBox.style.display = 'none';
+            window.selectedNewsImage = originalDataUrl;
+            showNotification('News image selected. Compression may have failed.', 'error');
+        };
+        img.src = originalDataUrl;
     };
     reader.readAsDataURL(file);
 }

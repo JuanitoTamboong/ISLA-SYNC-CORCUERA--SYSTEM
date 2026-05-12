@@ -217,11 +217,94 @@ document.addEventListener('DOMContentLoaded', function() {
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
+
+                        const estimateBytesFromDataUrl = (dataUrl) => {
+                            // dataUrl format: data:image/jpeg;base64,....
+                            const base64 = dataUrl.split(',')[1] || '';
+                            const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
+                            return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+                        };
+
+                        const compressToTarget = (imgEl) => {
+                            // Try different dimensions first, then progressively lower quality.
+                            const dimensionSteps = [1024, 768, 512, 384, 256];
+                            const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
+
+                            for (const maxDim of dimensionSteps) {
+                                // Calculate new width/height maintaining aspect ratio.
+                                let w = imgEl.width;
+                                let h = imgEl.height;
+                                if (w > h) {
+                                    if (w > maxDim) {
+                                        h = (h * maxDim) / w;
+                                        w = maxDim;
+                                    }
+                                } else {
+                                    if (h > maxDim) {
+                                        w = (w * maxDim) / h;
+                                        h = maxDim;
+                                    }
+                                }
+
+                                w = Math.round(w);
+                                h = Math.round(h);
+
+                                const tryCanvas = document.createElement('canvas');
+                                const tryCtx = tryCanvas.getContext('2d');
+                                tryCanvas.width = w;
+                                tryCanvas.height = h;
+
+                                tryCtx.drawImage(imgEl, 0, 0, w, h);
+
+                                for (const q of qualitySteps) {
+                                    const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
+                                    const bytes = estimateBytesFromDataUrl(dataUrl);
+                                    if (bytes <= MAX_UPLOAD_BYTES) {
+                                        return dataUrl;
+                                    }
+                                }
+                            }
+
+                            // If we couldn't reach the target, return the smallest attempt we can produce.
+                            // We'll do one last aggressive attempt.
+                            const finalMaxDim = 256;
+                            let w = imgEl.width;
+                            let h = imgEl.height;
+                            if (w > h) {
+                                if (w > finalMaxDim) {
+                                    h = (h * finalMaxDim) / w;
+                                    w = finalMaxDim;
+                                }
+                            } else {
+                                if (h > finalMaxDim) {
+                                    w = (w * finalMaxDim) / h;
+                                    h = finalMaxDim;
+                                }
+                            }
+                            w = Math.round(w);
+                            h = Math.round(h);
+
+                            const finalCanvas = document.createElement('canvas');
+                            const finalCtx = finalCanvas.getContext('2d');
+                            finalCanvas.width = w;
+                            finalCanvas.height = h;
+                            finalCtx.drawImage(imgEl, 0, 0, w, h);
+                            return finalCanvas.toDataURL('image/jpeg', 0.1);
+                        };
+
+                        const compressedDataUrl = compressToTarget(img);
+                        const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
+
                         const previewImg = document.getElementById('previewImg');
                         previewImg.src = compressedDataUrl;
                         window.selectedPhoto = compressedDataUrl;
                         previewDiv.style.display = 'block';
+
+                        if (estimatedBytes > MAX_UPLOAD_BYTES) {
+                            alert('Photo was compressed, but it may still be larger than 70KB due to the original image size. Please try a smaller image for best results.');
+                        }
+
                         
                         const uploadArea = document.querySelector('.upload-area');
                         if (uploadArea && uploadArea.contains(uploadBox) && previewDiv) {
