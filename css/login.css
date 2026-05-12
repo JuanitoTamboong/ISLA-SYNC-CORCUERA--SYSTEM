@@ -174,14 +174,3 @@ h2 {
     cursor: pointer;
 }
 
-/* Signup */
-.signup {
-    text-align: center;
-    font-size: 12px;
-    margin-top: 20px;
-}
-
-.signup a {
-    color: #2f80ed;
-    text-decoration: none;
-}
