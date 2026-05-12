@@ -1,6 +1,6 @@
 // Admin Homepage Script
 
-// Global navigation handlers (defined early so onclick always works)
+// Global navigation handlers
 window.navigateTo = function(page) {
     switch(page) {
         case 'home':
@@ -41,7 +41,7 @@ window.viewReportOnMap = function(reportId) {
 
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof supabase === 'undefined') {
-        showNotification('Error: Supabase SDK failed to load.', 'error');
+        showNotification('Error: Configuration failed to load.', 'error');
         return;
     }
 
@@ -72,14 +72,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateGreeting();
     document.getElementById('adminName').textContent = admin.fullName || 'Admin';
 
-    // Notification state (must be declared before any await that uses it)
+    // Notification state
     let notifications = [];
     let notifReadIds = JSON.parse(localStorage.getItem('adminNotifReadIds') || '[]');
 
     // Load admin profile photo
     await loadAdminProfilePhoto(supabaseClient, admin.id);
 
-    // Load notifications (new reports)
+    // Load notifications
     await loadNotifications(supabaseClient);
 
     // Load stats and recent reports
@@ -108,17 +108,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 };
                 profileImg.onerror = function() {
-                    console.error('Failed to load avatar:', profile.avatar_url);
                     if (profileContainer) {
                         profileContainer.classList.remove('has-image');
                     }
-                    // Reset src to prevent cached error
-                    this.src = '';
+                    profileImg.src = '';
                 };
             }
-            // If no avatar_url, ensure default icon shows (class already removed above)
         } catch (error) {
-            // Silently fail - keep default icon
+            // Silent fail
         }
     }
 
@@ -145,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             (reports || []).forEach(report => {
                 const cat = categoryIcons[report.category] || { icon: 'fa-circle-exclamation', color: 'blue' };
                 const timeAgo = getTimeAgo(report.created_at);
-            notifications.push({
+                notifications.push({
                     id: `report-${report.id}`,
                     reportId: report.id,
                     icon: cat.icon,
@@ -161,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             setupNotificationEvents();
 
         } catch (e) {
-            console.error('Load notifications error:', e);
+            // Silent fail
         }
     }
 
@@ -250,7 +247,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const notificationPanel = document.getElementById('notificationPanel');
         if (notificationPanel) notificationPanel.classList.remove('show');
 
-        // Navigate to report on map
         if (reportId) {
             sessionStorage.setItem('highlightReportId', reportId);
             window.location.href = 'admin-map.html';
@@ -300,7 +296,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderRecentReports(allReports.slice(0, 5));
 
         } catch (error) {
-            console.error('Dashboard load error:', error);
             showNotification('Failed to load dashboard data', 'error');
             document.getElementById('recentReportsList').innerHTML = `
                 <div class="empty-state">
@@ -346,9 +341,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             const imageHtml = hasImage
                 ? `<img src="${escapeHtml(report.image_url)}" alt="Report Image" class="report-image">`
                 : `<div class="report-icon ${cat.class}"><i class="fa-solid ${cat.icon}"></i></div>`;
-
-            // Debug: log the reporter_name value to console
-            console.log('Report ID:', report.id, 'reporter_name:', report.reporter_name);
 
             return `
                 <div class="recent-report-item" onclick="viewReportOnMap('${report.id}')">
@@ -402,7 +394,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>"]/g, function(m) {
-            const map = { '&': '&amp;', '<': '<', '>': '>', '"': '"' };
+            const map = { '&': '&amp;', '<': '<', '>': '>', '"': '&quot;' };
             return map[m];
         });
     }
@@ -417,6 +409,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
             <span>${message}</span>
         `;
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-family: 'Poppins', sans-serif;
+        `;
         document.body.appendChild(notification);
 
         setTimeout(() => {
@@ -424,4 +432,3 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 4000);
     }
 });
-

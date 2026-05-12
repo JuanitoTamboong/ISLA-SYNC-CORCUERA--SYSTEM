@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', async function() {
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
-        showNotification('Error: Supabase SDK failed to load. Please refresh the page.', 'error');
+        showNotification('Error: Configuration failed to load. Please refresh the page.', 'error');
         return;
     }
 
@@ -32,15 +32,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-// Immediately display local data
+    // Immediately display local data
     displayLocalDataImmediately(admin);
 
     // Setup functionality
     setupEditProfile(supabaseClient);
     setupPhotoUpload();
 
-    // Background sync from Supabase (non-blocking)
-    syncFromSupabase(supabaseClient, admin.id).catch(console.error);
+    // Background sync from Supabase
+    syncFromSupabase(supabaseClient, admin.id);
 
     // Back button navigation
     const backBtn = document.querySelector('.header i.fa-arrow-left');
@@ -53,19 +53,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function syncFromSupabase(supabaseClient, adminId) {
-    console.log('Syncing admin profile for ID:', adminId); // Debug
-    
     try {
         // Fetch profile
-        const { data: profile, error } = await supabaseClient
+        let { data: profile, error } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', adminId)
             .single();
 
-        if (error && error.code !== 'PGRST116') { // Not "not found"
-            console.warn('Supabase fetch warning (non-fatal):', error);
-            // Retry once
+        if (error && error.code !== 'PGRST116') {
             await new Promise(r => setTimeout(r, 1000));
             const { data: retryProfile, error: retryError } = await supabaseClient
                 .from('profiles')
@@ -78,7 +74,6 @@ async function syncFromSupabase(supabaseClient, adminId) {
 
         let needsUpsert = false;
         if (!profile) {
-            console.log('Profile not found, auto-creating...');
             needsUpsert = true;
             profile = {
                 id: adminId,
@@ -94,17 +89,12 @@ async function syncFromSupabase(supabaseClient, adminId) {
             profile.full_name = currentAdmin.fullName || profile.full_name;
             profile.email = currentAdmin.email || profile.email;
             
-            const { error: upsertError } = await supabaseClient
+            await supabaseClient
                 .from('profiles')
                 .upsert(profile);
-            if (upsertError) {
-                console.warn('Auto-create failed:', upsertError);
-            } else {
-                console.log('Profile created successfully');
-            }
         }
 
-        // Always update localStorage and UI
+        // Update localStorage and UI
         const adminData = {
             id: profile.id,
             fullName: profile.full_name || '',
@@ -117,11 +107,9 @@ async function syncFromSupabase(supabaseClient, adminId) {
         localStorage.setItem('currentAdmin', JSON.stringify(adminData));
         currentProfileData = profile;
         updateAdminProfileUI(profile);
-        console.log('Profile synced successfully');
 
     } catch (error) {
-        console.error('Supabase sync failed:', error);
-        // Silent - local data already shown
+        // Silent fail - local data already shown
     }
 }
 
@@ -132,9 +120,8 @@ function displayLocalDataImmediately(admin) {
         id: admin.id || '',
         avatar_url: ''
     };
-    currentProfileData = profile; // For edit form
+    currentProfileData = profile;
     updateAdminProfileUI(profile);
-    console.log('Displayed local data for admin:', admin.id);
 }
 
 function updateAdminProfileUI(profile) {
@@ -158,24 +145,23 @@ function updateAdminProfileUI(profile) {
 
     // Update avatar if available
     const avatarEl = document.getElementById('adminAvatar');
-    const avatarContainer = avatarEl.closest('.avatar');
-    if (avatarEl) {
+    const avatarContainer = avatarEl ? avatarEl.closest('.avatar') : null;
+    if (avatarEl && avatarContainer) {
         if (profile.avatar_url && profile.avatar_url.trim() !== '') {
             avatarEl.src = profile.avatar_url;
             avatarEl.onload = function() {
                 avatarContainer.classList.add('has-image');
             };
             avatarEl.onerror = function() {
-                console.error('Failed to load avatar:', profile.avatar_url);
                 avatarContainer.classList.remove('has-image');
-                this.src = '';
+                avatarEl.src = '';
             };
         } else {
             avatarContainer.classList.remove('has-image');
         }
     }
 
-    // Update account ID (shortened UUID)
+    // Update account ID
     const accountIdEl = document.getElementById('adminAccountId');
     if (accountIdEl && profile.id) {
         const shortId = profile.id.substring(0, 8).toUpperCase();
@@ -204,7 +190,6 @@ function setupEditProfile(supabaseClient) {
             if (profileSection) {
                 profileSection.style.display = 'none';
             }
-            // Hide personal info and admin controls sections
             const sectionTitles = document.querySelectorAll('.section-title');
             const cards = document.querySelectorAll('.card');
             sectionTitles.forEach(el => el.style.display = 'none');
@@ -258,7 +243,6 @@ function setupEditProfile(supabaseClient) {
         if (success) {
             showNotification('Profile updated successfully!', 'success');
             cancelEdit();
-            // Reload data to reflect changes
             const currentAdmin = JSON.parse(localStorage.getItem('currentAdmin') || '{}');
             if (currentAdmin.id) {
                 syncFromSupabase(supabaseClient, currentAdmin.id);
@@ -279,7 +263,6 @@ function populateEditForm() {
     const photoPreview = document.getElementById('photoPreview');
     const photoPlaceholder = document.getElementById('photoPlaceholder');
 
-    // Get latest data from localStorage or currentProfileData
     let user = {};
     if (currentProfileData) {
         user = {
@@ -316,12 +299,11 @@ function populateEditForm() {
 
 async function saveProfileToSupabase(formData, supabaseClient) {
     try {
-        // Get admin from localStorage (admin doesn't use Supabase auth)
         const currentAdminStr = localStorage.getItem('currentAdmin');
         const currentAdmin = JSON.parse(currentAdminStr);
         
         if (!currentAdmin || !currentAdmin.id) {
-            showNotification('Admin session not found. Please login again.', 'error');
+            showNotification('Session not found. Please login again.', 'error');
             return false;
         }
 
@@ -344,7 +326,6 @@ async function saveProfileToSupabase(formData, supabaseClient) {
             return false;
         }
 
-        // Update localStorage with new data
         const updatedAdmin = {
             ...currentAdmin,
             fullName: formData.fullName,
@@ -354,7 +335,6 @@ async function saveProfileToSupabase(formData, supabaseClient) {
 
         return true;
     } catch (error) {
-        console.error('Save profile error:', error);
         showNotification('Failed to save profile. Please try again.', 'error');
         return false;
     }
@@ -367,37 +347,31 @@ function setupPhotoUpload() {
     const photoPlaceholder = document.getElementById('photoPlaceholder');
 
     if (photoInput) {
-        // Remove any existing listeners by cloning and replacing the element
         const newPhotoInput = photoInput.cloneNode(true);
         photoInput.parentNode.replaceChild(newPhotoInput, photoInput);
-        
         newPhotoInput.addEventListener('change', handlePhotoUpload);
     }
 
     if (changePhotoBtn) {
-        // Remove existing listeners and add fresh one
         const newChangeBtn = changePhotoBtn.cloneNode(true);
         changePhotoBtn.parentNode.replaceChild(newChangeBtn, changePhotoBtn);
-        
         newChangeBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            document.getElementById('photoInput').click();
+            const input = document.getElementById('photoInput');
+            if (input) input.click();
         });
     }
 
     if (photoPlaceholder) {
-        // Remove existing listeners and add fresh one
         const newPlaceholder = photoPlaceholder.cloneNode(true);
         photoPlaceholder.parentNode.replaceChild(newPlaceholder, photoPlaceholder);
-        
         newPlaceholder.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            document.getElementById('photoInput').click();
+            const input = document.getElementById('photoInput');
+            if (input) input.click();
         });
-        
-        // Also update the global reference
         window.photoPlaceholder = newPlaceholder;
     }
 
@@ -415,7 +389,7 @@ function setupPhotoUpload() {
             return;
         }
 
-        const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
+        const MAX_UPLOAD_BYTES = 70 * 1024;
 
         const estimateBytesFromDataUrl = (dataUrl) => {
             const base64 = dataUrl.split(',')[1] || '';
@@ -459,7 +433,6 @@ function setupPhotoUpload() {
                 }
             }
 
-            // Aggressive final attempt
             const finalMaxDim = 256;
             let w = imgEl.width;
             let h = imgEl.height;
@@ -503,20 +476,19 @@ function setupPhotoUpload() {
                 }
 
                 if (estimatedBytes > MAX_UPLOAD_BYTES) {
-                    showNotification('Photo selected, but it may still be larger than 70KB after compression. Try a smaller image for best results.', 'error');
+                    showNotification('Photo may be larger than 70KB. Try a smaller image for best results.', 'error');
                 } else {
-                    showNotification('Photo selected! Click Save to update your profile photo.', 'success');
+                    showNotification('Photo selected! Click Save to update.', 'success');
                 }
             };
             img.onerror = () => {
-                // Fallback: use original if compression fails
                 tempPhotoData = originalDataUrl;
                 if (photoPreview && photoPlaceholder) {
                     photoPreview.src = originalDataUrl;
                     photoPreview.style.display = 'block';
                     photoPlaceholder.style.display = 'none';
                 }
-                showNotification('Photo selected! Click Save to update your profile photo.', 'success');
+                showNotification('Photo selected! Click Save to update.', 'success');
             };
             img.src = originalDataUrl;
         };
@@ -565,4 +537,3 @@ function showNotification(message, type = 'info') {
         }
     }, 4000);
 }
-
