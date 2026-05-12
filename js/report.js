@@ -35,7 +35,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const applyLocationBtn = document.getElementById('applyLocationBtn');
     const manualAddressInput = document.getElementById('manualAddress');
     const locationAddressSpan = document.getElementById('locationAddress');
-    
+
+    const submitSuccessModal = document.getElementById('submitSuccessModal');
+    const successModalClose = document.getElementById('successModalClose');
+    const viewMyReportsBtn = document.getElementById('viewMyReportsBtn');
+    const backToHomeBtn = document.getElementById('backToHomeBtn');
+    const referenceNumberEl = document.getElementById('referenceNumber');
+
+    if (submitSuccessModal) {
+        // Modal defaults
+        submitSuccessModal.style.display = 'none';
+
+        if (successModalClose) {
+            successModalClose.onclick = () => {
+                submitSuccessModal.style.display = 'none';
+                submitSuccessModal.setAttribute('aria-hidden','true');
+                document.body.style.overflow = 'auto';
+                document.documentElement.style.overflow = '';
+            };
+
+        }
+
+
+        if (viewMyReportsBtn) {
+            viewMyReportsBtn.onclick = () => {
+                window.location.href = '../pages/view-reports.html';
+            };
+        }
+
+        if (backToHomeBtn) {
+            backToHomeBtn.onclick = () => {
+                window.location.href = '../pages/resident-homepage.html';
+            };
+        }
+
+        window.onclick = (e) => {
+            if (e.target === submitSuccessModal) {
+                submitSuccessModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                document.documentElement.style.overflow = '';
+            }
+
+        };
+    }
+
     previewDiv.style.display = 'none';
     
     const cards = document.querySelectorAll('.card');
@@ -305,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             alert('Photo was compressed, but it may still be larger than 70KB due to the original image size. Please try a smaller image for best results.');
                         }
 
-                        
                         const uploadArea = document.querySelector('.upload-area');
                         if (uploadArea && uploadArea.contains(uploadBox) && previewDiv) {
                             uploadArea.appendChild(previewDiv);
@@ -368,8 +410,28 @@ document.addEventListener('DOMContentLoaded', function() {
         supabaseClient.from('reports').insert([reportData])
             .then(({ error }) => {
                 if (error) throw error;
-                alert(`Report submitted successfully!\nReference: ${refNum}`);
-                window.location.href = '../pages/view-reports.html';
+
+                // POPUP SUCCESS INSTEAD OF ALERT + REDIRECT
+                if (referenceNumberEl) referenceNumberEl.textContent = refNum;
+
+                if (submitSuccessModal) {
+                submitSuccessModal.style.display = 'flex';
+                    submitSuccessModal.setAttribute('aria-hidden','false');
+                    // Prevent background scroll while keeping modal scrollable
+                    document.body.style.overflow = 'hidden';
+                    document.documentElement.style.overflow = 'hidden';
+
+
+                }
+
+                submitButton.innerHTML = originalHtml;
+                submitButton.disabled = false;
+
+                // ensure success popup is visible
+                if (submitSuccessModal) {
+                    submitSuccessModal.style.display = 'flex';
+                }
+
             })
             .catch((err) => {
                 alert(`Submission failed: ${err.message}`);
@@ -378,3 +440,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 });
+

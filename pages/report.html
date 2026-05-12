@@ -66,19 +66,19 @@
         </div>
         <div class="preview" id="previewDiv" style="display: none;">
             <img id="previewImg" src="" alt="Preview">
-            <span class="remove" id="removePhotoBtn">×</span>
+            <span class="remove" id="removePhotoBtn">&times;</span>
         </div>
     </div>
 
     <!-- LOCATION SECTION - Enhanced with manual edit -->
     <h3 class="label">CURRENT LOCATION <span class="required-star">*</span></h3>
-    
+
     <div class="location-card">
         <div class="location-header">
             <i class="fa-solid fa-location-dot"></i>
             <span>Live Location</span>
         </div>
-        
+
         <!-- Display address and coordinates -->
         <div class="location-info">
             <div class="address-row">
@@ -124,6 +124,52 @@
         <i class="fa-solid fa-paper-plane"></i> Submit Report
     </button>
 
+</div>
+
+<!-- SUCCESS POPUP - FIXED  -->
+<div id="submitSuccessModal" class="success-modal" aria-hidden="true">
+
+    <div class="success-modal-phone" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+        <!-- CLOSE BUTTON NOW INSIDE MODAL HEADER -->
+        <div class="success-modal-header">
+            <button class="success-modal-close" id="successModalClose" aria-label="Close">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="success-content">
+            <div class="success-status" id="successTitle">Status</div>
+
+            <div class="success-icon-wrapper">
+                <div class="success-check-circle">
+                    <div class="success-check">✓</div>
+                </div>
+                <div class="success-leaf"></div>
+                <div class="success-drop"></div>
+            </div>
+
+            <div class="success-title">
+                Report Submitted<br>
+                Successfully!
+            </div>
+
+            <div class="success-description">
+                Thank you for helping us keep Corcuera safe
+                and beautiful. Our team will review your
+                report shortly.
+            </div>
+
+            <div class="success-reference-box">
+                <div class="success-reference-label">REFERENCE NUMBER</div>
+                <div class="success-reference-number" id="referenceNumber">#ISC-0000-0000</div>
+            </div>
+        </div>
+
+        <div class="success-footer">
+            <button class="btn btn-primary" id="viewMyReportsBtn">View My Reports</button>
+            <button class="btn btn-secondary" id="backToHomeBtn">Back to Home</button>
+        </div>
+    </div>
 </div>
 
 <script src="../js/report.js"></script>
