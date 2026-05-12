@@ -432,6 +432,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     submitSuccessModal.style.display = 'flex';
                 }
 
+                // CLEAR DESCRIPTION + VISUALS AFTER SUCCESSFUL SUBMISSION
+                const issueDescEl = document.getElementById('issueDesc');
+                if (issueDescEl) issueDescEl.value = '';
+
+                if (previewDiv) {
+                    previewDiv.style.display = 'none';
+                }
+
+                const previewImg = document.getElementById('previewImg');
+                if (previewImg) previewImg.src = '';
+
+                window.selectedPhoto = null;
+
             })
             .catch((err) => {
                 alert(`Submission failed: ${err.message}`);
