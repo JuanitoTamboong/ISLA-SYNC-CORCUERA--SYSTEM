@@ -198,7 +198,8 @@ function renderReportsList() {
                     <i class="fa-solid ${statusClass === 'resolved' ? 'fa-check' : 'fa-exclamation'}"></i>
                 </div>
                 <div class="report-info">
-                    <h4>${escapeHtml(report.reference || 'Report')}</h4>
+                    <h4>${escapeHtml(report.reporter_name || report.name || report.full_name || report.reporter || report.reference || 'Report')}</h4>
+
                     <p>${escapeHtml(report.category || '')} &middot; ${escapeHtml(shortDesc)} &middot; ${dateStr}</p>
                 </div>
                 <span class="report-status-badge ${statusClass}">${statusText}</span>
@@ -239,7 +240,11 @@ function openReportModal(reportId) {
     statusEl.className = `status-badge ${report.status === 'resolved' ? 'status-resolved' : 'status-pending'}`;
 
     document.getElementById('modalCategory').textContent = report.category || 'N/A';
-    document.getElementById('modalReporter').textContent = report.reporter_name || 'Unknown';
+    // Prefer reporter_name (used by Recent Reports on admin homepage)
+    // Fallback to other possible joined fields if your SQL/view uses different aliases.
+    const reporter = report.reporter_name || report.name || report.full_name || report.reporter || 'Unknown';
+    document.getElementById('modalReporter').textContent = reporter;
+
     document.getElementById('modalDescription').textContent = report.description || 'No description provided.';
 
     const dateStr = report.created_at
