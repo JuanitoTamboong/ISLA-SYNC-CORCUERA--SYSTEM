@@ -42,41 +42,67 @@ document.addEventListener('DOMContentLoaded', function() {
     const backToHomeBtn = document.getElementById('backToHomeBtn');
     const referenceNumberEl = document.getElementById('referenceNumber');
 
+    // FIXED: Enhanced accessibility helper function
+    function updateModalAccessibility(modal, isHidden) {
+        if (isHidden) {
+            modal.setAttribute('aria-hidden', 'true');
+            modal.setAttribute('inert', '');
+            // Ensure no focusable elements inside have focus
+            const focusableElements = modal.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            focusableElements.forEach(el => {
+                if (document.activeElement === el) {
+                    el.blur();
+                }
+            });
+        } else {
+            modal.removeAttribute('aria-hidden');
+            modal.removeAttribute('inert');
+        }
+    }
+
+    // FIXED: Initialize success modal with proper focus management
     if (submitSuccessModal) {
         // Modal defaults
         submitSuccessModal.style.display = 'none';
+        updateModalAccessibility(submitSuccessModal, true);
 
         if (successModalClose) {
             successModalClose.onclick = () => {
+                // Remove focus first
+                successModalClose.blur();
                 submitSuccessModal.style.display = 'none';
-                submitSuccessModal.setAttribute('aria-hidden','true');
+                updateModalAccessibility(submitSuccessModal, true);
                 document.body.style.overflow = 'auto';
                 document.documentElement.style.overflow = '';
             };
-
         }
-
 
         if (viewMyReportsBtn) {
             viewMyReportsBtn.onclick = () => {
+                // Remove focus first
+                viewMyReportsBtn.blur();
                 window.location.href = '../pages/view-reports.html';
             };
         }
 
         if (backToHomeBtn) {
             backToHomeBtn.onclick = () => {
+                // Remove focus first
+                backToHomeBtn.blur();
                 window.location.href = '../pages/resident-homepage.html';
             };
         }
 
-        window.onclick = (e) => {
-            if (e.target === submitSuccessModal) {
-                submitSuccessModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-                document.documentElement.style.overflow = '';
+        // Handle escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && submitSuccessModal.style.display === 'flex') {
+                if (successModalClose) {
+                    successModalClose.click();
+                }
             }
-
-        };
+        });
     }
 
     previewDiv.style.display = 'none';
@@ -120,15 +146,38 @@ document.addEventListener('DOMContentLoaded', function() {
             manualAddressInput.value = '';
         }
         locationModal.style.display = 'flex';
+        updateModalAccessibility(locationModal, false);
+        manualAddressInput.focus();
     };
     
+    // FIXED: Enhanced location modal close handler
     const closeModal = () => {
+        // Remove focus first
+        if (document.activeElement && locationModal.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
         locationModal.style.display = 'none';
+        updateModalAccessibility(locationModal, true);
     };
+    
     if (closeModalBtn) closeModalBtn.onclick = closeModal;
     if (cancelLocationBtn) cancelLocationBtn.onclick = closeModal;
+    
+    // FIXED: Enhanced window click handler
     window.onclick = (e) => {
-        if (e.target === locationModal) closeModal();
+        if (e.target === locationModal) {
+            closeModal();
+        }
+        if (e.target === submitSuccessModal) {
+            // Blur any focused element first
+            if (document.activeElement && submitSuccessModal.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+            submitSuccessModal.style.display = 'none';
+            updateModalAccessibility(submitSuccessModal, true);
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = '';
+        }
     };
     
     applyLocationBtn.onclick = () => {
@@ -140,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModal();
         } else {
             alert('Please enter the location address.');
+            manualAddressInput.focus();
         }
     };
     
@@ -263,19 +313,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
 
                         const estimateBytesFromDataUrl = (dataUrl) => {
-                            // dataUrl format: data:image/jpeg;base64,....
                             const base64 = dataUrl.split(',')[1] || '';
                             const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
                             return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
                         };
 
                         const compressToTarget = (imgEl) => {
-                            // Try different dimensions first, then progressively lower quality.
                             const dimensionSteps = [1024, 768, 512, 384, 256];
                             const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
 
                             for (const maxDim of dimensionSteps) {
-                                // Calculate new width/height maintaining aspect ratio.
                                 let w = imgEl.width;
                                 let h = imgEl.height;
                                 if (w > h) {
@@ -309,8 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             }
 
-                            // If we couldn't reach the target, return the smallest attempt we can produce.
-                            // We'll do one last aggressive attempt.
+                            // Final aggressive compression
                             const finalMaxDim = 256;
                             let w = imgEl.width;
                             let h = imgEl.height;
@@ -363,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
         input.click();
     }
     
+    // FIXED: Enhanced submitReport with proper focus management
     function submitReport(supabaseClient, user) {
         const activeCard = document.querySelector('.card.active');
         const description = document.getElementById('issueDesc').value.trim();
@@ -411,28 +458,31 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(({ error }) => {
                 if (error) throw error;
 
-                // POPUP SUCCESS INSTEAD OF ALERT + REDIRECT
                 if (referenceNumberEl) referenceNumberEl.textContent = refNum;
 
                 if (submitSuccessModal) {
-                submitSuccessModal.style.display = 'flex';
-                    submitSuccessModal.setAttribute('aria-hidden','false');
-                    // Prevent background scroll while keeping modal scrollable
+                    // FIXED: Ensure no focus issues before showing
+                    if (document.activeElement) {
+                        document.activeElement.blur();
+                    }
+                    
+                    submitSuccessModal.style.display = 'flex';
+                    updateModalAccessibility(submitSuccessModal, false);
                     document.body.style.overflow = 'hidden';
                     document.documentElement.style.overflow = 'hidden';
-
-
+                    
+                    // Focus first interactive element for accessibility
+                    setTimeout(() => {
+                        if (successModalClose) {
+                            successModalClose.focus();
+                        }
+                    }, 100);
                 }
 
                 submitButton.innerHTML = originalHtml;
                 submitButton.disabled = false;
 
-                // ensure success popup is visible
-                if (submitSuccessModal) {
-                    submitSuccessModal.style.display = 'flex';
-                }
-
-                // CLEAR DESCRIPTION + VISUALS AFTER SUCCESSFUL SUBMISSION
+                // CLEAR FORM AFTER SUCCESSFUL SUBMISSION
                 const issueDescEl = document.getElementById('issueDesc');
                 if (issueDescEl) issueDescEl.value = '';
 
@@ -453,4 +503,3 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 });
-
