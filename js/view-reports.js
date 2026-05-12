@@ -203,7 +203,8 @@ function populateModal(report) {
     const reference = report.reference || 'N/A';
     document.getElementById('modalReferenceTitle').textContent = reference;
     
-    const status = report.status ? report.status.toUpperCase().replace('_', ' ') : 'PENDING';
+    const rawStatus = (report.status || '').toLowerCase();
+    const status = rawStatus ? rawStatus.toUpperCase().replace('_', ' ') : 'PENDING';
     document.getElementById('modalBadge').textContent = status;
     
     const dateStr = report.created_at ? new Date(report.created_at).toLocaleString('en-US', {
@@ -235,6 +236,31 @@ function populateModal(report) {
         minute: '2-digit'
     }) : 'Recently';
     document.getElementById('modalTimelineTime').textContent = timelineTime;
+    
+    // Timeline based on status
+    const step2 = document.getElementById('modalTimelineStep2');
+    const step3 = document.getElementById('modalTimelineStep3');
+    const step2Time = document.getElementById('modalTimelineStep2Time');
+    const step2Title = document.getElementById('modalTimelineStep2Title');
+    const step2Desc = document.getElementById('modalTimelineStep2Desc');
+    const step3Time = document.getElementById('modalTimelineStep3Time');
+    const step3Title = document.getElementById('modalTimelineStep3Title');
+    const step3Desc = document.getElementById('modalTimelineStep3Desc');
+
+    const isResolved = rawStatus === 'resolved';
+
+    if (step2) step2.style.display = isResolved ? 'none' : 'block';
+    if (step3) step3.style.display = isResolved ? 'block' : 'none';
+
+    if (!isResolved) {
+        if (step2Time) step2Time.textContent = 'Pending Review';
+        if (step2Title) step2Title.textContent = 'Under Review';
+        if (step2Desc) step2Desc.textContent = 'The local department will verify the report details.';
+    } else {
+        if (step3Time) step3Time.textContent = 'Resolved';
+        if (step3Title) step3Title.textContent = 'Report Resolved';
+        if (step3Desc) step3Desc.textContent = 'Your report has been resolved. Thank you!';
+    }
     
     // Image
     const imgSection = document.getElementById('modalImageSection');
