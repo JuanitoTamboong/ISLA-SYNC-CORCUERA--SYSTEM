@@ -460,6 +460,27 @@
     width: 100%;
 }
 
+/* COMMUNITY UPDATE THEMES */
+.update-card.blue { background: #eff6ff; }
+.update-card.blue:hover { background: #dbeafe; }
+
+.update-card.green { background: #ecfdf5; }
+.update-card.green:hover { background: #d1fae5; }
+
+.update-card.orange { background: #fff7ed; }
+.update-card.orange:hover { background: #ffedd5; }
+
+.update-card.purple { background: #f5f3ff; }
+.update-card.purple:hover { background: #ede9fe; }
+
+.update-icon.blue { background: #dbeafe; color: #2563eb; }
+.update-icon.green { background: #d1fae5; color: #059669; }
+.update-icon.orange { background: #fef3c7; color: #d97706; }
+.update-icon.purple { background: #e9d5ff; color: #7c3aed; }
+
+.update-text .title { color: #111827; }
+
+
 .update-card:hover {
     background: #d1d5db;
     transform: translateX(5px);
@@ -475,7 +496,9 @@
     align-items: center;
     justify-content: center;
     margin-right: 10px;
+    transition: all 0.2s ease;
 }
+
 
 .update-text .title {
     font-weight: 600;

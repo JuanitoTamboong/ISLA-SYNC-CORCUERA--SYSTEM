@@ -117,6 +117,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!newsData || newsData.length === 0) return;
 
+            const categoryThemes = {
+                'Advisory': 'blue',
+                'Tourism': 'purple',
+                'Events': 'orange',
+                'Community': 'green'
+            };
+
             const categoryIcons = {
                 'Advisory': 'fa-bullhorn',
                 'Tourism': 'fa-map-location-dot',
@@ -126,13 +133,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const html = newsData.map(news => {
                 const icon = categoryIcons[news.category] || 'fa-bullhorn';
+                const themeClass = categoryThemes[news.category] || 'blue';
+
                 const shortTitle = news.title.length > 40 
                     ? news.title.substring(0, 40) + '...' 
                     : news.title;
-                
+
                 return `
-                    <div class="update-card" onclick="window.location.href='../pages/news.html'" style="cursor: pointer;">
-                        <div class="update-icon">
+                    <div class="update-card ${themeClass}" onclick="window.location.href='../pages/news.html'" style="cursor: pointer;">
+                        <div class="update-icon ${themeClass}">
                             <i class="fa ${icon}"></i>
                         </div>
                         <div class="update-text">
@@ -142,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             }).join('');
+
 
             updatesContainer.innerHTML = html;
 
