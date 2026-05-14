@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manage Tourist Spots - Admin</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Manage Tourist Spots - Admin | Romblon</title>
+<!-- CSS - Separate file structure preserved -->
 <link rel="stylesheet" href="../../css/admin/admin-shared.css">
 <link rel="stylesheet" href="../../css/admin/admin-tourist-spots.css">
 
-<!-- Icons -->
+<!-- Icons & Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
@@ -46,11 +45,11 @@
 
 </div>
 
-<!-- SPOT MODAL (Create/Edit) -->
+<!-- SPOT MODAL (Create/Edit) - Updated: Removed description, added driver_name & driver_contact_number -->
 <div id="spotModal" class="spot-modal">
     <div class="modal-overlay" onclick="closeSpotModal()"></div>
     <div class="modal-content">
-<div class="modal-header">
+        <div class="modal-header">
             <h2 id="modalTitle">Add Tourist Spot</h2>
             <button class="modal-close" onclick="closeSpotModal()" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
@@ -81,9 +80,15 @@
                     <input type="text" id="spotLocation" placeholder="e.g., Corcuera North">
                 </div>
 
+                <!-- Driver Info Section -->
                 <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="spotDescription" rows="3" placeholder="Describe the tourist spot..."></textarea>
+                    <label>Driver's Name</label>
+                    <input type="text" id="spotDriverName" placeholder="e.g., Juan Dela Cruz">
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="tel" id="spotDriverContactNumber" placeholder="e.g., 09123456789">
                 </div>
 
                 <div class="form-group">
@@ -110,7 +115,7 @@
                     </label>
                 </div>
 
-<!-- SOUVENIRS SECTION IN MODAL -->
+                <!-- SOUVENIRS SECTION IN MODAL -->
                 <div class="souvenir-section" id="souvenirSection" style="display: block;">
                     <div class="souvenir-section-header">
                         <h4><i class="fa-solid fa-gift"></i> Souvenirs</h4>
@@ -132,11 +137,11 @@
     </div>
 </div>
 
-<!-- SOUVENIR MODAL -->
+<!-- SOUVENIR MODAL - Removed Description field entirely -->
 <div id="souvenirModal" class="spot-modal">
     <div class="modal-overlay" onclick="closeSouvenirModal()"></div>
     <div class="modal-content">
-<div class="modal-header">
+        <div class="modal-header">
             <h2 id="souvenirModalTitle">Add Souvenir</h2>
             <button class="modal-close" onclick="closeSouvenirModal()" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
@@ -153,11 +158,6 @@
                 <div class="form-group">
                     <label>Souvenir Name <span class="required">*</span></label>
                     <input type="text" id="souvenirName" placeholder="Enter souvenir name" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="souvenirDescription" rows="2" placeholder="Describe the souvenir..."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -210,7 +210,6 @@
         </div>
     </div>
 </div>
-
 <script src="../../js/admin/admin-tourist-spots.js"></script>
 </body>
 </html>

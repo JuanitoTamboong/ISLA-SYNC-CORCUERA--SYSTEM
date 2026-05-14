@@ -184,16 +184,7 @@
     margin: 0 0 8px;
 }
 
-.spot-description {
-    font-size: 13px;
-    color: #6b7280;
-    line-height: 1.5;
-    margin: 0 0 12px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+
 
 .spot-souvenir-count {
     font-size: 12px;

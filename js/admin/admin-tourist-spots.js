@@ -1,5 +1,3 @@
-// Admin Tourist Spots Management Script
-
 // Global state
 let spots = [];
 let currentFilter = 'all';
@@ -11,7 +9,7 @@ let souvenirImageDataUrl = null;
 let spotSouvenirs = {};
 let souvenirs = [];
 let deleteSpotId = null;
-let pendingSouvenirs = []; // Store souvenirs to be added after spot is created
+let pendingSouvenirs = []; 
 
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
@@ -122,9 +120,15 @@ async function renderSpots() {
         const visibilityClass = spot.is_visible ? 'visible' : 'hidden';
         const visibilityText = spot.is_visible ? '<i class="fa-solid fa-eye"></i> Visible' : '<i class="fa-solid fa-eye-slash"></i> Hidden';
         
-        const shortDesc = spot.description && spot.description.length > 100
-            ? spot.description.substring(0, 100) + '...'
-            : (spot.description || 'No description');
+        // Driver info display - FIXED: changed contact_number to driver_contact_number
+        const driverName = spot.driver_name ? spot.driver_name : '';
+        const contactNumber = spot.driver_contact_number ? spot.driver_contact_number : '';
+        const driverInfoHtml = (driverName || contactNumber) ? `
+            <div class="spot-driver-info">
+                ${driverName ? `<p class="spot-driver-name"><i class="fa-solid fa-user"></i> ${escapeHtml(driverName)}</p>` : ''}
+                ${contactNumber ? `<p class="spot-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(contactNumber)}</p>` : ''}
+            </div>
+        ` : '';
             
         const dateStr = spot.created_at 
             ? new Date(spot.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -139,7 +143,6 @@ async function renderSpots() {
                 const souvenirImage = s.image_url 
                     ? `<img class="spot-souvenir-img" src="${escapeHtml(s.image_url)}" alt="${escapeHtml(s.name)}" onerror="this.style.display='none'">`
                     : `<div class="spot-souvenir-img-placeholder"><i class="fa-solid fa-gift"></i></div>`;
-                const souvenirDesc = s.description ? `<p class="spot-souvenir-desc">${escapeHtml(s.description)}</p>` : '';
                 return `
                     <div class="spot-souvenir-item">
                         <div class="spot-souvenir-img-wrap">
@@ -147,7 +150,6 @@ async function renderSpots() {
                         </div>
                         <div class="spot-souvenir-info">
                             <span class="spot-souvenir-name">${escapeHtml(s.name)}</span>
-                            ${souvenirDesc}
                             <span class="spot-souvenir-price">₱${priceFormatted}</span>
                         </div>
                     </div>
@@ -176,8 +178,7 @@ async function renderSpots() {
                     </div>
                     <h3 class="spot-name">${escapeHtml(spot.name)}</h3>
                     ${spot.location ? `<p class="spot-location"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location)}</p>` : ''}
-                    <p class="spot-description">${escapeHtml(shortDesc)}</p>
-                    ${spot.description ? '' : '<p class="spot-description" style="font-style:italic;color:#9ca3af">No description</p>'}
+                    ${driverInfoHtml}
                     <div class="spot-souvenirs-list">
                         <p class="spot-souvenirs-label"><i class="fa-solid fa-gift"></i> Souvenirs:</p>
                         ${souvenirsHtml}
@@ -224,7 +225,7 @@ window.openSpotModal = function(spotId = null) {
     document.getElementById('spotId').value = '';
     spotImageDataUrl = null;
     spotImageFile = null;
-    pendingSouvenirs = []; // Clear pending souvenirs when opening modal
+    pendingSouvenirs = [];
     
     document.getElementById('spotUploadBox').style.display = 'flex';
     document.getElementById('spotPreviewDiv').style.display = 'none';
@@ -243,7 +244,9 @@ window.openSpotModal = function(spotId = null) {
         document.getElementById('spotName').value = spot.name || '';
         document.getElementById('spotCategory').value = spot.category || 'Beach';
         document.getElementById('spotLocation').value = spot.location || '';
-        document.getElementById('spotDescription').value = spot.description || '';
+        document.getElementById('spotDriverName').value = spot.driver_name || '';
+        // FIXED: changed from contact_number to driver_contact_number
+        document.getElementById('spotDriverContactNumber').value = spot.driver_contact_number || '';
         document.getElementById('spotVisible').checked = spot.is_visible !== false;
         
         if (spot.image_url) {
@@ -309,7 +312,7 @@ function setupImageUploads() {
             return;
         }
         
-        const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
+        const MAX_UPLOAD_BYTES = 70 * 1024;
 
         const estimateBytesFromDataUrl = (dataUrl) => {
             const base64 = dataUrl.split(',')[1] || '';
@@ -353,7 +356,6 @@ function setupImageUploads() {
                 }
             }
 
-            // Aggressive final attempt
             const finalMaxDim = 256;
             let w = imgEl.width;
             let h = imgEl.height;
@@ -398,7 +400,6 @@ function setupImageUploads() {
                 }
             };
             img.onerror = () => {
-                // fallback to original
                 spotImageDataUrl = originalDataUrl;
                 document.getElementById('spotPreviewImg').src = originalDataUrl;
                 document.getElementById('spotUploadBox').style.display = 'none';
@@ -425,7 +426,7 @@ function setupImageUploads() {
             return;
         }
         
-        const MAX_UPLOAD_BYTES = 70 * 1024; // ~70KB
+        const MAX_UPLOAD_BYTES = 70 * 1024;
 
         const estimateBytesFromDataUrl = (dataUrl) => {
             const base64 = dataUrl.split(',')[1] || '';
@@ -469,7 +470,6 @@ function setupImageUploads() {
                 }
             }
 
-            // Aggressive final attempt
             const finalMaxDim = 256;
             let w = imgEl.width;
             let h = imgEl.height;
@@ -526,7 +526,7 @@ function setupImageUploads() {
     });
 }
 
-// ========== SAVE SPOT (with pending souvenirs) ==========
+// ========== SAVE SPOT (FIXED - changed contact_number to driver_contact_number) ==========
 async function saveSpot() {
     const saveBtn = document.getElementById('saveBtn');
     const originalText = saveBtn.innerHTML;
@@ -538,7 +538,9 @@ async function saveSpot() {
         const name = document.getElementById('spotName').value.trim();
         const category = document.getElementById('spotCategory').value;
         const location = document.getElementById('spotLocation').value.trim();
-        const description = document.getElementById('spotDescription').value.trim();
+        const driverName = document.getElementById('spotDriverName').value.trim();
+        // FIXED: changed input ID to spotDriverContactNumber
+        const contactNumber = document.getElementById('spotDriverContactNumber').value.trim();
         const isVisible = document.getElementById('spotVisible').checked;
 
         if (!name) {
@@ -550,12 +552,14 @@ async function saveSpot() {
 
         const currentSpot = spotId ? spots.find(s => s.id === spotId) : null;
 
+        // FIXED: changed contact_number to driver_contact_number
         const spotData = {
             name: name,
             category: category,
             location: location || null,
-            description: description || null,
-            is_visible: isVisible
+            is_visible: isVisible,
+            driver_name: driverName || null,
+            driver_contact_number: contactNumber || null  // Changed from contact_number
         };
 
         if (spotImageDataUrl) {
@@ -565,7 +569,6 @@ async function saveSpot() {
         }
         
         if (spotId) {
-            // Update existing spot
             const { error } = await window.supabaseClient
                 .from('tourist_spots')
                 .update(spotData)
@@ -574,12 +577,10 @@ async function saveSpot() {
             if (error) throw error;
             
             showInContainerNotification('spotModalNotification', 'Tourist spot updated successfully!', 'success');
-            
             await loadSpots();
-            
+            closeSpotModal();
             return;
         } else {
-            // Create new spot
             const { data: newSpot, error } = await window.supabaseClient
                 .from('tourist_spots')
                 .insert([spotData])
@@ -592,13 +593,11 @@ async function saveSpot() {
             currentEditingSpot = newSpot;
             document.getElementById('spotId').value = spotId;
             
-            // Update souvenirSpotId field
             const souvenirField = document.getElementById('souvenirSpotId');
             if (souvenirField) {
                 souvenirField.value = String(spotId);
             }
             
-            // Save any pending souvenirs that were added before spot creation
             if (pendingSouvenirs.length > 0) {
                 showNotification(`Saving ${pendingSouvenirs.length} souvenir(s) for the new spot...`, 'info');
                 
@@ -606,7 +605,6 @@ async function saveSpot() {
                     const souvenirData = {
                         tourist_spot_id: String(spotId),
                         name: pendingSouvenir.name,
-                        description: pendingSouvenir.description || null,
                         price: pendingSouvenir.price,
                         is_available: true,
                         image_url: pendingSouvenir.image_url || null
@@ -621,17 +619,16 @@ async function saveSpot() {
                     }
                 }
                 
-                pendingSouvenirs = []; // Clear pending souvenirs
+                pendingSouvenirs = [];
                 showNotification('Spot and souvenirs saved successfully!', 'success');
             } else {
                 showNotification('Tourist spot created successfully!', 'success');
             }
             
-            // Load souvenirs for the new spot
             await loadSouvenirs(spotId);
             document.getElementById('modalTitle').textContent = 'Edit Tourist Spot';
             await loadSpots();
-            
+            closeSpotModal();
             return;
         }
     } catch (error) {
@@ -746,7 +743,6 @@ function renderSouvenirs() {
         return;
     }
     
-    // Display both saved souvenirs and pending souvenirs
     const allSouvenirs = [...souvenirs, ...pendingSouvenirs];
     
     grid.innerHTML = allSouvenirs.map(souvenir => {
@@ -765,7 +761,6 @@ function renderSouvenirs() {
                 </div>
                 <div class="souvenir-details">
                     <p class="souvenir-name">${escapeHtml(souvenir.name)}</p>
-                    ${souvenir.description ? `<p class="souvenir-desc">${escapeHtml(souvenir.description)}</p>` : ''}
                     <p class="souvenir-price">₱${priceFormatted}</p>
                 </div>
                 <div class="souvenir-actions">
@@ -787,10 +782,7 @@ function renderSouvenirs() {
     }).join('');
 }
 
-// Remove pending souvenir from the list
 window.removePendingSouvenir = function(tempId) {
-    console.log('Removing pending souvenir with tempId:', tempId);
-    
     const index = pendingSouvenirs.findIndex(s => s.tempId === tempId);
     
     if (index !== -1) {
@@ -798,12 +790,10 @@ window.removePendingSouvenir = function(tempId) {
         renderSouvenirs();
         showNotification('Pending souvenir removed', 'success');
     } else {
-        console.error('Could not find pending souvenir with tempId:', tempId);
         showNotification('Failed to remove souvenir', 'error');
     }
 };
 
-// Open souvenir modal
 window.openSouvenirModal = function(souvenirId = null) {
     const modal = document.getElementById('souvenirModal');
     const form = document.getElementById('souvenirForm');
@@ -814,7 +804,6 @@ window.openSouvenirModal = function(souvenirId = null) {
     souvenirImageDataUrl = null;
     souvenirImageFile = null;
     
-    // Set the spot ID if available
     const spotId = document.getElementById('spotId')?.value;
     if (spotId && spotId !== '') {
         document.getElementById('souvenirSpotId').value = String(spotId);
@@ -825,7 +814,6 @@ window.openSouvenirModal = function(souvenirId = null) {
     document.getElementById('souvenirPreviewImg').src = '';
     
     if (souvenirId) {
-        // Check if it's from existing souvenirs
         const souvenir = souvenirs.find(s => s.id === souvenirId);
         if (!souvenir) {
             showNotification('Souvenir not found', 'error');
@@ -835,7 +823,6 @@ window.openSouvenirModal = function(souvenirId = null) {
         title.textContent = 'Edit Souvenir';
         document.getElementById('souvenirId').value = souvenir.id;
         document.getElementById('souvenirName').value = souvenir.name || '';
-        document.getElementById('souvenirDescription').value = souvenir.description || '';
         document.getElementById('souvenirPrice').value = souvenir.price || '';
         
         if (souvenir.image_url) {
@@ -862,7 +849,6 @@ window.removeSouvenirImage = function() {
     document.getElementById('souvenirPreviewImg').src = '';
 };
 
-// Save souvenir - can save as pending if spot not saved yet
 async function saveSouvenir() {
     const saveBtn = document.getElementById('souvenirSaveBtn');
     const originalText = saveBtn.innerHTML;
@@ -872,7 +858,6 @@ async function saveSouvenir() {
     try {
         const souvenirId = document.getElementById('souvenirId').value;
         const name = document.getElementById('souvenirName').value.trim();
-        const description = document.getElementById('souvenirDescription').value.trim();
         const price = parseFloat(document.getElementById('souvenirPrice').value);
 
         if (!name) {
@@ -885,30 +870,23 @@ async function saveSouvenir() {
             return;
         }
         
-        // Check if spot exists
         let spotId = document.getElementById('spotId')?.value;
         
         if (!spotId || spotId === '') {
-            // Spot not saved yet - store as pending souvenir with unique tempId
             const tempId = 'pending_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             
             const pendingSouvenir = {
                 tempId: tempId,
                 name: name,
-                description: description,
                 price: price,
                 image_url: souvenirImageDataUrl || null,
                 pending: true
             };
             
-            console.log('Adding pending souvenir:', pendingSouvenir);
-            
             pendingSouvenirs.push(pendingSouvenir);
             renderSouvenirs();
             
-            // Reset form and close modal
             document.getElementById('souvenirName').value = '';
-            document.getElementById('souvenirDescription').value = '';
             document.getElementById('souvenirPrice').value = '';
             souvenirImageDataUrl = null;
             document.getElementById('souvenirUploadBox').style.display = 'flex';
@@ -920,7 +898,6 @@ async function saveSouvenir() {
             return;
         }
         
-        // Spot exists - save directly to database
         spotId = String(spotId);
         
         const currentSouvenir = souvenirId ? souvenirs.find(s => s.id === souvenirId) : null;
@@ -928,7 +905,6 @@ async function saveSouvenir() {
         const souvenirData = {
             tourist_spot_id: spotId,
             name: name,
-            description: description || null,
             price: price,
             is_available: true
         };
@@ -1018,7 +994,6 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Container-specific notification function
 function showInContainerNotification(containerId, message, type = 'success') {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -1048,7 +1023,6 @@ function showInContainerNotification(containerId, message, type = 'success') {
     }, 3000);
 }
 
-// ========== HELPERS ==========
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"']/g, function(m) {
