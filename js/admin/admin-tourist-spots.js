@@ -54,11 +54,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupFilterTabs();
     setupForms();
     setupImageUploads();
-    
-    // Remove aggressive global Enter blocking; rely on form submit handlers instead.
-    // Global handlers were causing unintended submit/save executions.
-    // (Intentionally left blank)
-    ;
 });
 
 // ========== INPUT VALIDATION SETUP ==========
@@ -347,13 +342,6 @@ window.closeSpotModal = function() {
     document.getElementById('spotModal').classList.remove('show');
     currentEditingSpot = null;
     pendingSouvenirs = [];
-
-    // Release save lock if it is active.
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) {
-        saveBtn.dataset.locked = 'false';
-        saveBtn.disabled = false;
-    }
 };
 
 window.removeSpotImage = function() {
@@ -563,6 +551,7 @@ window.deleteLocalDriver = async function(driverId) {
 
         if (error) throw error;
 
+        // Use the same notification style as add success
         showInContainerNotification('mainPageNotification', 'Local driver deleted successfully!', 'success');
         
         if (currentEditingSpot) {
@@ -599,267 +588,246 @@ function setupForms() {
             await saveDriver();
         });
     }
-    
-    // Prevent Enter key from submitting forms unexpectedly
-    const forms = [spotForm, souvenirForm, driverForm];
-    forms.forEach(form => {
-        if (form) {
-            form.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    // Check if the Enter key was pressed on an input that is not a submit button
-                    const target = e.target;
-                    if (target.tagName === 'INPUT' && target.type !== 'submit' && target.type !== 'button') {
-                        e.preventDefault();
-                        // Don't submit automatically
-                        return false;
-                    }
-                }
-            });
-        }
-    });
 }
 
 // ========== IMAGE UPLOADS ==========
 function setupImageUploads() {
     const spotImageInput = document.getElementById('spotImageInput');
-    spotImageInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
-            showNotification('Please upload a JPEG or PNG image', 'error');
-            return;
-        }
-        
-        if (file.size > 5 * 1024 * 1024) {
-            showNotification('Image must be less than 5MB', 'error');
-            return;
-        }
-        
-        const MAX_UPLOAD_BYTES = 70 * 1024;
+    if (spotImageInput) {
+        spotImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
+                showNotification('Please upload a JPEG or PNG image', 'error');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification('Image must be less than 5MB', 'error');
+                return;
+            }
+            
+            const MAX_UPLOAD_BYTES = 70 * 1024;
 
-        const estimateBytesFromDataUrl = (dataUrl) => {
-            const base64 = dataUrl.split(',')[1] || '';
-            const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
-            return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
-        };
+            const estimateBytesFromDataUrl = (dataUrl) => {
+                const base64 = dataUrl.split(',')[1] || '';
+                const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
+                return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+            };
 
-        const compressToTarget = (imgEl) => {
-            const dimensionSteps = [1024, 768, 512, 384, 256];
-            const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
+            const compressToTarget = (imgEl) => {
+                const dimensionSteps = [1024, 768, 512, 384, 256];
+                const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
 
-            for (const maxDim of dimensionSteps) {
+                for (const maxDim of dimensionSteps) {
+                    let w = imgEl.width;
+                    let h = imgEl.height;
+
+                    if (w > h) {
+                        if (w > maxDim) {
+                            h = (h * maxDim) / w;
+                            w = maxDim;
+                        }
+                    } else {
+                        if (h > maxDim) {
+                            w = (w * maxDim) / h;
+                            h = maxDim;
+                        }
+                    }
+
+                    w = Math.round(w);
+                    h = Math.round(h);
+
+                    const tryCanvas = document.createElement('canvas');
+                    const tryCtx = tryCanvas.getContext('2d');
+                    tryCanvas.width = w;
+                    tryCanvas.height = h;
+                    tryCtx.drawImage(imgEl, 0, 0, w, h);
+
+                    for (const q of qualitySteps) {
+                        const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
+                        const bytes = estimateBytesFromDataUrl(dataUrl);
+                        if (bytes <= MAX_UPLOAD_BYTES) return dataUrl;
+                    }
+                }
+
+                const finalMaxDim = 256;
                 let w = imgEl.width;
                 let h = imgEl.height;
-
                 if (w > h) {
-                    if (w > maxDim) {
-                        h = (h * maxDim) / w;
-                        w = maxDim;
+                    if (w > finalMaxDim) {
+                        h = (h * finalMaxDim) / w;
+                        w = finalMaxDim;
                     }
                 } else {
-                    if (h > maxDim) {
-                        w = (w * maxDim) / h;
-                        h = maxDim;
+                    if (h > finalMaxDim) {
+                        w = (w * finalMaxDim) / h;
+                        h = finalMaxDim;
                     }
                 }
 
                 w = Math.round(w);
                 h = Math.round(h);
 
-                const tryCanvas = document.createElement('canvas');
-                const tryCtx = tryCanvas.getContext('2d');
-                tryCanvas.width = w;
-                tryCanvas.height = h;
-                tryCtx.drawImage(imgEl, 0, 0, w, h);
-
-                for (const q of qualitySteps) {
-                    const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
-                    const bytes = estimateBytesFromDataUrl(dataUrl);
-                    if (bytes <= MAX_UPLOAD_BYTES) return dataUrl;
-                }
-            }
-
-            const finalMaxDim = 256;
-            let w = imgEl.width;
-            let h = imgEl.height;
-            if (w > h) {
-                if (w > finalMaxDim) {
-                    h = (h * finalMaxDim) / w;
-                    w = finalMaxDim;
-                }
-            } else {
-                if (h > finalMaxDim) {
-                    w = (w * finalMaxDim) / h;
-                    h = finalMaxDim;
-                }
-            }
-
-            w = Math.round(w);
-            h = Math.round(h);
-
-            const finalCanvas = document.createElement('canvas');
-            const finalCtx = finalCanvas.getContext('2d');
-            finalCanvas.width = w;
-            finalCanvas.height = h;
-            finalCtx.drawImage(imgEl, 0, 0, w, h);
-            return finalCanvas.toDataURL('image/jpeg', 0.1);
-        };
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const originalDataUrl = e.target.result;
-            const img = new Image();
-            img.onload = () => {
-                const compressedDataUrl = compressToTarget(img);
-                const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
-
-                spotImageDataUrl = compressedDataUrl;
-                document.getElementById('spotPreviewImg').src = compressedDataUrl;
-                document.getElementById('spotUploadBox').style.display = 'none';
-                document.getElementById('spotPreviewDiv').style.display = 'block';
-
-                if (estimatedBytes > MAX_UPLOAD_BYTES) {
-                    showNotification('Spot image selected, but it may still be larger than 70KB after compression.', 'error');
-                }
+                const finalCanvas = document.createElement('canvas');
+                const finalCtx = finalCanvas.getContext('2d');
+                finalCanvas.width = w;
+                finalCanvas.height = h;
+                finalCtx.drawImage(imgEl, 0, 0, w, h);
+                return finalCanvas.toDataURL('image/jpeg', 0.1);
             };
-            img.onerror = () => {
-                spotImageDataUrl = originalDataUrl;
-                document.getElementById('spotPreviewImg').src = originalDataUrl;
-                document.getElementById('spotUploadBox').style.display = 'none';
-                document.getElementById('spotPreviewDiv').style.display = 'block';
-                showNotification('Spot image selected. Compression may have failed.', 'error');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const originalDataUrl = e.target.result;
+                const img = new Image();
+                img.onload = () => {
+                    const compressedDataUrl = compressToTarget(img);
+                    const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
+
+                    spotImageDataUrl = compressedDataUrl;
+                    document.getElementById('spotPreviewImg').src = compressedDataUrl;
+                    document.getElementById('spotUploadBox').style.display = 'none';
+                    document.getElementById('spotPreviewDiv').style.display = 'block';
+
+                    if (estimatedBytes > MAX_UPLOAD_BYTES) {
+                        showNotification('Spot image selected, but it may still be larger than 70KB after compression.', 'error');
+                    }
+                };
+                img.onerror = () => {
+                    spotImageDataUrl = originalDataUrl;
+                    document.getElementById('spotPreviewImg').src = originalDataUrl;
+                    document.getElementById('spotUploadBox').style.display = 'none';
+                    document.getElementById('spotPreviewDiv').style.display = 'block';
+                    showNotification('Spot image selected. Compression may have failed.', 'error');
+                };
+                img.src = originalDataUrl;
             };
-            img.src = originalDataUrl;
-        };
-        reader.readAsDataURL(file);
-    });
+            reader.readAsDataURL(file);
+        });
+    }
 
     const souvenirImageInput = document.getElementById('souvenirImageInput');
-    souvenirImageInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
-            showNotification('Please upload a JPEG or PNG image', 'error');
-            return;
-        }
-        
-        if (file.size > 5 * 1024 * 1024) {
-            showNotification('Image must be less than 5MB', 'error');
-            return;
-        }
-        
-        const MAX_UPLOAD_BYTES = 70 * 1024;
+    if (souvenirImageInput) {
+        souvenirImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
+                showNotification('Please upload a JPEG or PNG image', 'error');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification('Image must be less than 5MB', 'error');
+                return;
+            }
+            
+            const MAX_UPLOAD_BYTES = 70 * 1024;
 
-        const estimateBytesFromDataUrl = (dataUrl) => {
-            const base64 = dataUrl.split(',')[1] || '';
-            const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
-            return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
-        };
+            const estimateBytesFromDataUrl = (dataUrl) => {
+                const base64 = dataUrl.split(',')[1] || '';
+                const padding = (base64.endsWith('==') ? 2 : (base64.endsWith('=') ? 1 : 0));
+                return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+            };
 
-        const compressToTarget = (imgEl) => {
-            const dimensionSteps = [1024, 768, 512, 384, 256];
-            const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
+            const compressToTarget = (imgEl) => {
+                const dimensionSteps = [1024, 768, 512, 384, 256];
+                const qualitySteps = [0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.12, 0.1];
 
-            for (const maxDim of dimensionSteps) {
+                for (const maxDim of dimensionSteps) {
+                    let w = imgEl.width;
+                    let h = imgEl.height;
+
+                    if (w > h) {
+                        if (w > maxDim) {
+                            h = (h * maxDim) / w;
+                            w = maxDim;
+                        }
+                    } else {
+                        if (h > maxDim) {
+                            w = (w * maxDim) / h;
+                            h = maxDim;
+                        }
+                    }
+
+                    w = Math.round(w);
+                    h = Math.round(h);
+
+                    const tryCanvas = document.createElement('canvas');
+                    const tryCtx = tryCanvas.getContext('2d');
+                    tryCanvas.width = w;
+                    tryCanvas.height = h;
+                    tryCtx.drawImage(imgEl, 0, 0, w, h);
+
+                    for (const q of qualitySteps) {
+                        const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
+                        const bytes = estimateBytesFromDataUrl(dataUrl);
+                        if (bytes <= MAX_UPLOAD_BYTES) return dataUrl;
+                    }
+                }
+
+                const finalMaxDim = 256;
                 let w = imgEl.width;
                 let h = imgEl.height;
-
                 if (w > h) {
-                    if (w > maxDim) {
-                        h = (h * maxDim) / w;
-                        w = maxDim;
+                    if (w > finalMaxDim) {
+                        h = (h * finalMaxDim) / w;
+                        w = finalMaxDim;
                     }
                 } else {
-                    if (h > maxDim) {
-                        w = (w * maxDim) / h;
-                        h = maxDim;
+                    if (h > finalMaxDim) {
+                        w = (w * finalMaxDim) / h;
+                        h = finalMaxDim;
                     }
                 }
 
                 w = Math.round(w);
                 h = Math.round(h);
 
-                const tryCanvas = document.createElement('canvas');
-                const tryCtx = tryCanvas.getContext('2d');
-                tryCanvas.width = w;
-                tryCanvas.height = h;
-                tryCtx.drawImage(imgEl, 0, 0, w, h);
-
-                for (const q of qualitySteps) {
-                    const dataUrl = tryCanvas.toDataURL('image/jpeg', q);
-                    const bytes = estimateBytesFromDataUrl(dataUrl);
-                    if (bytes <= MAX_UPLOAD_BYTES) return dataUrl;
-                }
-            }
-
-            const finalMaxDim = 256;
-            let w = imgEl.width;
-            let h = imgEl.height;
-            if (w > h) {
-                if (w > finalMaxDim) {
-                    h = (h * finalMaxDim) / w;
-                    w = finalMaxDim;
-                }
-            } else {
-                if (h > finalMaxDim) {
-                    w = (w * finalMaxDim) / h;
-                    h = finalMaxDim;
-                }
-            }
-
-            w = Math.round(w);
-            h = Math.round(h);
-
-            const finalCanvas = document.createElement('canvas');
-            const finalCtx = finalCanvas.getContext('2d');
-            finalCanvas.width = w;
-            finalCanvas.height = h;
-            finalCtx.drawImage(imgEl, 0, 0, w, h);
-            return finalCanvas.toDataURL('image/jpeg', 0.1);
-        };
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const originalDataUrl = e.target.result;
-            const img = new Image();
-            img.onload = () => {
-                const compressedDataUrl = compressToTarget(img);
-                const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
-
-                souvenirImageDataUrl = compressedDataUrl;
-                document.getElementById('souvenirPreviewImg').src = compressedDataUrl;
-                document.getElementById('souvenirUploadBox').style.display = 'none';
-                document.getElementById('souvenirPreviewDiv').style.display = 'block';
-
-                if (estimatedBytes > MAX_UPLOAD_BYTES) {
-                    showNotification('Souvenir image selected, but it may still be larger than 70KB after compression.', 'error');
-                }
+                const finalCanvas = document.createElement('canvas');
+                const finalCtx = finalCanvas.getContext('2d');
+                finalCanvas.width = w;
+                finalCanvas.height = h;
+                finalCtx.drawImage(imgEl, 0, 0, w, h);
+                return finalCanvas.toDataURL('image/jpeg', 0.1);
             };
-            img.onerror = () => {
-                souvenirImageDataUrl = originalDataUrl;
-                document.getElementById('souvenirPreviewImg').src = originalDataUrl;
-                document.getElementById('souvenirUploadBox').style.display = 'none';
-                document.getElementById('souvenirPreviewDiv').style.display = 'block';
-                showNotification('Souvenir image selected. Compression may have failed.', 'error');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const originalDataUrl = e.target.result;
+                const img = new Image();
+                img.onload = () => {
+                    const compressedDataUrl = compressToTarget(img);
+                    const estimatedBytes = estimateBytesFromDataUrl(compressedDataUrl);
+
+                    souvenirImageDataUrl = compressedDataUrl;
+                    document.getElementById('souvenirPreviewImg').src = compressedDataUrl;
+                    document.getElementById('souvenirUploadBox').style.display = 'none';
+                    document.getElementById('souvenirPreviewDiv').style.display = 'block';
+
+                    if (estimatedBytes > MAX_UPLOAD_BYTES) {
+                        showNotification('Souvenir image selected, but it may still be larger than 70KB after compression.', 'error');
+                    }
+                };
+                img.onerror = () => {
+                    souvenirImageDataUrl = originalDataUrl;
+                    document.getElementById('souvenirPreviewImg').src = originalDataUrl;
+                    document.getElementById('souvenirUploadBox').style.display = 'none';
+                    document.getElementById('souvenirPreviewDiv').style.display = 'block';
+                    showNotification('Souvenir image selected. Compression may have failed.', 'error');
+                };
+                img.src = originalDataUrl;
             };
-            img.src = originalDataUrl;
-        };
-        reader.readAsDataURL(file);
-    });
+            reader.readAsDataURL(file);
+        });
+    }
 }
 
 // ========== SAVE SPOT ==========
 async function saveSpot() {
     const saveBtn = document.getElementById('saveBtn');
-
-    // Safety: prevent accidental double submissions.
-    if (!saveBtn || saveBtn.dataset.locked === 'true') return;
-    saveBtn.dataset.locked = 'true';
-
-    // Release lock on modal cancel/close as well, so it won't remain stuck.
-    // (Also prevents "saving" button from visually staying in Saving state.)
     const originalText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
     saveBtn.disabled = true;
@@ -1021,6 +989,7 @@ window.confirmDelete = async function() {
 
         if (error) throw error;
 
+        // Use the same notification style as add success
         showInContainerNotification('mainPageNotification', 'Tourist spot deleted successfully!', 'success');
         closeDeleteModal();
         await loadSpots();
@@ -1327,6 +1296,7 @@ window.deleteSouvenir = async function(souvenirId) {
 
         if (error) throw error;
 
+        // Use the same notification style as add success
         showInContainerNotification('mainPageNotification', 'Souvenir deleted successfully!', 'success');
         
         if (currentEditingSpot) {
