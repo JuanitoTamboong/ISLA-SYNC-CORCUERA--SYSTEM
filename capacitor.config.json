@@ -1,6 +1,6 @@
 {
   "appId": "com.corcuera.islasync",
-  "appName": "Isla Sync",
+  "appName": "Isla",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {
