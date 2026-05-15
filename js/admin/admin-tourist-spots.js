@@ -55,21 +55,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupForms();
     setupImageUploads();
     
-    // Prevent Enter key from submitting forms globally
-    document.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            // Check if the active element is a button, submit input, or if we're in a modal that should submit
-            const activeElement = document.activeElement;
-            if (activeElement && (activeElement.type === 'submit' || activeElement.tagName === 'BUTTON')) {
-                // Let the button's own click handler work
-                return;
-            }
-            // Otherwise, prevent default to avoid accidental form submissions
-            if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-                event.preventDefault();
-            }
-        }
-    });
+    // Remove aggressive global Enter blocking; rely on form submit handlers instead.
+    // Global handlers were causing unintended submit/save executions.
+    // (Intentionally left blank)
+    ;
 });
 
 // ========== INPUT VALIDATION SETUP ==========
@@ -358,6 +347,13 @@ window.closeSpotModal = function() {
     document.getElementById('spotModal').classList.remove('show');
     currentEditingSpot = null;
     pendingSouvenirs = [];
+
+    // Release save lock if it is active.
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.dataset.locked = 'false';
+        saveBtn.disabled = false;
+    }
 };
 
 window.removeSpotImage = function() {
@@ -567,7 +563,7 @@ window.deleteLocalDriver = async function(driverId) {
 
         if (error) throw error;
 
-        showNotification('Local driver deleted successfully', 'success');
+        showInContainerNotification('mainPageNotification', 'Local driver deleted successfully!', 'success');
         
         if (currentEditingSpot) {
             await loadLocalDrivers(currentEditingSpot.id);
@@ -857,6 +853,13 @@ function setupImageUploads() {
 // ========== SAVE SPOT ==========
 async function saveSpot() {
     const saveBtn = document.getElementById('saveBtn');
+
+    // Safety: prevent accidental double submissions.
+    if (!saveBtn || saveBtn.dataset.locked === 'true') return;
+    saveBtn.dataset.locked = 'true';
+
+    // Release lock on modal cancel/close as well, so it won't remain stuck.
+    // (Also prevents "saving" button from visually staying in Saving state.)
     const originalText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
     saveBtn.disabled = true;
@@ -1018,7 +1021,7 @@ window.confirmDelete = async function() {
 
         if (error) throw error;
 
-        showNotification('Tourist spot deleted successfully', 'success');
+        showInContainerNotification('mainPageNotification', 'Tourist spot deleted successfully!', 'success');
         closeDeleteModal();
         await loadSpots();
 
@@ -1324,7 +1327,7 @@ window.deleteSouvenir = async function(souvenirId) {
 
         if (error) throw error;
 
-        showNotification('Souvenir deleted successfully', 'success');
+        showInContainerNotification('mainPageNotification', 'Souvenir deleted successfully!', 'success');
         
         if (currentEditingSpot) {
             await loadSouvenirs(currentEditingSpot.id);
