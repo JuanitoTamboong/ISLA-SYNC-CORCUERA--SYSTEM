@@ -64,7 +64,9 @@
 
                 <div class="form-group">
                     <label>Name <span class="required">*</span></label>
-                    <input type="text" id="spotName" placeholder="Enter spot name" required>
+                    <input type="text" id="spotName" placeholder="Enter spot name" required 
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <small>Letters and spaces only</small>
                 </div>
 
                 <div class="form-group">
@@ -157,12 +159,17 @@
 
                 <div class="form-group">
                     <label>Driver Name <span class="required">*</span></label>
-                    <input type="text" id="driverName" placeholder="Enter local driver name" required>
+                    <input type="text" id="driverName" placeholder="Enter local driver name" required
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <small>Letters and spaces only</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Contact Number</label>
-                    <input type="tel" id="driverContactNumber" placeholder="e.g., 09123456789">
+                    <label>Contact Number <span class="required">*</span></label>
+                    <input type="tel" id="driverContactNumber" placeholder="e.g., 09123456789" required
+                           maxlength="11" inputmode="numeric" pattern="\d{11}"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
+                    <small>11 digits only (numbers)</small>
                 </div>
 
                 <div class="form-actions">
@@ -196,12 +203,17 @@
 
                 <div class="form-group">
                     <label>Souvenir Name <span class="required">*</span></label>
-                    <input type="text" id="souvenirName" placeholder="Enter souvenir name" required>
+                    <input type="text" id="souvenirName" placeholder="Enter souvenir name" required
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <small>Letters and spaces only</small>
                 </div>
 
                 <div class="form-group">
                     <label>Price (PHP) <span class="required">*</span></label>
-                    <input type="number" id="souvenirPrice" placeholder="0.00" min="0" step="0.01" required>
+                    <input type="number" id="souvenirPrice" placeholder="0" min="0" step="1" required 
+                           inputmode="numeric" pattern="\d+"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <small>Numbers only (no decimals)</small>
                 </div>
 
                 <div class="form-group">

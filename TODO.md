@@ -1,13 +1,11 @@
-# TODO - Admin Tourist Spots (JS + Design Fix)
+# TODO
 
-- [x] Read current admin tourist spots JS/HTML/CSS.
-- [x] Fix JS crash: remove references to non-existent driver fields in `saveSpot()`.
-- [x] Fix spot-card design inconsistency: remove driver preview fields from spot cards (drivers are handled in `tourist_spot_drivers`).
-- [x] Fix CSS conflict: scope `.souvenir-item` styling to `#souvenirGrid` to avoid overriding inline souvenir styles on spot cards.
-- [ ] Quick manual test:
-  - [ ] Open `pages/admin/admin-tourist-spots.html`
-  - [ ] Add/edit a spot (save works)
-  - [ ] Add/edit/delete drivers via Driver modal
-  - [ ] Add/edit/delete souvenirs via Souvenir modal
-  - [ ] Filter tabs re-render correctly
+- [x] Add client-side validation on admin tourist spots page inputs:
+  - [x] Local Driver name: letters only (A-Z/a-z + spaces)
+  - [x] Local Driver contact number: digits only, exactly 11 digits
+  - [x] Souvenir name: letters only (A-Z/a-z + spaces)
+  - [x] Souvenir price: integer only (no decimals), exact numbers only
+- [x] Add minor input attributes (maxlength=11) for contact number.
+- [ ] Verify add/edit tourist spot → driver/souvenir save flows with invalid inputs are blocked.
+
 

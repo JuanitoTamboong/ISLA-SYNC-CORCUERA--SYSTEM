@@ -46,11 +46,74 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     window.supabaseClient = supabaseClient;
+    
+    // Setup validation for form inputs
+    setupInputValidation();
+    
     await loadSpots();
     setupFilterTabs();
     setupForms();
     setupImageUploads();
+    
+    // Prevent Enter key from submitting forms globally
+    document.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            // Check if the active element is a button, submit input, or if we're in a modal that should submit
+            const activeElement = document.activeElement;
+            if (activeElement && (activeElement.type === 'submit' || activeElement.tagName === 'BUTTON')) {
+                // Let the button's own click handler work
+                return;
+            }
+            // Otherwise, prevent default to avoid accidental form submissions
+            if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                event.preventDefault();
+            }
+        }
+    });
 });
+
+// ========== INPUT VALIDATION SETUP ==========
+function setupInputValidation() {
+    // Validate tourist spot name (letters only)
+    const spotNameInput = document.getElementById('spotName');
+    if (spotNameInput) {
+        spotNameInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+    }
+    
+    // Validate driver name (letters only)
+    const driverNameInput = document.getElementById('driverName');
+    if (driverNameInput) {
+        driverNameInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+    }
+    
+    // Validate driver contact number (numbers only, max 11)
+    const driverContactInput = document.getElementById('driverContactNumber');
+    if (driverContactInput) {
+        driverContactInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11);
+        });
+    }
+    
+    // Validate souvenir name (letters only)
+    const souvenirNameInput = document.getElementById('souvenirName');
+    if (souvenirNameInput) {
+        souvenirNameInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+    }
+    
+    // Validate souvenir price (numbers only, no decimals)
+    const souvenirPriceInput = document.getElementById('souvenirPrice');
+    if (souvenirPriceInput) {
+        souvenirPriceInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+}
 
 // ========== LOAD SPOTS ==========
 async function loadSpots() {
@@ -278,14 +341,14 @@ window.openSpotModal = function(spotId = null) {
         
         souvenirSection.style.display = 'block';
         loadSouvenirs(spotId);
-        loadLocalDrivers(spotId); // Load local drivers for this spot
+        loadLocalDrivers(spotId);
     } else {
         currentEditingSpot = null;
         title.textContent = 'Add Tourist Spot';
         souvenirSection.style.display = 'block';
         souvenirs = [];
         renderSouvenirs();
-        renderLocalDrivers(); // Initialize empty local drivers list for new spot
+        renderLocalDrivers();
     }
     
     modal.classList.add('show');
@@ -418,10 +481,18 @@ async function saveDriver() {
         const driverId = document.getElementById('driverId').value;
         const driverName = document.getElementById('driverName').value.trim();
         const driverContactNumber = document.getElementById('driverContactNumber').value.trim();
+        
         const spotId = document.getElementById('spotId').value;
 
+        // Validation: Driver name (letters only)
         if (!driverName) {
             showNotification('Please enter a driver name', 'error');
+            return;
+        }
+        
+        const lettersOnlyRegex = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
+        if (!lettersOnlyRegex.test(driverName)) {
+            showNotification('Driver name should contain letters only (A-Z, spaces allowed)', 'error');
             return;
         }
 
@@ -429,6 +500,15 @@ async function saveDriver() {
             showNotification('Please save the tourist spot first before adding local drivers', 'error');
             closeDriverModal();
             return;
+        }
+
+        // Validation: Contact number (exactly 11 digits if provided)
+        if (driverContactNumber) {
+            const digitsOnlyRegex = /^\d{11}$/;
+            if (!digitsOnlyRegex.test(driverContactNumber)) {
+                showNotification('Contact number must be exactly 11 digits (numbers only)', 'error');
+                return;
+            }
         }
 
         const driverData = {
@@ -500,22 +580,47 @@ window.deleteLocalDriver = async function(driverId) {
 
 // ========== FORMS ==========
 function setupForms() {
-    document.getElementById('spotForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await saveSpot();
-    });
+    const spotForm = document.getElementById('spotForm');
+    if (spotForm) {
+        spotForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveSpot();
+        });
+    }
 
-    document.getElementById('souvenirForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await saveSouvenir();
-    });
+    const souvenirForm = document.getElementById('souvenirForm');
+    if (souvenirForm) {
+        souvenirForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveSouvenir();
+        });
+    }
     
-    if (document.getElementById('driverForm')) {
-        document.getElementById('driverForm').addEventListener('submit', async function(e) {
+    const driverForm = document.getElementById('driverForm');
+    if (driverForm) {
+        driverForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             await saveDriver();
         });
     }
+    
+    // Prevent Enter key from submitting forms unexpectedly
+    const forms = [spotForm, souvenirForm, driverForm];
+    forms.forEach(form => {
+        if (form) {
+            form.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    // Check if the Enter key was pressed on an input that is not a submit button
+                    const target = e.target;
+                    if (target.tagName === 'INPUT' && target.type !== 'submit' && target.type !== 'button') {
+                        e.preventDefault();
+                        // Don't submit automatically
+                        return false;
+                    }
+                }
+            });
+        }
+    });
 }
 
 // ========== IMAGE UPLOADS ==========
@@ -763,8 +868,17 @@ async function saveSpot() {
         const location = document.getElementById('spotLocation').value.trim();
         const isVisible = document.getElementById('spotVisible').checked;
 
+        // Validation: Spot name (letters only)
         if (!name) {
             showNotification('Please enter a spot name', 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+            return;
+        }
+        
+        const lettersOnlyRegex = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
+        if (!lettersOnlyRegex.test(name)) {
+            showNotification('Spot name should contain letters only (A-Z, spaces allowed)', 'error');
             saveBtn.innerHTML = originalText;
             saveBtn.disabled = false;
             return;
@@ -1083,18 +1197,38 @@ async function saveSouvenir() {
     try {
         const souvenirId = document.getElementById('souvenirId').value;
         const name = document.getElementById('souvenirName').value.trim();
-        const price = parseFloat(document.getElementById('souvenirPrice').value);
+        const priceRaw = document.getElementById('souvenirPrice').value.trim();
 
+        // Validation: Souvenir name (letters only)
         if (!name) {
             showNotification('Please enter a souvenir name', 'error');
             return;
         }
+        
+        const lettersOnlyRegex = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
+        if (!lettersOnlyRegex.test(name)) {
+            showNotification('Souvenir name should contain letters only (A-Z, spaces allowed)', 'error');
+            return;
+        }
 
-        if (isNaN(price) || price < 0) {
-            showNotification('Please enter a valid price (non-negative number)', 'error');
+        // Validation: Price (numbers only, positive integer)
+        if (!priceRaw) {
+            showNotification('Please enter a valid price', 'error');
             return;
         }
         
+        const numbersOnlyRegex = /^\d+$/;
+        if (!numbersOnlyRegex.test(priceRaw)) {
+            showNotification('Price should be numbers only (no decimals or special characters)', 'error');
+            return;
+        }
+
+        const price = Number(priceRaw);
+        if (isNaN(price) || price < 0) {
+            showNotification('Please enter a valid price (non-negative exact number)', 'error');
+            return;
+        }
+
         let spotId = document.getElementById('spotId')?.value;
         
         if (!spotId || spotId === '') {
