@@ -184,18 +184,62 @@
     margin: 0 0 8px;
 }
 
-
-
-.spot-souvenir-count {
-    font-size: 12px;
-    color: #059669;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+/* LOCAL DRIVERS SECTION IN SPOT CARD */
+.spot-drivers-list {
     margin-bottom: 12px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
 }
 
-/* Inline souvenirs in spot cards */
+.spot-drivers-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.spot-drivers-label i {
+    color: #0d6efd;
+}
+
+.spot-driver-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #495057;
+    padding: 6px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.spot-driver-item:last-child {
+    border-bottom: none;
+}
+
+.spot-driver-item i {
+    width: 16px;
+    color: #6c757d;
+    font-size: 11px;
+}
+
+.spot-driver-contact {
+    margin-left: auto;
+    font-size: 11px;
+    color: #0d6efd;
+}
+
+.spot-no-drivers {
+    font-size: 12px;
+    color: #9ca3af;
+    font-style: italic;
+    margin: 8px 0;
+}
+
 .spot-souvenirs-list {
     margin-bottom: 12px;
 }
@@ -343,6 +387,176 @@
     background: #fee2e2;
 }
 
+/* LOCAL DRIVERS SECTION IN MODAL */
+.drivers-section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.drivers-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.drivers-section-header h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.drivers-section-header h4 i {
+    color: #0d6efd;
+    margin-right: 8px;
+}
+
+.drivers-add-btn {
+    background: #0d6efd;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.drivers-add-btn:hover {
+    background: #0b5ed7;
+    transform: translateY(-1px);
+}
+
+.drivers-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.driver-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
+}
+
+.driver-item:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.driver-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.driver-info i {
+    font-size: 28px;
+    color: #6c757d;
+}
+
+.driver-details {
+    flex: 1;
+}
+
+.driver-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+    font-size: 14px;
+}
+
+.driver-contact {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.driver-contact i {
+    font-size: 11px;
+    color: #0d6efd;
+}
+
+.driver-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.driver-actions button {
+    background: none;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.driver-actions button:first-child {
+    color: #0d6efd;
+    background: #e7f1ff;
+}
+
+.driver-actions button:first-child:hover {
+    background: #cfe2ff;
+}
+
+.driver-actions button:last-child {
+    color: #dc3545;
+    background: #ffe6e6;
+}
+
+.driver-actions button:last-child:hover {
+    background: #ffcccc;
+}
+
+.drivers-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: #9ca3af;
+}
+
+.drivers-empty i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+    opacity: 0.5;
+}
+
+.drivers-empty p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.drivers-hint {
+    font-size: 11px !important;
+    opacity: 0.7;
+}
+
 /* SOUVENIR SECTION */
 .souvenir-section {
     margin-top: 15px;
@@ -416,6 +630,7 @@
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
+    position: relative;
 }
 
 .souvenir-image img {
@@ -525,6 +740,7 @@
     color: #9ca3af;
     margin-top: 4px !important;
 }
+
 /* Pending souvenir styles */
 .pending-souvenir {
     opacity: 0.85;
@@ -543,29 +759,6 @@
     font-weight: bold;
 }
 
-.souvenir-image {
-    position: relative;
-}
-
-.souvenir-actions button {
-    background: #ef4444;
-    color: white;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    transition: all 0.2s;
-}
-
-.souvenir-actions button:hover {
-    background: #dc2626;
-    transform: scale(1.05);
-}
 /* LOADING & EMPTY */
 .loading-state, .empty-state {
     text-align: center;
@@ -1050,18 +1243,38 @@
     .souvenir-grid {
         grid-template-columns: 1fr;
     }
+    
+    .driver-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .driver-actions {
+        align-self: flex-end;
+    }
+    
+    .driver-info {
+        width: 100%;
+    }
 }
 
 /* Scrollbar */
-.modal-body::-webkit-scrollbar {
+.modal-body::-webkit-scrollbar,
+.drivers-grid::-webkit-scrollbar,
+.souvenir-grid::-webkit-scrollbar {
     width: 4px;
 }
 
-.modal-body::-webkit-scrollbar-track {
+.modal-body::-webkit-scrollbar-track,
+.drivers-grid::-webkit-scrollbar-track,
+.souvenir-grid::-webkit-scrollbar-track {
     background: #f1f5f9;
 }
 
-.modal-body::-webkit-scrollbar-thumb {
+.modal-body::-webkit-scrollbar-thumb,
+.drivers-grid::-webkit-scrollbar-thumb,
+.souvenir-grid::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 2px;
 }

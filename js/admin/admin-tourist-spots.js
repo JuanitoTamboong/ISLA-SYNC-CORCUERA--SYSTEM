@@ -10,6 +10,7 @@ let spotSouvenirs = {};
 let souvenirs = [];
 let deleteSpotId = null;
 let pendingSouvenirs = []; 
+let spotDrivers = {}; // Store local drivers for each spot
 
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
@@ -63,7 +64,20 @@ async function loadSpots() {
 
         spots = data || [];
         
+        // Load local drivers for each spot
         for (let spot of spots) {
+            const { data: drivers, error: driversError } = await window.supabaseClient
+                .from('spot_drivers')
+                .select('*')
+                .eq('tourist_spot_id', spot.id)
+                .order('created_at', { ascending: true });
+            
+            if (!driversError) {
+                spotDrivers[spot.id] = drivers || [];
+            } else {
+                spotDrivers[spot.id] = [];
+            }
+            
             const { count } = await window.supabaseClient
                 .from('souvenirs')
                 .select('*', { count: 'exact', head: true })
@@ -120,15 +134,25 @@ async function renderSpots() {
         const visibilityClass = spot.is_visible ? 'visible' : 'hidden';
         const visibilityText = spot.is_visible ? '<i class="fa-solid fa-eye"></i> Visible' : '<i class="fa-solid fa-eye-slash"></i> Hidden';
         
-        // Driver info display - FIXED: changed contact_number to driver_contact_number
-        const driverName = spot.driver_name ? spot.driver_name : '';
-        const contactNumber = spot.driver_contact_number ? spot.driver_contact_number : '';
-        const driverInfoHtml = (driverName || contactNumber) ? `
-            <div class="spot-driver-info">
-                ${driverName ? `<p class="spot-driver-name"><i class="fa-solid fa-user"></i> ${escapeHtml(driverName)}</p>` : ''}
-                ${contactNumber ? `<p class="spot-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(contactNumber)}</p>` : ''}
-            </div>
-        ` : '';
+        // Get local drivers for this spot
+        const drivers = spotDrivers[spot.id] || [];
+        let driversHtml = '';
+        
+        if (drivers.length > 0) {
+            driversHtml = `
+                <div class="spot-drivers-list">
+                    <p class="spot-drivers-label"><i class="fa-solid fa-users"></i> Local Drivers:</p>
+                    ${drivers.map(driver => `
+                        <div class="spot-driver-item">
+                            <i class="fa-solid fa-user"></i> ${escapeHtml(driver.driver_name)}
+                            ${driver.driver_contact_number ? `<span class="spot-driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</span>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            driversHtml = '<p class="spot-no-drivers">No local drivers added</p>';
+        }
             
         const dateStr = spot.created_at 
             ? new Date(spot.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -178,7 +202,7 @@ async function renderSpots() {
                     </div>
                     <h3 class="spot-name">${escapeHtml(spot.name)}</h3>
                     ${spot.location ? `<p class="spot-location"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location)}</p>` : ''}
-                    ${driverInfoHtml}
+                    ${driversHtml}
                     <div class="spot-souvenirs-list">
                         <p class="spot-souvenirs-label"><i class="fa-solid fa-gift"></i> Souvenirs:</p>
                         ${souvenirsHtml}
@@ -244,9 +268,6 @@ window.openSpotModal = function(spotId = null) {
         document.getElementById('spotName').value = spot.name || '';
         document.getElementById('spotCategory').value = spot.category || 'Beach';
         document.getElementById('spotLocation').value = spot.location || '';
-        document.getElementById('spotDriverName').value = spot.driver_name || '';
-        // FIXED: changed from contact_number to driver_contact_number
-        document.getElementById('spotDriverContactNumber').value = spot.driver_contact_number || '';
         document.getElementById('spotVisible').checked = spot.is_visible !== false;
         
         if (spot.image_url) {
@@ -257,12 +278,14 @@ window.openSpotModal = function(spotId = null) {
         
         souvenirSection.style.display = 'block';
         loadSouvenirs(spotId);
+        loadLocalDrivers(spotId); // Load local drivers for this spot
     } else {
         currentEditingSpot = null;
         title.textContent = 'Add Tourist Spot';
         souvenirSection.style.display = 'block';
         souvenirs = [];
         renderSouvenirs();
+        renderLocalDrivers(); // Initialize empty local drivers list for new spot
     }
     
     modal.classList.add('show');
@@ -282,6 +305,199 @@ window.removeSpotImage = function() {
     document.getElementById('spotPreviewImg').src = '';
 };
 
+// ========== LOCAL DRIVERS MANAGEMENT ==========
+async function loadLocalDrivers(spotId) {
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('spot_drivers')
+            .select('*')
+            .eq('tourist_spot_id', spotId)
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        if (!spotDrivers[spotId]) {
+            spotDrivers[spotId] = [];
+        }
+        spotDrivers[spotId] = data || [];
+        renderLocalDrivers();
+    } catch (error) {
+        console.error('Failed to load local drivers:', error);
+        spotDrivers[spotId] = [];
+        renderLocalDrivers();
+    }
+}
+
+function renderLocalDrivers() {
+    const container = document.getElementById('driversGrid');
+    
+    if (!container) return;
+    
+    const spotId = document.getElementById('spotId').value;
+    const drivers = spotId && spotDrivers[spotId] ? spotDrivers[spotId] : [];
+    
+    if (drivers.length === 0) {
+        container.innerHTML = `
+            <div class="drivers-empty">
+                <i class="fa-solid fa-users"></i>
+                <p>No local drivers yet</p>
+                <p class="drivers-hint">Click + Add to add local drivers</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = drivers.map(driver => {
+        return `
+            <div class="driver-item" data-id="${driver.id}">
+                <div class="driver-info">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <div class="driver-details">
+                        <p class="driver-name">${escapeHtml(driver.driver_name)}</p>
+                        ${driver.driver_contact_number ? `<p class="driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</p>` : ''}
+                    </div>
+                </div>
+                <div class="driver-actions">
+                    <button onclick="editLocalDriver('${driver.id}')" title="Edit">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button onclick="deleteLocalDriver('${driver.id}')" title="Delete">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.openDriverModal = function(driverId = null) {
+    const modal = document.getElementById('driverModal');
+    const form = document.getElementById('driverForm');
+    const title = document.getElementById('driverModalTitle');
+    
+    form.reset();
+    document.getElementById('driverId').value = '';
+    
+    const spotId = document.getElementById('spotId')?.value;
+    if (spotId && spotId !== '') {
+        document.getElementById('driverSpotId').value = String(spotId);
+    }
+    
+    if (driverId) {
+        const spotId = document.getElementById('spotId').value;
+        const drivers = spotDrivers[spotId] || [];
+        const driver = drivers.find(d => d.id === driverId);
+        
+        if (!driver) {
+            showNotification('Local driver not found', 'error');
+            return;
+        }
+        
+        title.textContent = 'Edit Local Driver';
+        document.getElementById('driverId').value = driver.id;
+        document.getElementById('driverName').value = driver.driver_name || '';
+        document.getElementById('driverContactNumber').value = driver.driver_contact_number || '';
+    } else {
+        title.textContent = 'Add Local Driver';
+    }
+    
+    modal.classList.add('show');
+};
+
+window.closeDriverModal = function() {
+    document.getElementById('driverModal').classList.remove('show');
+};
+
+async function saveDriver() {
+    const saveBtn = document.getElementById('driverSaveBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+
+    try {
+        const driverId = document.getElementById('driverId').value;
+        const driverName = document.getElementById('driverName').value.trim();
+        const driverContactNumber = document.getElementById('driverContactNumber').value.trim();
+        const spotId = document.getElementById('spotId').value;
+
+        if (!driverName) {
+            showNotification('Please enter a driver name', 'error');
+            return;
+        }
+
+        if (!spotId) {
+            showNotification('Please save the tourist spot first before adding local drivers', 'error');
+            closeDriverModal();
+            return;
+        }
+
+        const driverData = {
+            tourist_spot_id: spotId,
+            driver_name: driverName,
+            driver_contact_number: driverContactNumber || null
+        };
+
+        if (driverId) {
+            const { error } = await window.supabaseClient
+                .from('spot_drivers')
+                .update(driverData)
+                .eq('id', driverId);
+
+            if (error) throw new Error(`Update failed: ${error.message}`);
+            showInContainerNotification('driverModalNotification', 'Local driver updated successfully!', 'success');
+        } else {
+            const { error } = await window.supabaseClient
+                .from('spot_drivers')
+                .insert([driverData]);
+
+            if (error) throw new Error(`Insert failed: ${error.message}`);
+            showInContainerNotification('driverModalNotification', 'Local driver added successfully!', 'success');
+        }
+
+        setTimeout(() => {
+            closeDriverModal();
+            if (currentEditingSpot) {
+                loadLocalDrivers(currentEditingSpot.id);
+            }
+        }, 1500);
+
+    } catch (error) {
+        console.error('saveDriver error:', error);
+        showNotification('Failed to save local driver: ' + error.message, 'error');
+    } finally {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+window.editLocalDriver = function(driverId) {
+    openDriverModal(driverId);
+};
+
+window.deleteLocalDriver = async function(driverId) {
+    if (!confirm('Are you sure you want to delete this local driver?')) {
+        return;
+    }
+
+    try {
+        const { error } = await window.supabaseClient
+            .from('spot_drivers')
+            .delete()
+            .eq('id', driverId);
+
+        if (error) throw error;
+
+        showNotification('Local driver deleted successfully', 'success');
+        
+        if (currentEditingSpot) {
+            await loadLocalDrivers(currentEditingSpot.id);
+        }
+
+    } catch (error) {
+        showNotification('Failed to delete local driver', 'error');
+    }
+};
+
 // ========== FORMS ==========
 function setupForms() {
     document.getElementById('spotForm').addEventListener('submit', async function(e) {
@@ -293,6 +509,13 @@ function setupForms() {
         e.preventDefault();
         await saveSouvenir();
     });
+    
+    if (document.getElementById('driverForm')) {
+        document.getElementById('driverForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await saveDriver();
+        });
+    }
 }
 
 // ========== IMAGE UPLOADS ==========
@@ -526,7 +749,7 @@ function setupImageUploads() {
     });
 }
 
-// ========== SAVE SPOT (FIXED - changed contact_number to driver_contact_number) ==========
+// ========== SAVE SPOT ==========
 async function saveSpot() {
     const saveBtn = document.getElementById('saveBtn');
     const originalText = saveBtn.innerHTML;
@@ -538,9 +761,6 @@ async function saveSpot() {
         const name = document.getElementById('spotName').value.trim();
         const category = document.getElementById('spotCategory').value;
         const location = document.getElementById('spotLocation').value.trim();
-        const driverName = document.getElementById('spotDriverName').value.trim();
-        // FIXED: changed input ID to spotDriverContactNumber
-        const contactNumber = document.getElementById('spotDriverContactNumber').value.trim();
         const isVisible = document.getElementById('spotVisible').checked;
 
         if (!name) {
@@ -552,14 +772,11 @@ async function saveSpot() {
 
         const currentSpot = spotId ? spots.find(s => s.id === spotId) : null;
 
-        // FIXED: changed contact_number to driver_contact_number
         const spotData = {
             name: name,
             category: category,
             location: location || null,
-            is_visible: isVisible,
-            driver_name: driverName || null,
-            driver_contact_number: contactNumber || null  // Changed from contact_number
+            is_visible: isVisible
         };
 
         if (spotImageDataUrl) {
@@ -665,6 +882,14 @@ window.confirmDelete = async function() {
     confirmBtn.disabled = true;
 
     try {
+        // Delete local drivers first
+        const { error: driversError } = await window.supabaseClient
+            .from('spot_drivers')
+            .delete()
+            .eq('tourist_spot_id', deleteSpotId);
+
+        if (driversError) throw driversError;
+
         const { error: souvenirError } = await window.supabaseClient
             .from('souvenirs')
             .delete()
@@ -1027,12 +1252,12 @@ function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"']/g, function(m) {
         const map = {
-            '&': '&amp;',
+            '&': '&lt;',
             '<': '&lt;',
             '>': '&gt;',
             '"': '&quot;',
             "'": '&#039;'
         };
         return map[m] || m;
-    });
+    }); 
 }

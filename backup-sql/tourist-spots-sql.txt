@@ -2,7 +2,7 @@
 -- ISLA-SYNC CORCUERA - TOURIST SPOTS & SOUVENIRS TABLES (SCHEMA FIX / ADMIN COMPAT)
 -- ============================================
 -- Fixes admin errors caused by column mismatches:
---   js/admin/admin-tourist-spots.js uses driver_name + driver_contact_number
+--   js/admin/admin-tourist-spots.js uses spot_drivers table
 -- This migration is safe to re-run.
 -- ============================================
 
@@ -47,25 +47,22 @@ CREATE TABLE IF NOT EXISTS public.tourist_spots (
     image_url TEXT,
     is_visible BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    -- NEW FIELDS
-    driver_name TEXT,
-    driver_contact_number TEXT
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Add missing columns if the table already exists
 ALTER TABLE public.tourist_spots
-    ADD COLUMN IF NOT EXISTS driver_name TEXT,
-    ADD COLUMN IF NOT EXISTS driver_contact_number TEXT,
     ADD COLUMN IF NOT EXISTS location TEXT,
     ADD COLUMN IF NOT EXISTS image_url TEXT,
     ADD COLUMN IF NOT EXISTS is_visible BOOLEAN DEFAULT true,
     ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
--- Remove obsolete column (prevents API selecting/updating invalid schema)
+-- Remove obsolete columns (prevents API selecting/updating invalid schema)
 ALTER TABLE public.tourist_spots
-    DROP COLUMN IF EXISTS description;
+    DROP COLUMN IF EXISTS description,
+    DROP COLUMN IF EXISTS driver_name,
+    DROP COLUMN IF EXISTS driver_contact_number;
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_tourist_spots_category ON public.tourist_spots(category);
@@ -133,7 +130,6 @@ ALTER TABLE public.souvenirs
     DROP COLUMN IF EXISTS description;
 
 -- Ensure FK exists (idempotent)
--- If tourist_spot_id already exists, ensure the FK is present.
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -187,5 +183,80 @@ GRANT ALL ON public.souvenirs TO authenticated;
 GRANT SELECT ON public.souvenirs TO anon;
 GRANT ALL ON public.souvenirs TO service_role;
 
+-- ============================================
+-- SPOT DRIVERS TABLE (LOCAL DRIVERS - MULTI-DRIVER SUPPORT)
+-- ============================================
+-- IMPORTANT: Table name must be 'spot_drivers' to match JavaScript code
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS public.spot_drivers (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    tourist_spot_id UUID NOT NULL,
+    driver_name TEXT NOT NULL,
+    driver_contact_number TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    FOREIGN KEY (tourist_spot_id) REFERENCES public.tourist_spots(id) ON DELETE CASCADE
+);
+
+-- Idempotent add/alter (safe even if table already exists)
+ALTER TABLE public.spot_drivers
+    ADD COLUMN IF NOT EXISTS tourist_spot_id UUID NOT NULL,
+    ADD COLUMN IF NOT EXISTS driver_name TEXT NOT NULL,
+    ADD COLUMN IF NOT EXISTS driver_contact_number TEXT,
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_spot_drivers_spot ON public.spot_drivers(tourist_spot_id);
+CREATE INDEX IF NOT EXISTS idx_spot_drivers_created_at ON public.spot_drivers(created_at);
+
+-- updated_at trigger
+DROP TRIGGER IF EXISTS update_spot_drivers_updated_at ON public.spot_drivers;
+CREATE TRIGGER update_spot_drivers_updated_at
+    BEFORE UPDATE ON public.spot_drivers
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- RLS
+ALTER TABLE public.spot_drivers ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+DROP POLICY IF EXISTS "admins_manage_spot_drivers" ON public.spot_drivers;
+DROP POLICY IF EXISTS "public_view_spot_drivers" ON public.spot_drivers;
+
+CREATE POLICY "admins_manage_spot_drivers"
+    ON public.spot_drivers
+    FOR ALL
+    USING (check_is_admin(auth.uid()))
+    WITH CHECK (check_is_admin(auth.uid()));
+
+CREATE POLICY "public_view_spot_drivers"
+    ON public.spot_drivers
+    FOR SELECT
+    TO anon, authenticated
+    USING (
+        tourist_spot_id IN (
+            SELECT id FROM public.tourist_spots WHERE is_visible = true
+        )
+    );
+
+-- Grants
+GRANT ALL ON public.spot_drivers TO authenticated;
+GRANT SELECT ON public.spot_drivers TO anon;
+GRANT ALL ON public.spot_drivers TO service_role;
+
 COMMIT;
 
+-- ============================================
+-- VERIFICATION QUERIES (Run after migration)
+-- ============================================
+
+-- Check tables exist
+SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('tourist_spots', 'souvenirs', 'spot_drivers');
+
+-- Check spot_drivers table structure
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'spot_drivers' 
+ORDER BY ordinal_position;

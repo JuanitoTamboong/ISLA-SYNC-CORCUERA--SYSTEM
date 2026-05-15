@@ -1,12 +1,13 @@
-# TODO - Tourist Spots Admin Fix
+# TODO - Admin Tourist Spots (JS + Design Fix)
 
-- [x] Update `backup-sql/tourist-spots-sql.txt` to a safe, re-runnable ALTER-based migration:
-  - [x] Ensure `tourist_spots` has `driver_name` + `driver_contact_number`
-  - [x] Ensure `tourist_spots` has no `description` column
-  - [x] Ensure `souvenirs` has no `description` column
-  - [x] Keep/create RLS policies + grants
-  - [x] Keep/create triggers for `updated_at`
-  - [x] Keep/create helper functions `check_is_admin` and `update_updated_at_column`
-- [ ] After applying SQL in Supabase, refresh admin pages and verify CRUD works
-
+- [x] Read current admin tourist spots JS/HTML/CSS.
+- [x] Fix JS crash: remove references to non-existent driver fields in `saveSpot()`.
+- [x] Fix spot-card design inconsistency: remove driver preview fields from spot cards (drivers are handled in `tourist_spot_drivers`).
+- [x] Fix CSS conflict: scope `.souvenir-item` styling to `#souvenirGrid` to avoid overriding inline souvenir styles on spot cards.
+- [ ] Quick manual test:
+  - [ ] Open `pages/admin/admin-tourist-spots.html`
+  - [ ] Add/edit a spot (save works)
+  - [ ] Add/edit/delete drivers via Driver modal
+  - [ ] Add/edit/delete souvenirs via Souvenir modal
+  - [ ] Filter tabs re-render correctly
 
