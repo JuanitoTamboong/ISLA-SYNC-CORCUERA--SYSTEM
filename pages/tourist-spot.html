@@ -25,7 +25,7 @@
     <div class="header">
         <i class="fa-solid fa-arrow-left" id="backButton"></i>
         <div>
-            <h2>Isla-Sync-Corcuera</h2>
+            <h2>IslaSync Corcuera</h2>
             <p>Explore Simara Island</p>
         </div>
     </div>
@@ -33,7 +33,7 @@
     <!-- SEARCH BOX -->
     <div class="search-box">
         <i class="fa fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Find spots in corcuera..." autocomplete="off">
+        <input type="text" id="searchInput" placeholder="Find spots in Corcuera..." autocomplete="off">
     </div>
 
     <!-- FILTER PILLS -->
@@ -52,25 +52,31 @@
         </div>
     </div>
 
-    <!-- BEACHES SECTION (separate) -->
+    <!-- BEACHES SECTION -->
     <div class="section" id="beachesSection">
         <div class="section-header">
             <h3><i class="fas fa-umbrella-beach"></i> Beaches</h3>
             <span class="see-all" data-section="beaches">See all</span>
         </div>
         <div class="scroll" id="beachesScroll">
-            <!-- Skeleton cards will appear here -->
+            <!-- Skeleton loaders will appear here -->
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-rating"></div><div class="skeleton-location"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-rating"></div><div class="skeleton-location"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-rating"></div><div class="skeleton-location"></div></div></div>
         </div>
     </div>
 
-    <!-- LANDMARK SPOTS SECTION (separate) -->
+    <!-- LANDMARK SPOTS SECTION -->
     <div class="section" id="landmarkSection">
         <div class="section-header">
             <h3><i class="fas fa-landmark"></i> Landmark Spots</h3>
             <span class="see-all" data-section="landmarks">See all</span>
         </div>
         <div class="scroll" id="landmarkScroll">
-            <!-- Skeleton cards will appear here -->
+            <!-- Skeleton loaders will appear here -->
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-rating"></div><div class="skeleton-location"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-rating"></div><div class="skeleton-location"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-rating"></div><div class="skeleton-location"></div></div></div>
         </div>
     </div>
 
@@ -81,15 +87,19 @@
             <i class="fa-solid fa-sliders" id="filterSouvenirIcon"></i>
         </div>
         <div class="grid" id="souvenirGrid">
-            <!-- Skeleton products will appear here -->
+            <!-- Skeleton loaders will appear here -->
+            <div class="skeleton-product"><div class="skeleton-product-image"></div><div class="skeleton-product-title"></div><div class="skeleton-product-price"></div></div>
+            <div class="skeleton-product"><div class="skeleton-product-image"></div><div class="skeleton-product-title"></div><div class="skeleton-product-price"></div></div>
+            <div class="skeleton-product"><div class="skeleton-product-image"></div><div class="skeleton-product-title"></div><div class="skeleton-product-price"></div></div>
+            <div class="skeleton-product"><div class="skeleton-product-image"></div><div class="skeleton-product-title"></div><div class="skeleton-product-price"></div></div>
         </div>
     </div>
 
 </div>
 
-<!-- MODAL FOR SPOT DETAILS -->
+<!-- MODAL FOR SPOT DETAILS (Compact - No Description) -->
 <div id="spotModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content compact-modal">
         <div class="modal-header">
             <h2 id="modalSpotName"></h2>
             <span class="close-modal">&times;</span>
@@ -100,13 +110,20 @@
                 <p id="modalSpotRating"><i class="fas fa-star"></i> <span></span></p>
                 <p id="modalSpotLocation"><i class="fas fa-location-dot"></i> <span></span></p>
                 <p id="modalSpotCategory"><i class="fas fa-tag"></i> <span></span></p>
-                <p id="modalSpotDescription"><i class="fas fa-info-circle"></i> <span></span></p>
+                
+                <!-- LOCAL DRIVERS SECTION IN MODAL -->
+                <div class="modal-drivers-section" id="modalDriversSection">
+                    <h4><i class="fas fa-users"></i> Local Drivers</h4>
+                    <div id="modalDriversList" class="drivers-list">
+                        <!-- Drivers will be dynamically inserted here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL FOR SOUVENIR DETAILS -->
+<!-- MODAL FOR SOUVENIR DETAILS (No View Details) -->
 <div id="souvenirModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -118,7 +135,6 @@
             <div class="modal-info">
                 <p id="modalSouvenirPrice"><i class="fas fa-tag"></i> <span></span></p>
                 <p id="modalSouvenirShop"><i class="fas fa-store"></i> <span></span></p>
-                <p id="modalSouvenirDescription"><i class="fas fa-info-circle"></i> <span></span></p>
                 <button class="buy-now-btn" id="buyNowBtn"><i class="fas fa-shopping-cart"></i> Inquire Now</button>
             </div>
         </div>
