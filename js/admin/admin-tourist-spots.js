@@ -9,8 +9,11 @@ let souvenirImageDataUrl = null;
 let spotSouvenirs = {};
 let souvenirs = [];
 let deleteSpotId = null;
+let deleteDriverId = null;
+let deleteSouvenirId = null;
 let pendingSouvenirs = []; 
-let spotDrivers = {}; // Store local drivers for each spot
+let spotDrivers = {};
+let isSaving = false; // Add flag to prevent multiple saves
 
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
@@ -47,18 +50,31 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     window.supabaseClient = supabaseClient;
     
-    // Setup validation for form inputs
     setupInputValidation();
-    
     await loadSpots();
     setupFilterTabs();
     setupForms();
     setupImageUploads();
+    
+    // Close modals when clicking escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAllModals();
+        }
+    });
 });
+
+function closeAllModals() {
+    closeSpotModal();
+    closeDriverModal();
+    closeSouvenirModal();
+    closeDeleteModal();
+    closeDeleteDriverModal();
+    closeDeleteSouvenirModal();
+}
 
 // ========== INPUT VALIDATION SETUP ==========
 function setupInputValidation() {
-    // Validate tourist spot name (letters only)
     const spotNameInput = document.getElementById('spotName');
     if (spotNameInput) {
         spotNameInput.addEventListener('input', function(e) {
@@ -66,7 +82,6 @@ function setupInputValidation() {
         });
     }
     
-    // Validate driver name (letters only)
     const driverNameInput = document.getElementById('driverName');
     if (driverNameInput) {
         driverNameInput.addEventListener('input', function(e) {
@@ -74,7 +89,6 @@ function setupInputValidation() {
         });
     }
     
-    // Validate driver contact number (numbers only, max 11)
     const driverContactInput = document.getElementById('driverContactNumber');
     if (driverContactInput) {
         driverContactInput.addEventListener('input', function(e) {
@@ -82,7 +96,6 @@ function setupInputValidation() {
         });
     }
     
-    // Validate souvenir name (letters only)
     const souvenirNameInput = document.getElementById('souvenirName');
     if (souvenirNameInput) {
         souvenirNameInput.addEventListener('input', function(e) {
@@ -90,7 +103,6 @@ function setupInputValidation() {
         });
     }
     
-    // Validate souvenir price (numbers only, no decimals)
     const souvenirPriceInput = document.getElementById('souvenirPrice');
     if (souvenirPriceInput) {
         souvenirPriceInput.addEventListener('input', function(e) {
@@ -111,7 +123,6 @@ async function loadSpots() {
 
         spots = data || [];
         
-        // Load local drivers for each spot
         for (let spot of spots) {
             const { data: drivers, error: driversError } = await window.supabaseClient
                 .from('spot_drivers')
@@ -181,7 +192,6 @@ async function renderSpots() {
         const visibilityClass = spot.is_visible ? 'visible' : 'hidden';
         const visibilityText = spot.is_visible ? '<i class="fa-solid fa-eye"></i> Visible' : '<i class="fa-solid fa-eye-slash"></i> Hidden';
         
-        // Get local drivers for this spot
         const drivers = spotDrivers[spot.id] || [];
         let driversHtml = '';
         
@@ -292,6 +302,14 @@ window.openSpotModal = function(spotId = null) {
     const title = document.getElementById('modalTitle');
     const souvenirSection = document.getElementById('souvenirSection');
     
+    // Reset save button state
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.innerHTML = 'Save Spot';
+        saveBtn.disabled = false;
+    }
+    isSaving = false;
+    
     form.reset();
     document.getElementById('spotId').value = '';
     spotImageDataUrl = null;
@@ -338,10 +356,79 @@ window.openSpotModal = function(spotId = null) {
     modal.classList.add('show');
 };
 
-window.closeSpotModal = function() {
-    document.getElementById('spotModal').classList.remove('show');
+window.closeSpotModal = function(event) {
+    if (event && event.target !== event.currentTarget) return;
+    
+    const modal = document.getElementById('spotModal');
+    const saveBtn = document.getElementById('saveBtn');
+    
+    // Reset save button state if it's stuck in "Saving..."
+    if (saveBtn) {
+        saveBtn.innerHTML = 'Save Spot';
+        saveBtn.disabled = false;
+    }
+    isSaving = false;
+    
+    // Reset all state variables
     currentEditingSpot = null;
     pendingSouvenirs = [];
+    spotImageDataUrl = null;
+    spotImageFile = null;
+    souvenirImageDataUrl = null;
+    souvenirImageFile = null;
+    
+    // Clear any pending timeouts
+    if (window._saveTimeout) {
+        clearTimeout(window._saveTimeout);
+        window._saveTimeout = null;
+    }
+    
+    // Reset the form
+    const form = document.getElementById('spotForm');
+    if (form) {
+        form.reset();
+    }
+    
+    // Reset spot ID
+    const spotIdField = document.getElementById('spotId');
+    if (spotIdField) {
+        spotIdField.value = '';
+    }
+    
+    // Reset image previews
+    const spotUploadBox = document.getElementById('spotUploadBox');
+    const spotPreviewDiv = document.getElementById('spotPreviewDiv');
+    if (spotUploadBox) spotUploadBox.style.display = 'flex';
+    if (spotPreviewDiv) spotPreviewDiv.style.display = 'none';
+    
+    const spotPreviewImg = document.getElementById('spotPreviewImg');
+    if (spotPreviewImg) spotPreviewImg.src = '';
+    
+    // Clear any notifications in the modal
+    const modalNotification = document.getElementById('spotModalNotification');
+    if (modalNotification) {
+        modalNotification.innerHTML = '';
+        const existingNotif = modalNotification.querySelector('.in-container-notification');
+        if (existingNotif) existingNotif.remove();
+    }
+    
+    // Reset souvenir grid
+    const souvenirGrid = document.getElementById('souvenirGrid');
+    if (souvenirGrid) {
+        souvenirGrid.innerHTML = '';
+    }
+    
+    // Reset drivers grid
+    const driversGrid = document.getElementById('driversGrid');
+    if (driversGrid) {
+        driversGrid.innerHTML = '';
+    }
+    
+    // Clear souvenirs array
+    souvenirs = [];
+    
+    // Remove the show class to hide modal
+    modal.classList.remove('show');
 };
 
 window.removeSpotImage = function() {
@@ -408,7 +495,7 @@ function renderLocalDrivers() {
                     <button onclick="editLocalDriver('${driver.id}')" title="Edit">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button onclick="deleteLocalDriver('${driver.id}')" title="Delete">
+                    <button onclick="openDeleteDriverModal('${driver.id}', event)" title="Delete">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -416,6 +503,70 @@ function renderLocalDrivers() {
         `;
     }).join('');
 }
+
+// ADD THIS MISSING FUNCTION - Close Delete Driver Modal
+window.closeDeleteDriverModal = function(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    const modal = document.getElementById('deleteDriverModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+    deleteDriverId = null;
+};
+
+// FIXED - Open Delete Driver Modal
+window.openDeleteDriverModal = function(driverId, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    deleteDriverId = driverId;
+    const modal = document.getElementById('deleteDriverModal');
+    if (!modal) {
+        console.error("deleteDriverModal element not found");
+        showNotification('Delete confirmation modal not found', 'error');
+        return;
+    }
+    modal.classList.add('show');
+};
+
+// FIXED - Confirm Delete Driver
+window.confirmDeleteDriver = async function(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    if (!deleteDriverId) return;
+
+    const confirmBtn = document.getElementById('confirmDeleteDriverBtn');
+    if (!confirmBtn) return;
+    
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    confirmBtn.disabled = true;
+
+    try {
+        const { error } = await window.supabaseClient
+            .from('spot_drivers')
+            .delete()
+            .eq('id', deleteDriverId);
+
+        if (error) throw error;
+
+        showInContainerNotification('spotModalNotification', 'Local driver deleted successfully!', 'success');
+        closeDeleteDriverModal();
+        
+        if (currentEditingSpot) {
+            await loadLocalDrivers(currentEditingSpot.id);
+        }
+
+    } catch (error) {
+        showNotification('Failed to delete local driver: ' + error.message, 'error');
+    } finally {
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    }
+};
 
 window.openDriverModal = function(driverId = null) {
     const modal = document.getElementById('driverModal');
@@ -451,8 +602,12 @@ window.openDriverModal = function(driverId = null) {
     modal.classList.add('show');
 };
 
-window.closeDriverModal = function() {
-    document.getElementById('driverModal').classList.remove('show');
+window.closeDriverModal = function(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('driverModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 };
 
 async function saveDriver() {
@@ -468,7 +623,6 @@ async function saveDriver() {
         
         const spotId = document.getElementById('spotId').value;
 
-        // Validation: Driver name (letters only)
         if (!driverName) {
             showNotification('Please enter a driver name', 'error');
             return;
@@ -486,7 +640,6 @@ async function saveDriver() {
             return;
         }
 
-        // Validation: Contact number (exactly 11 digits if provided)
         if (driverContactNumber) {
             const digitsOnlyRegex = /^\d{11}$/;
             if (!digitsOnlyRegex.test(driverContactNumber)) {
@@ -538,37 +691,13 @@ window.editLocalDriver = function(driverId) {
     openDriverModal(driverId);
 };
 
-window.deleteLocalDriver = async function(driverId) {
-    if (!confirm('Are you sure you want to delete this local driver?')) {
-        return;
-    }
-
-    try {
-        const { error } = await window.supabaseClient
-            .from('spot_drivers')
-            .delete()
-            .eq('id', driverId);
-
-        if (error) throw error;
-
-        // Use the same notification style as add success
-        showInContainerNotification('mainPageNotification', 'Local driver deleted successfully!', 'success');
-        
-        if (currentEditingSpot) {
-            await loadLocalDrivers(currentEditingSpot.id);
-        }
-
-    } catch (error) {
-        showNotification('Failed to delete local driver', 'error');
-    }
-};
-
 // ========== FORMS ==========
 function setupForms() {
     const spotForm = document.getElementById('spotForm');
     if (spotForm) {
         spotForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
             await saveSpot();
         });
     }
@@ -577,6 +706,7 @@ function setupForms() {
     if (souvenirForm) {
         souvenirForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
             await saveSouvenir();
         });
     }
@@ -585,6 +715,7 @@ function setupForms() {
     if (driverForm) {
         driverForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
             await saveDriver();
         });
     }
@@ -828,9 +959,17 @@ function setupImageUploads() {
 // ========== SAVE SPOT ==========
 async function saveSpot() {
     const saveBtn = document.getElementById('saveBtn');
+    
+    // Prevent multiple save attempts
+    if (isSaving) {
+        showNotification('Save already in progress...', 'warning');
+        return;
+    }
+    
     const originalText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
     saveBtn.disabled = true;
+    isSaving = true;
 
     try {
         let spotId = document.getElementById('spotId').value;
@@ -839,11 +978,11 @@ async function saveSpot() {
         const location = document.getElementById('spotLocation').value.trim();
         const isVisible = document.getElementById('spotVisible').checked;
 
-        // Validation: Spot name (letters only)
         if (!name) {
             showNotification('Please enter a spot name', 'error');
             saveBtn.innerHTML = originalText;
             saveBtn.disabled = false;
+            isSaving = false;
             return;
         }
         
@@ -852,6 +991,7 @@ async function saveSpot() {
             showNotification('Spot name should contain letters only (A-Z, spaces allowed)', 'error');
             saveBtn.innerHTML = originalText;
             saveBtn.disabled = false;
+            isSaving = false;
             return;
         }
 
@@ -880,7 +1020,10 @@ async function saveSpot() {
             
             showInContainerNotification('spotModalNotification', 'Tourist spot updated successfully!', 'success');
             await loadSpots();
-            closeSpotModal();
+            
+            setTimeout(() => {
+                closeSpotModal();
+            }, 1000);
             return;
         } else {
             const { data: newSpot, error } = await window.supabaseClient
@@ -930,14 +1073,17 @@ async function saveSpot() {
             await loadSouvenirs(spotId);
             document.getElementById('modalTitle').textContent = 'Edit Tourist Spot';
             await loadSpots();
-            closeSpotModal();
+            
+            setTimeout(() => {
+                closeSpotModal();
+            }, 1000);
             return;
         }
     } catch (error) {
         showNotification('Failed to save tourist spot: ' + error.message, 'error');
-    } finally {
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
+        isSaving = false;
     }
 }
 
@@ -950,11 +1096,17 @@ window.editSpot = function(spotId) {
 window.deleteSpot = function(spotId) {
     deleteSpotId = spotId;
     const modal = document.getElementById('deleteModal');
-    modal.classList.add('show');
+    if (modal) {
+        modal.classList.add('show');
+    }
 };
 
-window.closeDeleteModal = function() {
-    document.getElementById('deleteModal').classList.remove('show');
+window.closeDeleteModal = function(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
     deleteSpotId = null;
 };
 
@@ -967,7 +1119,6 @@ window.confirmDelete = async function() {
     confirmBtn.disabled = true;
 
     try {
-        // Delete local drivers first
         const { error: driversError } = await window.supabaseClient
             .from('spot_drivers')
             .delete()
@@ -989,7 +1140,6 @@ window.confirmDelete = async function() {
 
         if (error) throw error;
 
-        // Use the same notification style as add success
         showInContainerNotification('mainPageNotification', 'Tourist spot deleted successfully!', 'success');
         closeDeleteModal();
         await loadSpots();
@@ -1079,7 +1229,7 @@ function renderSouvenirs() {
                         <button onclick="editSouvenir('${souvenir.id}')" title="Edit">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button onclick="deleteSouvenir('${souvenir.id}')" title="Delete">
+                        <button onclick="openDeleteSouvenirModal('${souvenir.id}', event)" title="Delete">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     ` : `
@@ -1092,6 +1242,67 @@ function renderSouvenirs() {
         `;
     }).join('');
 }
+
+// ADD THIS MISSING FUNCTION - Close Delete Souvenir Modal
+window.closeDeleteSouvenirModal = function(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    const modal = document.getElementById('deleteSouvenirModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+    deleteSouvenirId = null;
+};
+
+// FIXED - Open Delete Souvenir Modal
+window.openDeleteSouvenirModal = function(souvenirId, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    deleteSouvenirId = souvenirId;
+    const modal = document.getElementById('deleteSouvenirModal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+};
+
+// FIXED - Confirm Delete Souvenir
+window.confirmDeleteSouvenir = async function(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    if (!deleteSouvenirId) return;
+
+    const confirmBtn = document.getElementById('confirmDeleteSouvenirBtn');
+    if (!confirmBtn) return;
+    
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    confirmBtn.disabled = true;
+
+    try {
+        const { error } = await window.supabaseClient
+            .from('souvenirs')
+            .delete()
+            .eq('id', deleteSouvenirId);
+
+        if (error) throw error;
+
+        showInContainerNotification('spotModalNotification', 'Souvenir deleted successfully!', 'success');
+        closeDeleteSouvenirModal();
+        
+        if (currentEditingSpot) {
+            await loadSouvenirs(currentEditingSpot.id);
+        }
+
+    } catch (error) {
+        showNotification('Failed to delete souvenir: ' + error.message, 'error');
+    } finally {
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    }
+};
 
 window.removePendingSouvenir = function(tempId) {
     const index = pendingSouvenirs.findIndex(s => s.tempId === tempId);
@@ -1148,8 +1359,12 @@ window.openSouvenirModal = function(souvenirId = null) {
     modal.classList.add('show');
 };
 
-window.closeSouvenirModal = function() {
-    document.getElementById('souvenirModal').classList.remove('show');
+window.closeSouvenirModal = function(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('souvenirModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 };
 
 window.removeSouvenirImage = function() {
@@ -1171,7 +1386,6 @@ async function saveSouvenir() {
         const name = document.getElementById('souvenirName').value.trim();
         const priceRaw = document.getElementById('souvenirPrice').value.trim();
 
-        // Validation: Souvenir name (letters only)
         if (!name) {
             showNotification('Please enter a souvenir name', 'error');
             return;
@@ -1183,7 +1397,6 @@ async function saveSouvenir() {
             return;
         }
 
-        // Validation: Price (numbers only, positive integer)
         if (!priceRaw) {
             showNotification('Please enter a valid price', 'error');
             return;
@@ -1283,31 +1496,6 @@ window.editSouvenir = function(souvenirId) {
     openSouvenirModal(souvenirId);
 };
 
-window.deleteSouvenir = async function(souvenirId) {
-    if (!confirm('Are you sure you want to delete this souvenir?')) {
-        return;
-    }
-
-    try {
-        const { error } = await window.supabaseClient
-            .from('souvenirs')
-            .delete()
-            .eq('id', souvenirId);
-
-        if (error) throw error;
-
-        // Use the same notification style as add success
-        showInContainerNotification('mainPageNotification', 'Souvenir deleted successfully!', 'success');
-        
-        if (currentEditingSpot) {
-            await loadSouvenirs(currentEditingSpot.id);
-        }
-
-    } catch (error) {
-        showNotification('Failed to delete souvenir', 'error');
-    }
-};
-
 // ========== NOTIFICATION SYSTEM ==========
 function showNotification(message, type = 'info') {
     const existing = document.querySelector('.notification');
@@ -1330,7 +1518,10 @@ function showInContainerNotification(containerId, message, type = 'success') {
     const container = document.getElementById(containerId);
     if (!container) return;
     
-    container.innerHTML = '';
+    const existingNotif = container.querySelector('.in-container-notification');
+    if (existingNotif) {
+        existingNotif.remove();
+    }
     
     const notification = document.createElement('div');
     notification.className = `in-container-notification ${type}`;
@@ -1348,7 +1539,7 @@ function showInContainerNotification(containerId, message, type = 'success') {
             notification.style.animation = 'fadeOut 0.3s ease-out forwards';
             setTimeout(() => {
                 if (notification && notification.parentNode) {
-                    container.innerHTML = '';
+                    notification.remove();
                 }
             }, 300);
         }
@@ -1359,12 +1550,12 @@ function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"']/g, function(m) {
         const map = {
-            '&': '&lt;',
+            '&': '&amp;',
             '<': '&lt;',
             '>': '&gt;',
             '"': '&quot;',
-            "'": '&#039;'
+            "'": '&#39;'
         };
-        return map[m] || m;
-    }); 
+        return map[m];
+    });
 }

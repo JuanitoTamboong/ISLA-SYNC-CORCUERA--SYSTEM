@@ -183,6 +183,46 @@
     </div>
 </div>
 
+<!-- DELETE DRIVER CONFIRMATION MODAL -->
+<div id="deleteDriverModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDeleteDriverModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete Local Driver?</h3>
+            <p>This action cannot be undone. Are you sure you want to delete this local driver?</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteDriverModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteDriverBtn" onclick="confirmDeleteDriver()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE SOUVENIR CONFIRMATION MODAL -->
+<div id="deleteSouvenirModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDeleteSouvenirModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete Souvenir?</h3>
+            <p>This action cannot be undone. Are you sure you want to delete this souvenir?</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteSouvenirModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteSouvenirBtn" onclick="confirmDeleteSouvenir()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- SOUVENIR MODAL -->
 <div id="souvenirModal" class="spot-modal">
     <div class="modal-overlay" onclick="closeSouvenirModal()"></div>
@@ -242,7 +282,7 @@
     </div>
 </div>
 
-<!-- DELETE CONFIRMATION MODAL -->
+<!-- DELETE TOURIST SPOT CONFIRMATION MODAL -->
 <div id="deleteModal" class="spot-modal">
     <div class="modal-overlay" onclick="closeDeleteModal()"></div>
     <div class="modal-content delete-content">
