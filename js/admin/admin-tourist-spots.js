@@ -442,6 +442,15 @@ window.removeSpotImage = function() {
 // ========== LOCAL DRIVERS MANAGEMENT ==========
 async function loadLocalDrivers(spotId) {
     try {
+        if (!spotId) {
+            console.warn('No spotId provided to loadLocalDrivers');
+            if (spotDrivers[spotId]) {
+                delete spotDrivers[spotId];
+            }
+            renderLocalDrivers();
+            return;
+        }
+        
         const { data, error } = await window.supabaseClient
             .from('spot_drivers')
             .select('*')
@@ -450,11 +459,17 @@ async function loadLocalDrivers(spotId) {
         
         if (error) throw error;
         
-        if (!spotDrivers[spotId]) {
-            spotDrivers[spotId] = [];
-        }
+        // Update the global spotDrivers object
         spotDrivers[spotId] = data || [];
+        
+        // Also update currentEditingSpot if it matches
+        if (currentEditingSpot && currentEditingSpot.id === spotId) {
+            currentEditingSpot.drivers = spotDrivers[spotId];
+        }
+        
+        // Render the drivers in the modal
         renderLocalDrivers();
+        
     } catch (error) {
         console.error('Failed to load local drivers:', error);
         spotDrivers[spotId] = [];
@@ -468,7 +483,12 @@ function renderLocalDrivers() {
     if (!container) return;
     
     const spotId = document.getElementById('spotId').value;
-    const drivers = spotId && spotDrivers[spotId] ? spotDrivers[spotId] : [];
+    
+    // Get the latest drivers from the global object
+    let drivers = [];
+    if (spotId && spotDrivers[spotId]) {
+        drivers = spotDrivers[spotId];
+    }
     
     if (drivers.length === 0) {
         container.innerHTML = `
@@ -504,7 +524,6 @@ function renderLocalDrivers() {
     }).join('');
 }
 
-// ADD THIS MISSING FUNCTION - Close Delete Driver Modal
 window.closeDeleteDriverModal = function(event) {
     if (event) {
         event.stopPropagation();
@@ -516,7 +535,6 @@ window.closeDeleteDriverModal = function(event) {
     deleteDriverId = null;
 };
 
-// FIXED - Open Delete Driver Modal
 window.openDeleteDriverModal = function(driverId, event) {
     if (event) {
         event.stopPropagation();
@@ -531,7 +549,6 @@ window.openDeleteDriverModal = function(driverId, event) {
     modal.classList.add('show');
 };
 
-// FIXED - Confirm Delete Driver
 window.confirmDeleteDriver = async function(event) {
     if (event) {
         event.stopPropagation();
@@ -556,9 +573,13 @@ window.confirmDeleteDriver = async function(event) {
         showInContainerNotification('spotModalNotification', 'Local driver deleted successfully!', 'success');
         closeDeleteDriverModal();
         
-        if (currentEditingSpot) {
-            await loadLocalDrivers(currentEditingSpot.id);
+        const spotId = document.getElementById('spotId').value;
+        if (spotId) {
+            await loadLocalDrivers(spotId);
         }
+        
+        // Refresh main spots display
+        await loadSpots();
 
     } catch (error) {
         showNotification('Failed to delete local driver: ' + error.message, 'error');
@@ -575,6 +596,8 @@ window.openDriverModal = function(driverId = null) {
     
     form.reset();
     document.getElementById('driverId').value = '';
+    document.getElementById('driverName').value = '';
+    document.getElementById('driverContactNumber').value = '';
     
     const spotId = document.getElementById('spotId')?.value;
     if (spotId && spotId !== '') {
@@ -623,27 +646,35 @@ async function saveDriver() {
         
         const spotId = document.getElementById('spotId').value;
 
+        // Validation
         if (!driverName) {
             showNotification('Please enter a driver name', 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
             return;
         }
         
         const lettersOnlyRegex = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
         if (!lettersOnlyRegex.test(driverName)) {
             showNotification('Driver name should contain letters only (A-Z, spaces allowed)', 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
             return;
         }
 
         if (!spotId) {
             showNotification('Please save the tourist spot first before adding local drivers', 'error');
-            closeDriverModal();
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
             return;
         }
 
-        if (driverContactNumber) {
+        if (driverContactNumber && driverContactNumber.length > 0) {
             const digitsOnlyRegex = /^\d{11}$/;
             if (!digitsOnlyRegex.test(driverContactNumber)) {
                 showNotification('Contact number must be exactly 11 digits (numbers only)', 'error');
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
                 return;
             }
         }
@@ -654,29 +685,49 @@ async function saveDriver() {
             driver_contact_number: driverContactNumber || null
         };
 
+        let success = false;
+        
         if (driverId) {
+            // Update existing driver
             const { error } = await window.supabaseClient
                 .from('spot_drivers')
                 .update(driverData)
                 .eq('id', driverId);
 
             if (error) throw new Error(`Update failed: ${error.message}`);
+            success = true;
             showInContainerNotification('driverModalNotification', 'Local driver updated successfully!', 'success');
         } else {
+            // Insert new driver
             const { error } = await window.supabaseClient
                 .from('spot_drivers')
                 .insert([driverData]);
 
             if (error) throw new Error(`Insert failed: ${error.message}`);
+            success = true;
             showInContainerNotification('driverModalNotification', 'Local driver added successfully!', 'success');
         }
 
-        setTimeout(() => {
-            closeDriverModal();
-            if (currentEditingSpot) {
-                loadLocalDrivers(currentEditingSpot.id);
+        if (success) {
+            // Wait a moment for the database to update
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Refresh the drivers list for the current spot
+            const currentSpotId = document.getElementById('spotId').value;
+            if (currentSpotId) {
+                await loadLocalDrivers(currentSpotId);
             }
-        }, 1500);
+            
+            // Also update the main spots data
+            await loadSpots();
+            
+            // Close the modal after successful save
+            setTimeout(() => {
+                closeDriverModal();
+                // Force a re-render of the spot list to show updated drivers
+                renderSpots();
+            }, 1000);
+        }
 
     } catch (error) {
         console.error('saveDriver error:', error);
@@ -688,7 +739,32 @@ async function saveDriver() {
 }
 
 window.editLocalDriver = function(driverId) {
-    openDriverModal(driverId);
+    const spotId = document.getElementById('spotId').value;
+    const drivers = spotDrivers[spotId] || [];
+    const driver = drivers.find(d => d.id === driverId);
+    
+    if (!driver) {
+        showNotification('Local driver not found', 'error');
+        return;
+    }
+    
+    // Open the modal with the driver data
+    const modal = document.getElementById('driverModal');
+    const title = document.getElementById('driverModalTitle');
+    
+    // Reset form
+    document.getElementById('driverForm').reset();
+    document.getElementById('driverId').value = driver.id;
+    document.getElementById('driverName').value = driver.driver_name || '';
+    document.getElementById('driverContactNumber').value = driver.driver_contact_number || '';
+    
+    // Set the spot ID
+    if (spotId && spotId !== '') {
+        document.getElementById('driverSpotId').value = String(spotId);
+    }
+    
+    title.textContent = 'Edit Local Driver';
+    modal.classList.add('show');
 };
 
 // ========== FORMS ==========
@@ -1243,7 +1319,6 @@ function renderSouvenirs() {
     }).join('');
 }
 
-// ADD THIS MISSING FUNCTION - Close Delete Souvenir Modal
 window.closeDeleteSouvenirModal = function(event) {
     if (event) {
         event.stopPropagation();
@@ -1255,7 +1330,6 @@ window.closeDeleteSouvenirModal = function(event) {
     deleteSouvenirId = null;
 };
 
-// FIXED - Open Delete Souvenir Modal
 window.openDeleteSouvenirModal = function(souvenirId, event) {
     if (event) {
         event.stopPropagation();
@@ -1267,7 +1341,6 @@ window.openDeleteSouvenirModal = function(souvenirId, event) {
     }
 };
 
-// FIXED - Confirm Delete Souvenir
 window.confirmDeleteSouvenir = async function(event) {
     if (event) {
         event.stopPropagation();
