@@ -97,7 +97,7 @@ async function loadUserDataFromSupabase(supabaseClient) {
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
             return;

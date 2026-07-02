@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 .from('profiles')
                 .select('avatar_url')
                 .eq('id', adminId)
-                .single();
+                .maybeSingle();
 
             if (error || !profile) return;
 

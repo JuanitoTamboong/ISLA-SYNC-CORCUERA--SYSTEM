@@ -59,7 +59,7 @@ async function syncFromSupabase(supabaseClient, adminId) {
             .from('profiles')
             .select('*')
             .eq('id', adminId)
-            .single();
+            .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
             await new Promise(r => setTimeout(r, 1000));
@@ -67,7 +67,7 @@ async function syncFromSupabase(supabaseClient, adminId) {
                 .from('profiles')
                 .select('*')
                 .eq('id', adminId)
-                .single();
+                .maybeSingle();
             if (retryError) throw retryError;
             profile = retryProfile;
         }
