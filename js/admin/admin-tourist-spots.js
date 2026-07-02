@@ -11,7 +11,8 @@ let souvenirs = [];
 let deleteSpotId = null;
 let deleteDriverId = null;
 let deleteSouvenirId = null;
-let pendingSouvenirs = []; 
+let pendingSouvenirs = [];
+let pendingDrivers = [];
 let spotDrivers = {};
 let isSaving = false; // Add flag to prevent multiple saves
 
@@ -29,6 +30,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+    if (sessionError || !sessionData?.session) {
+        console.warn('No active Supabase session for admin:', sessionError);
+        localStorage.removeItem('currentAdmin');
+        window.location.href = 'admin-login.html';
+        return;
+    }
 
     const currentAdminStr = localStorage.getItem('currentAdmin');
     if (!currentAdminStr) {
@@ -315,6 +324,7 @@ window.openSpotModal = function(spotId = null) {
     spotImageDataUrl = null;
     spotImageFile = null;
     pendingSouvenirs = [];
+    pendingDrivers = [];
     
     document.getElementById('spotUploadBox').style.display = 'flex';
     document.getElementById('spotPreviewDiv').style.display = 'none';
@@ -372,6 +382,7 @@ window.closeSpotModal = function(event) {
     // Reset all state variables
     currentEditingSpot = null;
     pendingSouvenirs = [];
+    pendingDrivers = [];
     spotImageDataUrl = null;
     spotImageFile = null;
     souvenirImageDataUrl = null;
@@ -440,7 +451,7 @@ window.removeSpotImage = function() {
 };
 
 // ========== LOCAL DRIVERS MANAGEMENT ==========
-async function loadLocalDrivers(spotId) {
+window.loadLocalDrivers = async function(spotId) {
     try {
         if (!spotId) {
             console.warn('No spotId provided to loadLocalDrivers');
@@ -475,7 +486,7 @@ async function loadLocalDrivers(spotId) {
         spotDrivers[spotId] = [];
         renderLocalDrivers();
     }
-}
+};
 
 function renderLocalDrivers() {
     const container = document.getElementById('driversGrid');
@@ -484,12 +495,16 @@ function renderLocalDrivers() {
     
     const spotId = document.getElementById('spotId').value;
     
-    // Get the latest drivers from the global object
+    // Get the latest drivers from the global object and any pending drivers
     let drivers = [];
     if (spotId && spotDrivers[spotId]) {
-        drivers = spotDrivers[spotId];
+        drivers = [...spotDrivers[spotId]];
     }
-    
+
+    if (!spotId) {
+        drivers = [...pendingDrivers];
+    }
+
     if (drivers.length === 0) {
         container.innerHTML = `
             <div class="drivers-empty">
@@ -502,20 +517,22 @@ function renderLocalDrivers() {
     }
     
     container.innerHTML = drivers.map(driver => {
+        const driverKey = driver.id || driver.tempId;
+        const pendingBadge = driver.pending ? '<span class="pending-badge">Pending</span>' : '';
         return `
-            <div class="driver-item" data-id="${driver.id}">
+            <div class="driver-item" data-id="${driverKey}">
                 <div class="driver-info">
                     <i class="fa-solid fa-user-circle"></i>
                     <div class="driver-details">
-                        <p class="driver-name">${escapeHtml(driver.driver_name)}</p>
+                        <p class="driver-name">${escapeHtml(driver.driver_name)} ${pendingBadge}</p>
                         ${driver.driver_contact_number ? `<p class="driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</p>` : ''}
                     </div>
                 </div>
                 <div class="driver-actions">
-                    <button onclick="editLocalDriver('${driver.id}')" title="Edit">
+                    <button type="button" onclick="editLocalDriver('${driverKey}')" title="Edit">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button onclick="openDeleteDriverModal('${driver.id}', event)" title="Delete">
+                    <button type="button" onclick="openDeleteDriverModal('${driverKey}', event)" title="Delete">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -563,6 +580,17 @@ window.confirmDeleteDriver = async function(event) {
     confirmBtn.disabled = true;
 
     try {
+        if (String(deleteDriverId).startsWith('pending_')) {
+            const index = pendingDrivers.findIndex(d => String(d.tempId) === String(deleteDriverId));
+            if (index !== -1) {
+                pendingDrivers.splice(index, 1);
+            }
+            showInContainerNotification('spotModalNotification', 'Local driver removed successfully!', 'success');
+            closeDeleteDriverModal();
+            renderLocalDrivers();
+            return;
+        }
+
         const { error } = await window.supabaseClient
             .from('spot_drivers')
             .delete()
@@ -589,25 +617,36 @@ window.confirmDeleteDriver = async function(event) {
     }
 };
 
+// ========== FIXED: OPEN DRIVER MODAL ==========
 window.openDriverModal = function(driverId = null) {
     const modal = document.getElementById('driverModal');
     const form = document.getElementById('driverForm');
     const title = document.getElementById('driverModalTitle');
     
+    // Reset the form completely
     form.reset();
     document.getElementById('driverId').value = '';
     document.getElementById('driverName').value = '';
     document.getElementById('driverContactNumber').value = '';
     
-    const spotId = document.getElementById('spotId')?.value;
+    // Get the current spot ID from the main form
+    const spotId = document.getElementById('spotId').value;
     if (spotId && spotId !== '') {
         document.getElementById('driverSpotId').value = String(spotId);
+    } else {
+        document.getElementById('driverSpotId').value = '';
     }
     
+    // If editing an existing driver
     if (driverId) {
-        const spotId = document.getElementById('spotId').value;
-        const drivers = spotDrivers[spotId] || [];
-        const driver = drivers.find(d => d.id === driverId);
+        let driver = null;
+        if (spotId) {
+            const drivers = spotDrivers[spotId] || [];
+            driver = drivers.find(d => String(d.id) === String(driverId) || String(d.tempId) === String(driverId));
+        }
+        if (!driver) {
+            driver = pendingDrivers.find(d => String(d.tempId) === String(driverId) || String(d.id) === String(driverId));
+        }
         
         if (!driver) {
             showNotification('Local driver not found', 'error');
@@ -615,7 +654,7 @@ window.openDriverModal = function(driverId = null) {
         }
         
         title.textContent = 'Edit Local Driver';
-        document.getElementById('driverId').value = driver.id;
+        document.getElementById('driverId').value = driver.tempId || driver.id;
         document.getElementById('driverName').value = driver.driver_name || '';
         document.getElementById('driverContactNumber').value = driver.driver_contact_number || '';
     } else {
@@ -631,9 +670,12 @@ window.closeDriverModal = function(event) {
     if (modal) {
         modal.classList.remove('show');
     }
+    // Reset driverId when closing
+    document.getElementById('driverId').value = '';
 };
 
-async function saveDriver() {
+// ========== FIXED: SAVE DRIVER ==========
+window.saveDriver = async function() {
     const saveBtn = document.getElementById('driverSaveBtn');
     const originalText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
@@ -643,8 +685,9 @@ async function saveDriver() {
         const driverId = document.getElementById('driverId').value;
         const driverName = document.getElementById('driverName').value.trim();
         const driverContactNumber = document.getElementById('driverContactNumber').value.trim();
-        
-        const spotId = document.getElementById('spotId').value;
+        const spotId = document.getElementById('driverSpotId').value || document.getElementById('spotId').value;
+
+        console.log('Saving driver - ID:', driverId, 'Spot ID:', spotId);
 
         // Validation
         if (!driverName) {
@@ -663,7 +706,36 @@ async function saveDriver() {
         }
 
         if (!spotId) {
-            showNotification('Please save the tourist spot first before adding local drivers', 'error');
+            if (driverId) {
+                const existingDriverIndex = pendingDrivers.findIndex(d => String(d.tempId) === String(driverId) || String(d.id) === String(driverId));
+                if (existingDriverIndex !== -1) {
+                    pendingDrivers[existingDriverIndex] = {
+                        ...pendingDrivers[existingDriverIndex],
+                        driver_name: driverName,
+                        driver_contact_number: driverContactNumber || null
+                    };
+                    showInContainerNotification('driverModalNotification', 'Pending local driver updated successfully!', 'success');
+                } else {
+                    pendingDrivers.push({
+                        tempId: driverId,
+                        driver_name: driverName,
+                        driver_contact_number: driverContactNumber || null,
+                        pending: true
+                    });
+                    showInContainerNotification('driverModalNotification', 'Pending local driver added successfully!', 'success');
+                }
+            } else {
+                pendingDrivers.push({
+                    tempId: 'pending_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    driver_name: driverName,
+                    driver_contact_number: driverContactNumber || null,
+                    pending: true
+                });
+                showInContainerNotification('driverModalNotification', 'Pending local driver added successfully!', 'success');
+            }
+
+            renderLocalDrivers();
+            closeDriverModal();
             saveBtn.innerHTML = originalText;
             saveBtn.disabled = false;
             return;
@@ -688,22 +760,33 @@ async function saveDriver() {
         let success = false;
         
         if (driverId) {
-            // Update existing driver
+            // UPDATE existing driver
+            console.log('Updating driver with ID:', driverId);
+            console.log('Update data:', driverData);
+            
             const { error } = await window.supabaseClient
                 .from('spot_drivers')
                 .update(driverData)
                 .eq('id', driverId);
 
-            if (error) throw new Error(`Update failed: ${error.message}`);
+            if (error) {
+                console.error('Update error:', error);
+                throw new Error(`Update failed: ${error.message}`);
+            }
             success = true;
             showInContainerNotification('driverModalNotification', 'Local driver updated successfully!', 'success');
         } else {
-            // Insert new driver
+            // INSERT new driver
+            console.log('Inserting new driver:', driverData);
+            
             const { error } = await window.supabaseClient
                 .from('spot_drivers')
                 .insert([driverData]);
 
-            if (error) throw new Error(`Insert failed: ${error.message}`);
+            if (error) {
+                console.error('Insert error:', error);
+                throw new Error(`Insert failed: ${error.message}`);
+            }
             success = true;
             showInContainerNotification('driverModalNotification', 'Local driver added successfully!', 'success');
         }
@@ -736,35 +819,11 @@ async function saveDriver() {
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
     }
-}
+};
 
+// ========== FIXED: EDIT LOCAL DRIVER ==========
 window.editLocalDriver = function(driverId) {
-    const spotId = document.getElementById('spotId').value;
-    const drivers = spotDrivers[spotId] || [];
-    const driver = drivers.find(d => d.id === driverId);
-    
-    if (!driver) {
-        showNotification('Local driver not found', 'error');
-        return;
-    }
-    
-    // Open the modal with the driver data
-    const modal = document.getElementById('driverModal');
-    const title = document.getElementById('driverModalTitle');
-    
-    // Reset form
-    document.getElementById('driverForm').reset();
-    document.getElementById('driverId').value = driver.id;
-    document.getElementById('driverName').value = driver.driver_name || '';
-    document.getElementById('driverContactNumber').value = driver.driver_contact_number || '';
-    
-    // Set the spot ID
-    if (spotId && spotId !== '') {
-        document.getElementById('driverSpotId').value = String(spotId);
-    }
-    
-    title.textContent = 'Edit Local Driver';
-    modal.classList.add('show');
+    openDriverModal(driverId);
 };
 
 // ========== FORMS ==========
@@ -792,7 +851,7 @@ function setupForms() {
         driverForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             e.stopPropagation();
-            await saveDriver();
+            await window.saveDriver();
         });
     }
 }
@@ -1097,6 +1156,10 @@ async function saveSpot() {
             showInContainerNotification('spotModalNotification', 'Tourist spot updated successfully!', 'success');
             await loadSpots();
             
+            isSaving = false;
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+
             setTimeout(() => {
                 closeSpotModal();
             }, 1000);
@@ -1119,29 +1182,51 @@ async function saveSpot() {
                 souvenirField.value = String(spotId);
             }
             
-            if (pendingSouvenirs.length > 0) {
-                showNotification(`Saving ${pendingSouvenirs.length} souvenir(s) for the new spot...`, 'info');
-                
-                for (const pendingSouvenir of pendingSouvenirs) {
-                    const souvenirData = {
-                        tourist_spot_id: String(spotId),
-                        name: pendingSouvenir.name,
-                        price: pendingSouvenir.price,
-                        is_available: true,
-                        image_url: pendingSouvenir.image_url || null
-                    };
-                    
-                    const { error: souvenirError } = await window.supabaseClient
-                        .from('souvenirs')
-                        .insert([souvenirData]);
-                    
-                    if (souvenirError) {
-                        console.error('Failed to save pending souvenir:', souvenirError);
+            if (pendingSouvenirs.length > 0 || pendingDrivers.length > 0) {
+                if (pendingSouvenirs.length > 0) {
+                    showNotification(`Saving ${pendingSouvenirs.length} souvenir(s) for the new spot...`, 'info');
+                    for (const pendingSouvenir of pendingSouvenirs) {
+                        const souvenirData = {
+                            tourist_spot_id: String(spotId),
+                            name: pendingSouvenir.name,
+                            price: pendingSouvenir.price,
+                            is_available: true,
+                            image_url: pendingSouvenir.image_url || null
+                        };
+                        
+                        const { error: souvenirError } = await window.supabaseClient
+                            .from('souvenirs')
+                            .insert([souvenirData]);
+                        
+                        if (souvenirError) {
+                            console.error('Failed to save pending souvenir:', souvenirError);
+                        }
                     }
+                    pendingSouvenirs = [];
                 }
-                
-                pendingSouvenirs = [];
-                showNotification('Spot and souvenirs saved successfully!', 'success');
+
+                if (pendingDrivers.length > 0) {
+                    showNotification(`Saving ${pendingDrivers.length} local driver(s) for the new spot...`, 'info');
+                    for (const pendingDriver of pendingDrivers) {
+                        const driverData = {
+                            tourist_spot_id: String(spotId),
+                            driver_name: pendingDriver.driver_name,
+                            driver_contact_number: pendingDriver.driver_contact_number || null
+                        };
+                        
+                        const { error: driverError } = await window.supabaseClient
+                            .from('spot_drivers')
+                            .insert([driverData]);
+                        
+                        if (driverError) {
+                            console.error('Failed to save pending local driver:', driverError);
+                        }
+                    }
+                    pendingDrivers = [];
+                    await loadLocalDrivers(spotId);
+                }
+
+                showNotification('Spot and related items saved successfully!', 'success');
             } else {
                 showNotification('Tourist spot created successfully!', 'success');
             }
@@ -1150,13 +1235,18 @@ async function saveSpot() {
             document.getElementById('modalTitle').textContent = 'Edit Tourist Spot';
             await loadSpots();
             
+            isSaving = false;
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+            
             setTimeout(() => {
                 closeSpotModal();
             }, 1000);
             return;
         }
     } catch (error) {
-        showNotification('Failed to save tourist spot: ' + error.message, 'error');
+        console.error('saveSpot error object:', error);
+        showNotification('Failed to save tourist spot: ' + (error.message || 'Unknown error'), 'error');
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
         isSaving = false;
