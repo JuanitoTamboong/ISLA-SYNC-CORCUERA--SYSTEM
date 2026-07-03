@@ -1,0 +1,21 @@
+-- Drop existing view
+DROP VIEW IF EXISTS public.reports_with_users CASCADE;
+
+-- Recreate the view with proper permissions
+CREATE OR REPLACE VIEW public.reports_with_users AS
+SELECT 
+    r.*,
+    p.full_name as reporter_name,
+    p.email as reporter_email,
+    p.phone_number as reporter_phone,
+    p.avatar_url as reporter_avatar
+FROM public.reports r
+LEFT JOIN public.profiles p ON r.user_id = p.id;
+
+-- Grant permissions to the view
+GRANT SELECT ON public.reports_with_users TO anon;
+GRANT SELECT ON public.reports_with_users TO authenticated;
+GRANT ALL ON public.reports_with_users TO service_role;
+
+-- Add RLS policy for the view (using the underlying table's policies)
+ALTER VIEW public.reports_with_users SET (security_invoker = true);
