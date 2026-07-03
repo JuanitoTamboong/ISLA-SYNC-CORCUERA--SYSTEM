@@ -13,7 +13,7 @@
 <!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- Font -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 </head>
@@ -23,93 +23,171 @@
 
     <!-- HEADER -->
     <div class="header">
-        <i class="fa-solid fa-arrow-left" onclick="goBack()"></i>
-        <h2>Reports Map</h2>
-        <i class="fa-solid fa-rotate-right refresh" onclick="refreshData()"></i>
+        <button class="header-btn back-btn" onclick="goBack()">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="header-title">
+            <h2>Reports Map</h2>
+            <span class="header-subtitle">Monitor and manage all user reports</span>
+        </div>
+        <button class="header-btn refresh-btn" onclick="refreshData()">
+            <i class="fa-solid fa-rotate-right"></i>
+        </button>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-number" id="totalReports">0</span>
+            <span class="stat-label">Total Reports</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-number pending-count" id="pendingCount">0</span>
+            <span class="stat-label">Pending</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-number resolved-count" id="resolvedCount">0</span>
+            <span class="stat-label">Resolved</span>
+        </div>
     </div>
 
     <!-- FILTERS -->
     <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">All</button>
-        <button class="filter-tab" data-filter="pending">Pending</button>
-        <button class="filter-tab" data-filter="resolved">Resolved</button>
+        <button class="filter-tab active" data-filter="all">
+            <i class="fa-solid fa-list"></i> All
+        </button>
+        <button class="filter-tab" data-filter="pending">
+            <i class="fa-solid fa-clock"></i> Pending
+        </button>
+        <button class="filter-tab" data-filter="resolved">
+            <i class="fa-solid fa-check-circle"></i> Resolved
+        </button>
     </div>
 
     <!-- MAP -->
     <div class="map-wrapper">
         <div id="map"></div>
+        <div class="map-overlay-stats">
+            <span id="mapMarkerCount">0 markers</span>
+        </div>
+    </div>
 
     <!-- REPORTS LIST -->
     <div class="reports-section">
         <div class="section-header">
-            <h3>Reports List</h3>
-            <span id="reportCount">0 reports</span>
+            <div class="section-header-left">
+                <h3><i class="fa-regular fa-file-lines"></i> Reports List</h3>
+                <span class="report-count-badge" id="reportCount">0</span>
+            </div>
+            <div class="section-header-right">
+                <span class="sort-label"><i class="fa-regular fa-arrow-up-wide-short"></i> Latest first</span>
+            </div>
         </div>
         <div id="reportsList" class="reports-list">
             <div class="loading-state">
-                <i class="fa-solid fa-spinner fa-spin"></i>
+                <div class="loading-spinner"></div>
                 <p>Loading reports...</p>
             </div>
+        </div>
     </div>
+</div>
 
 <!-- REPORT DETAIL MODAL -->
 <div id="reportModal" class="report-modal">
     <div class="modal-overlay" onclick="closeModal()"></div>
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modalTitle">Report Details</h2>
+            <div class="modal-header-left">
+                <div class="modal-avatar" id="modalAvatar">
+                    <img id="modalAvatarImg" src="" alt="User avatar" style="display:none;">
+                    <span id="modalAvatarInitials" class="avatar-initials">U</span>
+                </div>
+                <div class="modal-user-info">
+                    <h2 id="modalTitle">Report Details</h2>
+                    <div class="modal-user-meta">
+                        <span id="modalReporter">Unknown User</span>
+                        <span class="meta-dot">•</span>
+                        <span id="modalReference">#ISC-2026-0001</span>
+                    </div>
+                </div>
+            </div>
             <button class="modal-close" onclick="closeModal()" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div class="modal-body">
-            <div class="detail-section">
-                <label>Reference</label>
-                <p id="modalReference">-</p>
+            <!-- Status & Category Row -->
+            <div class="modal-status-row">
+                <div class="status-item">
+                    <span class="status-label">Status</span>
+                    <span id="modalStatus" class="status-badge status-pending">PENDING</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Category</span>
+                    <span id="modalCategory" class="category-badge">Infrastructure</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Date</span>
+                    <span id="modalDate" class="status-value">-</span>
+                </div>
             </div>
-            <div class="detail-section">
-                <label>Status</label>
-                <span id="modalStatus" class="status-badge status-pending">-</span>
+
+            <!-- Description -->
+            <div class="detail-section full-width">
+                <label><i class="fa-regular fa-align-left"></i> Description</label>
+                <div class="description-box">
+                    <p id="modalDescription">-</p>
+                </div>
             </div>
-            <div class="detail-section">
-                <label>Reported By</label>
-                <p id="modalReporter">-</p>
+
+            <!-- Location -->
+            <div class="detail-section full-width">
+                <label><i class="fa-regular fa-location-dot"></i> Location</label>
+                <div class="location-box">
+                    <span id="modalLocation">-</span>
+                    <a id="modalMapLink" href="#" target="_blank" class="map-link">
+                        <i class="fa-solid fa-map-pin"></i> View on Google Maps
+                    </a>
+                </div>
             </div>
-            <div class="detail-section">
-                <label>Category</label>
-                <p id="modalCategory">-</p>
-            </div>
-            <div class="detail-section">
-                <label>Description</label>
-                <p id="modalDescription">-</p>
-            </div>
-            <div class="detail-section" id="modalLocationSection">
-                <label>Location</label>
-                <p id="modalLocation">-</p>
-                <a id="modalMapLink" href="#" target="_blank" class="map-link">
-                    <i class="fa-solid fa-map-pin"></i> Open in Google Maps
-                </a>
-            </div>
-            <div class="detail-section">
-                <label>Date Submitted</label>
-                <p id="modalDate">-</p>
-            </div>
-            <div class="detail-section" id="modalImageSection" style="display: none;">
-                <label>Photo Evidence</label>
+
+            <!-- Image -->
+            <div class="detail-section full-width" id="modalImageSection" style="display: none;">
+                <label><i class="fa-regular fa-image"></i> Photo Evidence</label>
                 <div class="report-image-container">
                     <img id="modalImage" src="" alt="Report image">
+                    <button class="image-zoom-btn" onclick="openImageFullscreen()">
+                        <i class="fa-regular fa-magnifying-glass-plus"></i>
+                    </button>
                 </div>
-            <div class="detail-section" id="modalActions">
-                <label>Actions</label>
+            </div>
+
+            <!-- Actions -->
+            <div class="detail-section full-width" id="modalActions">
                 <div class="action-buttons">
                     <button id="resolveBtn" class="action-btn resolve-btn" onclick="updateReportStatus('resolved')">
-                        <i class="fa-solid fa-check"></i> Mark Resolved
+                        <i class="fa-solid fa-check"></i> Mark as Resolved
                     </button>
                     <button id="pendingBtn" class="action-btn pending-btn" onclick="updateReportStatus('pending')">
-                        <i class="fa-solid fa-clock"></i> Mark Pending
+                        <i class="fa-solid fa-clock"></i> Mark as Pending
                     </button>
                 </div>
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- Image Fullscreen Modal -->
+<div id="imageFullscreenModal" class="image-fullscreen-modal" style="display:none;">
+    <div class="image-fullscreen-overlay" onclick="closeImageFullscreen()"></div>
+    <div class="image-fullscreen-content">
+        <button class="image-fullscreen-close" onclick="closeImageFullscreen()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <img id="fullscreenImage" src="" alt="Report image fullscreen">
+    </div>
 </div>
 
 <!-- Leaflet JS -->
@@ -117,4 +195,3 @@
 <script src="../../js/admin/admin-map.js"></script>
 </body>
 </html>
-

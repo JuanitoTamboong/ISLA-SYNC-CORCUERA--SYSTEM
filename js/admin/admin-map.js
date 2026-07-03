@@ -2,7 +2,6 @@
 const SUPABASE_URL = 'https://xdiywmptyhwkcsibiqnq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
 
-// Simara Island coordinates
 const SIMARA_COORDS = { lat: 12.8055, lon: 122.0474 };
 
 let map;
@@ -12,22 +11,104 @@ let currentMarkers = [];
 let activeFilter = 'all';
 let currentReportId = null;
 let supabaseClient = null;
+let userAvatars = {};
 
-// Custom marker icons
-const MARKER_ICONS = {
-    pending: L.divIcon({
-        html: '<div style="background: linear-gradient(135deg, #f59e0b, #d97706); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(245,158,11,0.4); border: 2px solid white;"><i class="fa fa-exclamation" style="color:white; font-size: 14px;"></i></div>',
-        iconSize: [32, 32],
-        popupAnchor: [0, -16],
-        className: 'custom-marker-pending'
-    }),
-    resolved: L.divIcon({
-        html: '<div style="background: linear-gradient(135deg, #10b981, #059669); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16,185,129,0.4); border: 2px solid white;"><i class="fa fa-check" style="color:white; font-size: 14px;"></i></div>',
-        iconSize: [32, 32],
-        popupAnchor: [0, -16],
-        className: 'custom-marker-resolved'
-    })
-};
+const AVATAR_COLORS = [
+    '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
+    '#ec4899', '#f43f5e', '#ef4444', '#f59e0b',
+    '#10b981', '#06b6d4', '#3b82f6', '#4f46e5'
+];
+
+function getColorFromName(name) {
+    if (!name) return AVATAR_COLORS[0];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+}
+
+function createMarkerIcon(report) {
+    const isResolved = report.status === 'resolved';
+    const color = isResolved ? '#10b981' : '#f59e0b';
+    const reporterName = report.reporter_name || report.name || report.full_name || 'U';
+    const avatarUrl = report.avatar_url || userAvatars[report.user_id]?.avatar_url;
+    const initials = getInitials(reporterName);
+
+    const html = avatarUrl ? `
+        <div style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        ">
+            <img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;">
+            <div style="
+                position: absolute;
+                bottom: -2px;
+                right: -2px;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: ${color};
+                border: 2px solid white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            "></div>
+        </div>
+    ` : `
+        <div style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: ${color};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 2px solid white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+        ">
+            ${initials}
+            <div style="
+                position: absolute;
+                bottom: -2px;
+                right: -2px;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: ${isResolved ? '#10b981' : '#f59e0b'};
+                border: 2px solid white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            "></div>
+        </div>
+    `;
+
+    return L.divIcon({
+        html: html,
+        iconSize: [40, 40],
+        popupAnchor: [0, -20],
+        className: `custom-marker-${isResolved ? 'resolved' : 'pending'}`
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof supabase === 'undefined') {
@@ -37,7 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Check admin session
     const currentAdminStr = localStorage.getItem('currentAdmin');
     if (!currentAdminStr) {
         window.location.href = 'admin-login.html';
@@ -55,16 +135,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Init map
     initMap();
-
-    // Load data
     loadReports();
-
-    // Filter tabs
     setupFilters();
 
-    // Highlight report from homepage if any
     const highlightId = sessionStorage.getItem('highlightReportId');
     if (highlightId) {
         sessionStorage.removeItem('highlightReportId');
@@ -92,7 +166,6 @@ function initMap() {
     }).addTo(map);
 
     map.zoomControl.setPosition('bottomright');
-
     L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
 }
 
@@ -106,17 +179,39 @@ async function loadReports() {
         if (error) throw error;
 
         allReports = data || [];
+        await loadUserAvatars();
         applyFilter(activeFilter);
 
     } catch (error) {
         showNotification('Failed to load reports', 'error');
         document.getElementById('reportsList').innerHTML = `
             <div class="empty-state">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+                <i class="fa-regular fa-circle-exclamation"></i>
                 <p>Failed to load reports</p>
             </div>
         `;
     }
+}
+
+async function loadUserAvatars() {
+    const userIds = allReports
+        .map(r => r.user_id)
+        .filter(id => id && !userAvatars[id]);
+    
+    if (userIds.length === 0) return;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('id, avatar_url, full_name')
+            .in('id', userIds);
+        
+        if (!error && data) {
+            data.forEach(profile => {
+                userAvatars[profile.id] = profile;
+            });
+        }
+    } catch (e) {}
 }
 
 function applyFilter(filter) {
@@ -132,25 +227,26 @@ function applyFilter(filter) {
 
     renderMarkers();
     renderReportsList();
-    updateCount();
+    updateStats();
 }
 
 function renderMarkers() {
-    // Clear existing markers
     currentMarkers.forEach(m => map.removeLayer(m));
     currentMarkers = [];
 
     const reportsWithCoords = filteredReports.filter(r => r.latitude && r.longitude);
 
     reportsWithCoords.forEach(report => {
-        const icon = report.status === 'resolved' ? MARKER_ICONS.resolved : MARKER_ICONS.pending;
+        const icon = createMarkerIcon(report);
+        const reporterName = report.reporter_name || report.name || report.full_name || 'Unknown';
 
         const marker = L.marker([report.latitude, report.longitude], { icon: icon })
             .bindPopup(`
-                <div style="min-width: 180px;">
-                    <strong>${escapeHtml(report.reference || 'Report')}</strong><br>
-                    <span style="font-size: 12px; color: #666;">${escapeHtml(report.category || '')}</span><br>
-                    <span style="font-size: 11px; color: #999;">${escapeHtml((report.location_address || report.location || '').substring(0, 50))}</span>
+                <div style="min-width: 200px; font-family: 'Poppins', sans-serif; padding: 4px 0;">
+                    <strong style="font-size: 14px; color: #0f172a;">${escapeHtml(report.reference || 'Report')}</strong><br>
+                    <span style="font-size: 12px; color: #475569;">${escapeHtml(reporterName)}</span><br>
+                    <span style="font-size: 11px; color: #94a3b8;">${escapeHtml(report.category || '')}</span><br>
+                    <span style="font-size: 11px; color: #94a3b8;">${escapeHtml((report.location_address || report.location || '').substring(0, 50))}</span>
                 </div>
             `)
             .on('click', () => openReportModal(report.id));
@@ -160,7 +256,8 @@ function renderMarkers() {
         currentMarkers.push(marker);
     });
 
-    // Fit bounds if we have markers
+    document.getElementById('mapMarkerCount').textContent = `${currentMarkers.length} marker${currentMarkers.length !== 1 ? 's' : ''}`;
+
     if (currentMarkers.length > 0) {
         const group = L.featureGroup(currentMarkers);
         map.fitBounds(group.getBounds().pad(0.1));
@@ -177,6 +274,7 @@ function renderReportsList() {
             <div class="empty-state">
                 <i class="fa-regular fa-folder-open"></i>
                 <p>No reports found</p>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Try changing the filter</p>
             </div>
         `;
         return;
@@ -185,22 +283,45 @@ function renderReportsList() {
     const html = filteredReports.map(report => {
         const statusClass = report.status === 'resolved' ? 'resolved' : 'pending';
         const statusText = report.status === 'resolved' ? 'Resolved' : 'Pending';
-        const shortDesc = (report.description || '').length > 35
-            ? report.description.substring(0, 35) + '...'
+        const shortDesc = (report.description || '').length > 40
+            ? report.description.substring(0, 40) + '...'
             : (report.description || 'No description');
+        
         const dateStr = report.created_at
             ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
             : '';
+        
+        const timeStr = report.created_at
+            ? new Date(report.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            : '';
+
+        const reporterName = report.reporter_name || report.name || report.full_name || 'Unknown';
+        const initials = getInitials(reporterName);
+        const color = getColorFromName(reporterName);
+        const avatarUrl = report.avatar_url || userAvatars[report.user_id]?.avatar_url;
+        
+        const categoryClass = getCategoryClass(report.category);
+
+        const avatarHtml = avatarUrl 
+            ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(reporterName)}">`
+            : initials;
 
         return `
             <div class="report-item" data-id="${report.id}" onclick="openReportModal('${report.id}')">
-                <div class="report-marker-icon ${statusClass}">
-                    <i class="fa-solid ${statusClass === 'resolved' ? 'fa-check' : 'fa-exclamation'}"></i>
+                <div class="report-avatar ${statusClass}-bg">
+                    ${avatarHtml}
+                    <span class="status-dot ${statusClass}"></span>
                 </div>
                 <div class="report-info">
-                    <h4>${escapeHtml(report.reporter_name || report.name || report.full_name || report.reporter || report.reference || 'Report')}</h4>
-
-                    <p>${escapeHtml(report.category || '')} &middot; ${escapeHtml(shortDesc)} &middot; ${dateStr}</p>
+                    <div class="report-name">
+                        <h4>${escapeHtml(reporterName)}</h4>
+                        <span class="report-ref">${escapeHtml(report.reference || 'N/A')}</span>
+                        <span class="report-time">${dateStr} · ${timeStr}</span>
+                    </div>
+                    <div class="report-meta">
+                        <span class="category-tag ${categoryClass}">${escapeHtml(report.category || '')}</span>
+                        <span class="report-desc">${escapeHtml(shortDesc)}</span>
+                    </div>
                 </div>
                 <span class="report-status-badge ${statusClass}">${statusText}</span>
             </div>
@@ -210,9 +331,26 @@ function renderReportsList() {
     container.innerHTML = html;
 }
 
-function updateCount() {
-    const count = filteredReports.length;
-    document.getElementById('reportCount').textContent = `${count} report${count !== 1 ? 's' : ''}`;
+function getCategoryClass(category) {
+    if (!category) return '';
+    const map = {
+        'INFRASTRUCTURE': 'infrastructure',
+        'PUBLIC SAFETY': 'safety',
+        'ENGINEERING': 'engineering',
+        'TRAFFIC VIOLATION': 'traffic'
+    };
+    return map[category] || '';
+}
+
+function updateStats() {
+    const total = filteredReports.length;
+    const pending = filteredReports.filter(r => r.status !== 'resolved').length;
+    const resolved = filteredReports.filter(r => r.status === 'resolved').length;
+
+    document.getElementById('totalReports').textContent = total;
+    document.getElementById('pendingCount').textContent = pending;
+    document.getElementById('resolvedCount').textContent = resolved;
+    document.getElementById('reportCount').textContent = total;
 }
 
 function setupFilters() {
@@ -231,19 +369,42 @@ function openReportModal(reportId) {
 
     currentReportId = reportId;
 
+    const reporterName = report.reporter_name || report.name || report.full_name || 'Unknown';
+    const initials = getInitials(reporterName);
+    const color = getColorFromName(reporterName);
+    const avatarUrl = report.avatar_url || userAvatars[report.user_id]?.avatar_url;
+
+    // Set avatar
+    const avatarEl = document.getElementById('modalAvatar');
+    const avatarImg = document.getElementById('modalAvatarImg');
+    const avatarInitials = document.getElementById('modalAvatarInitials');
+
+    if (avatarUrl) {
+        avatarImg.src = avatarUrl;
+        avatarImg.style.display = 'block';
+        avatarInitials.style.display = 'none';
+        avatarEl.style.background = 'transparent';
+        avatarEl.style.padding = '0';
+    } else {
+        avatarImg.style.display = 'none';
+        avatarInitials.style.display = 'block';
+        avatarInitials.textContent = initials;
+        avatarEl.style.background = color;
+        avatarEl.style.padding = '';
+    }
+
     document.getElementById('modalTitle').textContent = report.reference || 'Report Details';
-    document.getElementById('modalReference').textContent = report.reference || 'N/A';
+    document.getElementById('modalReporter').textContent = reporterName;
+    document.getElementById('modalReference').textContent = report.reference || '#ISC-0000';
 
     const statusEl = document.getElementById('modalStatus');
     const displayStatus = report.status === 'resolved' ? 'RESOLVED' : 'PENDING';
     statusEl.textContent = displayStatus;
     statusEl.className = `status-badge ${report.status === 'resolved' ? 'status-resolved' : 'status-pending'}`;
 
-    document.getElementById('modalCategory').textContent = report.category || 'N/A';
-    // Prefer reporter_name (used by Recent Reports on admin homepage)
-    // Fallback to other possible joined fields if your SQL/view uses different aliases.
-    const reporter = report.reporter_name || report.name || report.full_name || report.reporter || 'Unknown';
-    document.getElementById('modalReporter').textContent = reporter;
+    const categoryEl = document.getElementById('modalCategory');
+    categoryEl.textContent = report.category || 'N/A';
+    categoryEl.className = `category-badge`;
 
     document.getElementById('modalDescription').textContent = report.description || 'No description provided.';
 
@@ -254,9 +415,8 @@ function openReportModal(reportId) {
         : 'Unknown';
     document.getElementById('modalDate').textContent = dateStr;
 
-    // Location
     const location = report.location_address || report.location || '';
-    document.getElementById('modalLocation').textContent = location || 'N/A';
+    document.getElementById('modalLocation').textContent = location || 'No location provided';
 
     const mapLink = document.getElementById('modalMapLink');
     if (report.latitude && report.longitude) {
@@ -266,17 +426,17 @@ function openReportModal(reportId) {
         mapLink.style.display = 'none';
     }
 
-    // Image
     const imgSection = document.getElementById('modalImageSection');
     const imgEl = document.getElementById('modalImage');
+    const fullscreenImg = document.getElementById('fullscreenImage');
     if (report.image_url && report.image_url.startsWith('data:')) {
         imgEl.src = report.image_url;
+        fullscreenImg.src = report.image_url;
         imgSection.style.display = 'block';
     } else {
         imgSection.style.display = 'none';
     }
 
-    // Show/hide action buttons based on current status
     const resolveBtn = document.getElementById('resolveBtn');
     const pendingBtn = document.getElementById('pendingBtn');
     if (report.status === 'resolved') {
@@ -287,11 +447,9 @@ function openReportModal(reportId) {
         pendingBtn.style.display = 'none';
     }
 
-    // Show modal
     document.getElementById('reportModal').classList.add('show');
     document.body.style.overflow = 'hidden';
 
-    // Highlight the list item
     document.querySelectorAll('.report-item').forEach(item => item.classList.remove('highlighted'));
     const listItem = document.querySelector(`.report-item[data-id="${reportId}"]`);
     if (listItem) {
@@ -299,7 +457,6 @@ function openReportModal(reportId) {
         listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Pan map to marker
     const marker = currentMarkers.find(m => m.reportId === reportId);
     if (marker && report.latitude && report.longitude) {
         map.setView([report.latitude, report.longitude], 16);
@@ -312,6 +469,18 @@ function closeModal() {
     document.body.style.overflow = 'auto';
     currentReportId = null;
     document.querySelectorAll('.report-item').forEach(item => item.classList.remove('highlighted'));
+}
+
+function openImageFullscreen() {
+    document.getElementById('imageFullscreenModal').classList.add('show');
+    document.getElementById('imageFullscreenModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageFullscreen() {
+    document.getElementById('imageFullscreenModal').classList.remove('show');
+    document.getElementById('imageFullscreenModal').style.display = 'none';
+    document.body.style.overflow = '';
 }
 
 async function updateReportStatus(newStatus) {
@@ -330,7 +499,6 @@ async function updateReportStatus(newStatus) {
 
         if (error) throw error;
 
-        // Update local data
         const report = allReports.find(r => r.id === currentReportId);
         if (report) {
             report.status = newStatus;
@@ -351,7 +519,6 @@ function highlightReport(reportId) {
     const report = allReports.find(r => r.id === reportId);
     if (!report) return;
 
-    // Switch to appropriate filter
     const targetFilter = report.status === 'resolved' ? 'resolved' : 'pending';
     if (activeFilter !== 'all' && activeFilter !== targetFilter) {
         document.querySelectorAll('.filter-tab').forEach(t => {
@@ -364,7 +531,7 @@ function highlightReport(reportId) {
 }
 
 function refreshData() {
-    const icon = document.querySelector('.header .refresh');
+    const icon = document.querySelector('.header .refresh-btn i');
     if (icon) {
         icon.style.animation = 'spin 0.6s linear';
         setTimeout(() => {
@@ -375,17 +542,17 @@ function refreshData() {
     showNotification('Refreshing data...', 'info');
 }
 
-// Navigation functions
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
 };
 
-// Keep modal functions global
 window.openReportModal = openReportModal;
 window.closeModal = closeModal;
 window.updateReportStatus = updateReportStatus;
 window.refreshData = refreshData;
 window.goBack = goBack;
+window.openImageFullscreen = openImageFullscreen;
+window.closeImageFullscreen = closeImageFullscreen;
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -414,16 +581,17 @@ function showNotification(message, type) {
         background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
         color: white;
         padding: 12px 24px;
-        border-radius: 8px;
+        border-radius: 12px;
         font-size: 14px;
         z-index: 3000;
         display: flex;
         align-items: center;
         gap: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         font-family: 'Poppins', sans-serif;
         max-width: 90%;
         word-break: break-word;
+        animation: slideDown 0.3s ease-out;
     `;
 
     document.body.appendChild(notification);
@@ -432,12 +600,16 @@ function showNotification(message, type) {
     }, 4000);
 }
 
-// Add spin animation
-const spinStyle = document.createElement('style');
-spinStyle.textContent = `
+// Add animations
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
     @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
+    @keyframes slideDown {
+        0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
 `;
-document.head.appendChild(spinStyle);
+document.head.appendChild(styleSheet);
