@@ -1,4 +1,3 @@
-
 window.navigateTo = function(page) {
     switch(page) {
         case 'home':
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaXl3bXB0eWh3a2NzaWJpcW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjM4MDksImV4cCI6MjA5MDEzOTgwOX0.vzWbydm_9CMxAH7z0rg3vOKTqLp6FOBLe9T1MMzpdds';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Check admin session
     const currentAdminStr = localStorage.getItem('currentAdmin');
     if (!currentAdminStr) {
         window.location.href = 'admin-login.html';
@@ -70,20 +68,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateGreeting();
     document.getElementById('adminName').textContent = admin.fullName || 'Admin';
 
-    // Notification state
+    // Set profile initials
+    const initials = getInitials(admin.fullName || 'Admin');
+    document.getElementById('profileInitials').textContent = initials;
+
     let notifications = [];
     let notifReadIds = JSON.parse(localStorage.getItem('adminNotifReadIds') || '[]');
 
-    // Load admin profile photo
     await loadAdminProfilePhoto(supabaseClient, admin.id);
-
-    // Load notifications
     await loadNotifications(supabaseClient);
-
-    // Load stats and recent reports
     await loadDashboardData(supabaseClient);
 
-    // ========== LOAD ADMIN PROFILE PHOTO ==========
+    function getInitials(name) {
+        if (!name) return 'A';
+        const parts = name.trim().split(' ');
+        if (parts.length >= 2) {
+            return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
     async function loadAdminProfilePhoto(supabaseClient, adminId) {
         try {
             const { data: profile, error } = await supabaseClient
@@ -118,10 +122,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // ========== NOTIFICATION SYSTEM ==========
     async function loadNotifications(supabaseClient) {
         try {
-            // USING THE VIEW - this should work now
             const { data: reports, error } = await supabaseClient
                 .from('reports_with_users')
                 .select('*')
@@ -148,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     icon: cat.icon,
                     iconColor: cat.color,
                     title: escapeHtml(report.reporter_name || 'Unknown'),
-                    message: `${escapeHtml(report.category || 'Report')} &bull; ${escapeHtml(report.description || 'No description')}`,
+                    message: `${escapeHtml(report.category || 'Report')} • ${escapeHtml(report.description || 'No description')}`,
                     time: timeAgo,
                     read: notifReadIds.includes(`report-${report.id}`)
                 });
@@ -158,8 +160,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             setupNotificationEvents();
 
         } catch (e) {
-            console.error('Error loading notifications:', e);
-            // Silent fail - show empty state
             const notifList = document.getElementById('notifList');
             if (notifList) {
                 notifList.innerHTML = `
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </div>
                 <div class="notif-content">
                     <p>${notif.title}</p>
-                    <span>${notif.message} &bull; ${notif.time}</span>
+                    <span>${notif.message} • ${notif.time}</span>
                 </div>
             </div>
         `).join('');
@@ -273,10 +273,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         renderNotifications();
     };
 
-    // ========== DASHBOARD DATA ==========
     async function loadDashboardData(supabaseClient) {
         try {
-            // USING THE VIEW - this should work now
             const { data: reports, error: reportsError } = await supabaseClient
                 .from('reports_with_users')
                 .select('*')
@@ -288,12 +286,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             const pending = allReports.filter(r => r.status !== 'resolved' && r.status !== 'Resolved');
             const resolved = allReports.filter(r => r.status === 'resolved' || r.status === 'Resolved');
 
-            // Update stats
             animateNumber('totalReports', allReports.length);
             animateNumber('pendingReports', pending.length);
             animateNumber('resolvedReports', resolved.length);
 
-            // Fetch user count
             const { count: userCount, error: userError } = await supabaseClient
                 .from('profiles')
                 .select('*', { count: 'exact', head: true })
@@ -303,17 +299,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                 animateNumber('totalUsers', userCount || 0);
             }
 
-            // Render recent reports (last 5)
             renderRecentReports(allReports.slice(0, 5));
 
         } catch (error) {
-            console.error('Error loading dashboard data:', error);
             showNotification('Failed to load dashboard data', 'error');
             const container = document.getElementById('recentReportsList');
             if (container) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <i class="fa-regular fa-circle-exclamation"></i>
                         <p>Failed to load reports</p>
                     </div>
                 `;
@@ -366,9 +360,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                         ${imageHtml}
                     </div>
                     <div class="report-info">
-                        <h4 class="report-reporter">${escapeHtml(reporterName)}</h4>
-                        <p class="report-meta">${escapeHtml(report.category || '')} &middot; ${dateStr}</p>
-                        <p class="report-id">ID: #${escapeHtml(report.reference || 'N/A')}</p>
+                        <p class="report-reporter">${escapeHtml(reporterName)}</p>
+                        <p class="report-meta">${escapeHtml(report.category || '')} • ${dateStr}</p>
+                        <p class="report-id">#${escapeHtml(report.reference || 'N/A')}</p>
                         <p class="report-desc">${escapeHtml(shortDesc)}</p>
                     </div>
                     <span class="report-status-badge ${statusClass}">${statusText}</span>
@@ -379,7 +373,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         container.innerHTML = html;
     }
 
-    // ========== UTILITY FUNCTIONS ==========
     function animateNumber(elementId, target) {
         const el = document.getElementById(elementId);
         if (!el) return;
@@ -427,22 +420,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         notification.innerHTML = `
             <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
             <span>${message}</span>
-        `;
-        notification.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            z-index: 3000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-family: 'Poppins', sans-serif;
         `;
         document.body.appendChild(notification);
 
