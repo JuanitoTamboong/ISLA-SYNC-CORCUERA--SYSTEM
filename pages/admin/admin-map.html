@@ -24,14 +24,14 @@
     <!-- HEADER -->
     <div class="header">
         <button class="header-btn back-btn" onclick="goBack()">
-            <i class="fa-solid fa-arrow-left"></i>
+            <i class="fas fa-arrow-left"></i>
         </button>
         <div class="header-title">
             <h2>Reports Map</h2>
             <span class="header-subtitle">Monitor and manage all user reports</span>
         </div>
         <button class="header-btn refresh-btn" onclick="refreshData()">
-            <i class="fa-solid fa-rotate-right"></i>
+            <i class="fas fa-sync-alt"></i>
         </button>
     </div>
 
@@ -56,13 +56,13 @@
     <!-- FILTERS -->
     <div class="filter-tabs">
         <button class="filter-tab active" data-filter="all">
-            <i class="fa-solid fa-list"></i> All
+            <i class="fas fa-list"></i> All
         </button>
         <button class="filter-tab" data-filter="pending">
-            <i class="fa-solid fa-clock"></i> Pending
+            <i class="fas fa-clock"></i> Pending
         </button>
         <button class="filter-tab" data-filter="resolved">
-            <i class="fa-solid fa-check-circle"></i> Resolved
+            <i class="fas fa-check-circle"></i> Resolved
         </button>
     </div>
 
@@ -78,11 +78,11 @@
     <div class="reports-section">
         <div class="section-header">
             <div class="section-header-left">
-                <h3><i class="fa-regular fa-file-lines"></i> Reports List</h3>
+                <h3><i class="fas fa-file-alt"></i> Reports List</h3>
                 <span class="report-count-badge" id="reportCount">0</span>
             </div>
             <div class="section-header-right">
-                <span class="sort-label"><i class="fa-regular fa-arrow-up-wide-short"></i> Latest first</span>
+                <span class="sort-label"><i class="fas fa-arrow-up-wide-short"></i> Latest first</span>
             </div>
         </div>
         <div id="reportsList" class="reports-list">
@@ -114,7 +114,7 @@
                 </div>
             </div>
             <button class="modal-close" onclick="closeModal()" aria-label="Close modal">
-                <i class="fa-solid fa-xmark"></i>
+                <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="modal-body">
@@ -136,7 +136,7 @@
 
             <!-- Description -->
             <div class="detail-section full-width">
-                <label><i class="fa-regular fa-align-left"></i> Description</label>
+                <label><i class="fas fa-align-left"></i> Description</label>
                 <div class="description-box">
                     <p id="modalDescription">-</p>
                 </div>
@@ -144,22 +144,22 @@
 
             <!-- Location -->
             <div class="detail-section full-width">
-                <label><i class="fa-regular fa-location-dot"></i> Location</label>
+                <label><i class="fas fa-map-pin"></i> Location</label>
                 <div class="location-box">
                     <span id="modalLocation">-</span>
                     <a id="modalMapLink" href="#" target="_blank" class="map-link">
-                        <i class="fa-solid fa-map-pin"></i> View on Google Maps
+                        <i class="fas fa-map-marker-alt"></i> View on Google Maps
                     </a>
                 </div>
             </div>
 
             <!-- Image -->
             <div class="detail-section full-width" id="modalImageSection" style="display: none;">
-                <label><i class="fa-regular fa-image"></i> Photo Evidence</label>
+                <label><i class="fas fa-image"></i> Photo Evidence</label>
                 <div class="report-image-container">
                     <img id="modalImage" src="" alt="Report image">
                     <button class="image-zoom-btn" onclick="openImageFullscreen()">
-                        <i class="fa-regular fa-magnifying-glass-plus"></i>
+                        <i class="fas fa-search-plus"></i>
                     </button>
                 </div>
             </div>
@@ -168,10 +168,10 @@
             <div class="detail-section full-width" id="modalActions">
                 <div class="action-buttons">
                     <button id="resolveBtn" class="action-btn resolve-btn" onclick="updateReportStatus('resolved')">
-                        <i class="fa-solid fa-check"></i> Mark as Resolved
+                        <i class="fas fa-check"></i> Mark as Resolved
                     </button>
                     <button id="pendingBtn" class="action-btn pending-btn" onclick="updateReportStatus('pending')">
-                        <i class="fa-solid fa-clock"></i> Mark as Pending
+                        <i class="fas fa-clock"></i> Mark as Pending
                     </button>
                 </div>
             </div>
@@ -184,7 +184,7 @@
     <div class="image-fullscreen-overlay" onclick="closeImageFullscreen()"></div>
     <div class="image-fullscreen-content">
         <button class="image-fullscreen-close" onclick="closeImageFullscreen()">
-            <i class="fa-solid fa-xmark"></i>
+            <i class="fas fa-times"></i>
         </button>
         <img id="fullscreenImage" src="" alt="Report image fullscreen">
     </div>
