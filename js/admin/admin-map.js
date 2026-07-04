@@ -373,20 +373,37 @@ async function fetchComments(reportId) {
     try {
         const { data, error } = await supabaseClient
             .from('report_comments')
-            .select(`
-                *,
-                profiles:user_id (
-                    full_name,
-                    avatar_url
-                )
-            `)
+            .select('*')
             .eq('report_id', reportId)
             .order('created_at', { ascending: true });
         
         if (error) throw error;
-        return data || [];
+        
+        if (!data || data.length === 0) return [];
+        
+        // Fetch user profiles separately
+        const userIds = data.map(c => c.user_id).filter(id => id);
+        let profilesMap = {};
+        
+        if (userIds.length > 0) {
+            const { data: profiles, error: profilesError } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .in('id', userIds);
+            
+            if (!profilesError && profiles) {
+                profilesMap = Object.fromEntries(
+                    profiles.map(p => [p.id, p])
+                );
+            }
+        }
+        
+        return data.map(comment => ({
+            ...comment,
+            profiles: profilesMap[comment.user_id] || null
+        }));
+        
     } catch (error) {
-        console.error('Error fetching comments:', error);
         return [];
     }
 }
@@ -401,22 +418,78 @@ async function addAdminComment(reportId, comment) {
                 comment: comment,
                 is_admin: true
             }])
-            .select(`
-                *,
-                profiles:user_id (
-                    full_name,
-                    avatar_url
-                )
-            `)
+            .select()
             .single();
         
         if (error) throw error;
-        return data;
+        
+        if (data) {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', data.user_id)
+                .single();
+            
+            return {
+                ...data,
+                profiles: profile || null
+            };
+        }
+        return null;
     } catch (error) {
-        console.error('Error adding comment:', error);
         return null;
     }
 }
+
+// ============================================
+// DELETE COMMENT - ADMIN
+// ============================================
+
+async function deleteAdminComment(commentId) {
+    try {
+        // Verify comment exists
+        const { data: comment, error: fetchError } = await supabaseClient
+            .from('report_comments')
+            .select('id')
+            .eq('id', commentId)
+            .single();
+        
+        if (fetchError) {
+            showNotification('Comment not found.', 'error');
+            return false;
+        }
+        
+        // Delete the comment
+        const { error: deleteError } = await supabaseClient
+            .from('report_comments')
+            .delete()
+            .eq('id', commentId);
+        
+        if (deleteError) {
+            showNotification('Failed to delete comment.', 'error');
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        showNotification('An error occurred while deleting.', 'error');
+        return false;
+    }
+}
+
+window.handleAdminDeleteComment = async function(commentId) {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    const success = await deleteAdminComment(commentId);
+    
+    if (success) {
+        showNotification('Comment deleted successfully!', 'success');
+        if (currentReportId) {
+            const comments = await fetchComments(currentReportId);
+            renderComments(comments);
+        }
+    }
+};
 
 function renderComments(comments) {
     const container = document.getElementById('modalCommentsContainer');
@@ -445,8 +518,11 @@ function renderComments(comments) {
             ? `<img src="${avatarUrl}" alt="${escapeHtml(userName)}">`
             : initials;
         
+        // Admin can delete any comment
+        const canDelete = true;
+        
         html += `
-            <div class="comment-item">
+            <div class="comment-item" data-comment-id="${comment.id}">
                 <div class="comment-avatar ${isAdmin ? 'admin' : 'resident'}">
                     ${avatarHtml}
                 </div>
@@ -455,6 +531,9 @@ function renderComments(comments) {
                         <span class="comment-author">${escapeHtml(userName)}</span>
                         ${isAdmin ? '<span class="comment-badge admin">Admin</span>' : '<span class="comment-badge resident">Resident</span>'}
                         <span class="comment-time">${timeAgo}</span>
+                        ${canDelete ? `<button class="comment-delete-btn" onclick="handleAdminDeleteComment('${comment.id}')" title="Delete comment">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>` : ''}
                     </div>
                     <p class="comment-text">${escapeHtml(comment.comment)}</p>
                 </div>
@@ -737,6 +816,7 @@ window.goBack = goBack;
 window.openImageFullscreen = openImageFullscreen;
 window.closeImageFullscreen = closeImageFullscreen;
 window.submitAdminComment = submitAdminComment;
+window.handleAdminDeleteComment = handleAdminDeleteComment;
 
 // ============================================
 // UTILITY FUNCTIONS

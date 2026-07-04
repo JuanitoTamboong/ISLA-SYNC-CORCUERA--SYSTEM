@@ -880,6 +880,9 @@
     color: #cbd5e1;
 }
 
+/* ============================================
+   COMMENT ITEM
+   ============================================ */
 .comment-item {
     display: flex;
     gap: 12px;
@@ -961,7 +964,30 @@
 .comment-time {
     font-size: 10px;
     color: #94a3b8;
+}
+
+/* ============================================
+   COMMENT DELETE BUTTON - ADMIN
+   ============================================ */
+.comment-delete-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
     margin-left: auto;
+}
+
+.comment-delete-btn:hover {
+    color: #ef4444;
+    background: #fef2f2;
+}
+
+.comment-delete-btn i {
+    font-size: 12px;
 }
 
 .comment-text {
@@ -972,6 +998,9 @@
     word-break: break-word;
 }
 
+/* ============================================
+   ADMIN COMMENT INPUT
+   ============================================ */
 .admin-comment-input {
     display: flex;
     gap: 10px;
@@ -1218,6 +1247,11 @@
     .comments-container {
         max-height: 150px;
     }
+
+    .comment-delete-btn {
+        font-size: 10px;
+        padding: 0 4px;
+    }
 }
 
 @media (max-width: 380px) {
@@ -1248,4 +1282,8 @@
 .modal-body::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 2px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
