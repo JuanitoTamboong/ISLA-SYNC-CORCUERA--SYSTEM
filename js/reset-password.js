@@ -23,20 +23,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Toggle password visibility
     if (toggleNewPassword && newPasswordInput) {
-        toggleNewPassword.addEventListener('click', () => {
+        toggleNewPassword.addEventListener('click', function(e) {
+            e.stopPropagation();
             const type = newPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             newPasswordInput.setAttribute('type', type);
-            toggleNewPassword.classList.toggle('fa-eye');
-            toggleNewPassword.classList.toggle('fa-eye-slash');
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
         });
     }
     
     if (toggleConfirmPassword && confirmPasswordInput) {
-        toggleConfirmPassword.addEventListener('click', () => {
+        toggleConfirmPassword.addEventListener('click', function(e) {
+            e.stopPropagation();
             const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             confirmPasswordInput.setAttribute('type', type);
-            toggleConfirmPassword.classList.toggle('fa-eye');
-            toggleConfirmPassword.classList.toggle('fa-eye-slash');
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
         });
     }
     
@@ -159,15 +161,50 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                showNotification('Password reset successfully! Redirecting to login...', 'success');
+                // Password reset successful - show success message and clear form
+                showNotification('✓ Password reset successfully!', 'success');
                 
-                // Clear any existing session data
-                localStorage.removeItem('currentUser');
+                // Clear form fields
+                if (newPasswordInput) newPasswordInput.value = '';
+                if (confirmPasswordInput) confirmPasswordInput.value = '';
+                passwordMatchMessage.textContent = '';
+                passwordMatchMessage.className = 'password-match-message';
                 
-                // Redirect to login after success
+                // Reset password requirements
+                const reqItems = document.querySelectorAll('.req-item');
+                reqItems.forEach(item => {
+                    item.classList.remove('valid');
+                    const icon = item.querySelector('i');
+                    if (icon) {
+                        icon.className = 'fas fa-circle';
+                    }
+                });
+                
+                // Reset button state
+                resetButton.disabled = false;
+                resetButton.innerHTML = '<i class="fas fa-sync-alt"></i> Reset Password';
+                
+                // Show additional success message
+                const successMessage = document.createElement('div');
+                successMessage.className = 'success-message';
+                successMessage.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 40px; display: block; margin: 0 auto 8px;"></i>
+                    <p style="color: white; text-align: center; font-size: 15px; font-weight: 500;">Your password has been updated successfully!</p>
+                    <p style="color: #cbd5f5; text-align: center; font-size: 12px; margin-top: 4px;">You can now use your new password to login.</p>
+                `;
+                
+                // Insert success message above the form
+                const formContainer = form.parentNode;
+                const existingSuccess = document.querySelector('.success-message');
+                if (existingSuccess) existingSuccess.remove();
+                formContainer.insertBefore(successMessage, form);
+                
+                // Remove success message after 5 seconds
                 setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
+                    if (successMessage.parentNode) {
+                        successMessage.remove();
+                    }
+                }, 5000);
                 
             } catch (error) {
                 showNotification('An unexpected error occurred. Please try again.', 'error');
