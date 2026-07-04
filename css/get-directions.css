@@ -1,4 +1,4 @@
-/* TOP BAR - header style like other pages */
+
 .top-bar {
     display: flex;
     align-items: center;
@@ -93,13 +93,11 @@
     }
 }
 
-/* REMOVED .pin styles - No more big red pin overlay */
-
-/* GPS BUTTON */
+/* GPS BUTTON - Fixed z-index and positioning */
 .gps-btn {
     position: absolute;
     right: 20px;
-    bottom: 20px;
+    bottom: 120px; /* Moved up to avoid zoom controls */
     width: 52px;
     height: 52px;
     background: #fff;
@@ -108,7 +106,7 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    z-index: 1000;
+    z-index: 999; /* Lower than zoom controls but higher than map */
     cursor: pointer;
     transition: all 0.3s ease;
     border: none;
@@ -138,7 +136,7 @@
         width: 48px;
         height: 48px;
         right: 16px;
-        bottom: 16px;
+        bottom: 80px; /* Adjusted for mobile */
     }
     
     .gps-btn i {
@@ -317,6 +315,14 @@
 .leaflet-marker-icon {
     background: transparent !important;
     border: none !important;
+}
+
+/* Fix for Leaflet zoom controls position */
+.leaflet-control-zoom {
+    position: absolute !important;
+    right: 20px !important;
+    bottom: 20px !important;
+    z-index: 1000 !important;
 }
 
 /* Route summary - fixed position */
