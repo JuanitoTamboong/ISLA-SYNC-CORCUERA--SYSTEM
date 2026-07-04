@@ -97,7 +97,7 @@
 .gps-btn {
     position: absolute;
     right: 20px;
-    bottom: 120px; /* Moved up to avoid zoom controls */
+    bottom: 120px;
     width: 52px;
     height: 52px;
     background: #fff;
