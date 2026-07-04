@@ -222,18 +222,17 @@ document.addEventListener('DOMContentLoaded', function() {
             background: type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6',
             color: 'white',
             padding: '12px 24px',
-            borderRadius: '12px',
+            borderRadius: '8px',
             fontSize: '14px',
             zIndex: '1000',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             fontFamily: "'Poppins', sans-serif",
             maxWidth: '90%',
             textAlign: 'center',
-            wordBreak: 'break-word',
-            animation: 'slideDown 0.3s ease-out'
+            wordBreak: 'break-word'
         });
         
         document.body.appendChild(notification);
@@ -242,6 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (notification && notification.parentNode) {
                 notification.remove();
             }
-        }, 5000);
+        }, 4000);
     }
 });

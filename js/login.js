@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
-showNotification('Connection issue: Please check your internet and try again.', 'error');
+        showNotification('Connection issue: Please check your internet and try again.', 'error');
         return;
     }
     
@@ -276,6 +276,7 @@ showNotification('Connection issue: Please check your internet and try again.', 
             }
             
             try {
+                // FIXED: Correct redirect URL
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
                     redirectTo: `${window.location.origin}/pages/reset-password.html`
                 })
