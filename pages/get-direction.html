@@ -21,26 +21,23 @@
 
     <!-- TOP CONTROLS -->
     <div class="top-bar">
-<div class="back-btn" onclick="window.location.href='map.html'">
+        <div class="back-btn" onclick="window.location.href='map.html'">
             <i class="fa-solid fa-chevron-left"></i>
         </div>
-        <div class="title">Get Directions</div>
+        <div class="title" id="pageTitle">Get Directions</div>
     </div>
 
     <!-- Search -->
     <div class="search-box">
-        <input type="text" placeholder="Search for address or landmark...">
+        <input type="text" id="searchInput" placeholder="Search for address or landmark...">
     </div>
 
     <!-- MAP -->
     <div class="map">
-        <!-- Pin -->
-        <div class="pin">
-            <div class="dot"></div>
-        </div>
-
+        <!-- REMOVED THE PIN OVERLAY -->
+        
         <!-- GPS Button -->
-        <div class="gps-btn">
+        <div class="gps-btn" id="gpsBtn">
             <i class="fa-solid fa-location-crosshairs"></i>
         </div>
 
@@ -56,19 +53,18 @@
             </div>
             <div>
                 <p class="label">SELECTED LOCATION</p>
-                <h3>San Jose, Corcuera</h3>
-                <span>Romblon, Philippines</span>
+                <h3 id="locationTitle">San Jose, Corcuera</h3>
+                <span id="locationAddress">Romblon, Philippines</span>
             </div>
         </div>
-        <button class="confirm-btn">Confirm Location</button>
+        <button class="confirm-btn" id="confirmBtn">Confirm Location</button>
     </div>
 
 </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <script src="../js/get-directions.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<script src="../js/get-directions.js"></script>
 </body>
 </html>
-

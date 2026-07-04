@@ -33,6 +33,15 @@
     justify-content: center;
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    color: #1e293b;
+}
+
+.back-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 .title {
@@ -42,11 +51,16 @@
     font-size: 14px;
     font-weight: 500;
     box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
 }
 
 /* SEARCH BOX */
 .search-box {
     margin-bottom: 20px;
+    position: relative;
 }
 
 .search-box input {
@@ -58,6 +72,13 @@
     background: #eef2f6;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     font-size: 14px;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.search-box input:focus {
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+    background: #ffffff;
 }
 
 @media (max-width: 480px) {
@@ -72,107 +93,9 @@
     }
 }
 
-/* =========================
-   NEW MARKER STYLES
-========================= */
-.pin {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    border-radius: 50%;
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4), 0 0 0 4px rgba(255,255,255,0.3);
-    border: 3px solid rgba(255,255,255,0.8);
-}
+/* REMOVED .pin styles - No more big red pin overlay */
 
-.pin::before {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 12px solid #ef4444;
-}
-
-.pin .dot {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 16px;
-    height: 16px;
-    background: linear-gradient(135deg, #fff, #f8fafc);
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.pin.green {
-    background: linear-gradient(135deg, #10b981, #059669);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4), 0 0 0 4px rgba(255,255,255,0.3);
-}
-
-.pin.green::before {
-    border-top-color: #10b981;
-}
-
-/* PEOPLE ICON - MOVING PERSON/CAR */
-.people-icon {
-    position: absolute;
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
-    border: 3px solid rgba(255,255,255,0.9);
-    z-index: 1001;
-    animation: bounce 1.5s infinite;
-}
-
-.people-icon::before {
-    content: '👤';
-    font-size: 18px;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-}
-
-@keyframes bounce {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.1) rotate(5deg); }
-}
-
-@media (max-width: 480px) {
-    .pin {
-        width: 44px;
-        height: 44px;
-    }
-    
-    .pin .dot {
-        width: 14px;
-        height: 14px;
-    }
-    
-    .people-icon {
-        width: 32px;
-        height: 32px;
-    }
-    
-    .people-icon::before {
-        font-size: 16px;
-    }
-}
-
-/* =========================
-   GPS BUTTON
-========================= */
+/* GPS BUTTON */
 .gps-btn {
     position: absolute;
     right: 20px;
@@ -186,6 +109,28 @@
     justify-content: center;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.gps-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.gps-btn i {
+    color: #2563eb;
+    font-size: 20px;
+}
+
+.gps-btn.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {
@@ -194,6 +139,10 @@
         height: 48px;
         right: 16px;
         bottom: 16px;
+    }
+    
+    .gps-btn i {
+        font-size: 18px;
     }
 }
 
@@ -214,7 +163,7 @@
     }
 }
 
-/* LOCATION SECTION - standard content style */
+/* LOCATION SECTION */
 .location-section {
     background: #f8fafc;
     padding: 25px 20px;
@@ -244,13 +193,6 @@
     }
 }
 
-/* LOCATION INFO */
-.location-info {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 70px;
-}
-
 .location-info .icon {
     width: 45px;
     height: 45px;
@@ -260,17 +202,18 @@
     align-items: center;
     justify-content: center;
     color: #2563eb;
+    flex-shrink: 0;
 }
 
 @media (max-width: 480px) {
-    .location-info {
-        margin-bottom: 60px;
-    }
-    
     .location-info .icon {
         width: 40px;
         height: 40px;
         border-radius: 10px;
+    }
+    
+    .location-info .icon i {
+        font-size: 18px;
     }
 }
 
@@ -278,11 +221,14 @@
     font-size: 11px;
     letter-spacing: 1px;
     color: #64748b;
+    font-weight: 600;
 }
 
 .location-info h3 {
     font-size: 16px;
     font-weight: 600;
+    margin: 4px 0;
+    color: #1e293b;
 }
 
 @media (max-width: 480px) {
@@ -307,28 +253,224 @@
     font-size: 15px;
     font-weight: 500;
     box-shadow: 0 10px 25px rgba(37,99,235,0.35);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif;
 }
 
-@media (max-width: 480px) {
-    .confirm-btn {
-        padding: 14px;
-        font-size: 14px;
-        border-radius: 14px;
-    }
+.confirm-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(37,99,235,0.45);
+}
+
+.confirm-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.confirm-btn.success {
+    background: linear-gradient(to right, #10b981, #059669);
+    box-shadow: 0 10px 25px rgba(16,185,129,0.35);
+}
+
+.confirm-btn.error {
+    background: linear-gradient(to right, #ef4444, #dc2626);
+    box-shadow: 0 10px 25px rgba(239,68,68,0.35);
+}
+
+.confirm-btn .btn-loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
 }
 
 /* MAP DIV */
 #map {
     width: 100%;
     height: 100%;
+    background: #e8edf3;
 }
 
-/* Route summary enhancements */
+/* Hide default Leaflet popups and routing UI */
+.leaflet-popup {
+    display: none !important;
+}
+
+.leaflet-routing-container {
+    display: none !important;
+}
+
+.leaflet-control-container .leaflet-routing-container-hide {
+    display: none !important;
+}
+
+/* Fix for marker icons */
+.leaflet-marker-icon {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Route summary - fixed position */
 .route-summary {
-    margin: 20px;
+    position: absolute !important;
+    bottom: 80px !important;
+    left: 16px !important;
+    right: 16px !important;
+    z-index: 1000 !important;
+    max-width: calc(100% - 32px) !important;
+    background: rgba(255, 255, 255, 0.97) !important;
+    padding: 12px 16px !important;
+    border-radius: 30px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    font-family: 'Poppins', sans-serif !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+}
+
+.route-summary .route-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.route-summary strong {
+    color: #1e293b;
+    font-size: 13px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.route-summary .route-details {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.route-summary .route-details i {
+    margin-right: 4px;
+    width: 14px;
+}
+
+.route-summary .route-close {
+    background: #ef4444;
+    border: none;
+    padding: 4px 14px;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    flex-shrink: 0;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.route-summary .route-close:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+@media (max-width: 480px) {
+    .route-summary {
+        bottom: 70px !important;
+        left: 12px !important;
+        right: 12px !important;
+        max-width: calc(100% - 24px) !important;
+        padding: 10px 14px !important;
+        font-size: 12px !important;
+        border-radius: 24px !important;
+    }
+    
+    .route-summary strong {
+        font-size: 12px !important;
+    }
+    
+    .route-summary .route-details {
+        font-size: 11px;
+    }
+    
+    .route-summary .route-close {
+        font-size: 11px;
+        padding: 3px 12px;
+        height: 26px;
+    }
+}
+
+/* Search results dropdown */
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    margin-top: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 2000;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
     font-family: 'Poppins', sans-serif;
 }
 
-.route-summary button {
+.search-result-item:hover {
+    background: #f8fafc;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item .result-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #eef2f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.search-result-item .result-name {
     font-weight: 500;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.search-result-item .result-address {
+    font-size: 12px;
+    color: #64748b;
 }
