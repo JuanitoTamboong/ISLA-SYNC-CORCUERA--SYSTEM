@@ -208,7 +208,7 @@ async function fetchReportDetail(reportId) {
 }
 
 // ============================================
-// COMMENTS FUNCTIONS - FIXED
+// COMMENTS FUNCTIONS
 // ============================================
 
 async function fetchComments(reportId) {
@@ -284,13 +284,8 @@ async function addComment(reportId, comment) {
     }
 }
 
-// ============================================
-// FIXED DELETE COMMENT
-// ============================================
-
 async function deleteComment(commentId) {
     try {
-        // First verify the comment exists and get its data
         const { data: comment, error: fetchError } = await supabaseClient
             .from('report_comments')
             .select('user_id, report_id')
@@ -302,25 +297,23 @@ async function deleteComment(commentId) {
             return false;
         }
         
-        // Check authorization
         if (comment.user_id !== currentUser.id && currentUser.userType !== 'admin') {
             showNotification('You are not authorized to delete this comment.', 'error');
             return false;
         }
         
-        // Delete the comment using the correct ID
         const { error: deleteError } = await supabaseClient
             .from('report_comments')
             .delete()
             .eq('id', commentId);
         
         if (deleteError) {
-            showNotification('Failed to delete comment: ' + deleteError.message, 'error');
+            showNotification('Failed to delete comment.', 'error');
             return false;
         }
         
         return true;
-    } catch (error) {
+    } catch {
         showNotification('An error occurred while deleting.', 'error');
         return false;
     }
@@ -385,7 +378,6 @@ window.handleDeleteComment = async function(commentId) {
     
     if (success) {
         showNotification('Comment deleted successfully!', 'success');
-        // Force refresh comments from database
         if (currentReportId) {
             const freshComments = await fetchComments(currentReportId);
             currentReportComments = freshComments;
@@ -555,17 +547,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('modalClose').onclick = hideModal;
     document.getElementById('modalOverlay').onclick = hideModal;
     
-    document.getElementById('commentToggleBtn').addEventListener('click', function() {
-        const input = document.getElementById('commentInput');
-        input.focus();
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-    
-    document.getElementById('submitCommentBtn').addEventListener('click', async function() {
+    // Comment toggle button - handles adding comments (Send button removed)
+    document.getElementById('commentToggleBtn').addEventListener('click', async function() {
         const input = document.getElementById('commentInput');
         const comment = input.value.trim();
         
-        if (!comment || !currentReportId) return;
+        if (!comment || !currentReportId) {
+            input.focus();
+            return;
+        }
         
         const btn = this;
         btn.disabled = true;
@@ -583,13 +573,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send';
+        btn.innerHTML = '<i class="fa-solid fa-comment"></i> Add Comment';
     });
     
+    // Enter key to submit comment (Shift+Enter for new line)
     document.getElementById('commentInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            document.getElementById('submitCommentBtn').click();
+            document.getElementById('commentToggleBtn').click();
         }
     });
     

@@ -536,7 +536,7 @@
 }
 
 /* ============================================
-   COMMENTS SECTION
+   COMMENTS SECTION - Updated (No Send button)
    ============================================ */
 .comments-container {
     margin-bottom: 16px;
@@ -685,6 +685,7 @@
     word-break: break-word;
 }
 
+/* Comment Input - No Send button */
 .comment-input-wrapper {
     display: flex;
     gap: 10px;
@@ -719,36 +720,7 @@
     color: #94a3b8;
 }
 
-.comment-submit-btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #2563eb, #4f46e5);
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'Poppins', sans-serif;
-    flex-shrink: 0;
-    height: 44px;
-}
-
-.comment-submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
-}
-
-.comment-submit-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* BOTTOM BUTTON */
+/* BOTTOM BUTTON - Now the submit button */
 .modal-bottom {
     margin-top: 10px;
     padding-top: 10px;
@@ -777,6 +749,12 @@
     opacity: 0.95;
 }
 
+.modal-bottom button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 @keyframes modalPop {
     0% {
         opacity: 0;
@@ -803,11 +781,6 @@
     .comment-input-wrapper {
         flex-direction: column;
         align-items: stretch;
-    }
-    
-    .comment-submit-btn {
-        height: 40px;
-        justify-content: center;
     }
 }
 
