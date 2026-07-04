@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     let notifications = [];
     let notifReadIds = JSON.parse(localStorage.getItem('adminNotifReadIds') || '[]');
+    let userAvatars = {};
 
     await loadAdminProfilePhoto(supabaseClient, admin.id);
     await loadNotifications(supabaseClient);
@@ -86,6 +87,39 @@ document.addEventListener('DOMContentLoaded', async function() {
             return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
         }
         return name.substring(0, 2).toUpperCase();
+    }
+
+    function getColorFromName(name) {
+        const colors = [
+            '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
+            '#ec4899', '#f43f5e', '#ef4444', '#f59e0b',
+            '#10b981', '#06b6d4', '#3b82f6', '#4f46e5'
+        ];
+        if (!name) return colors[0];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    }
+
+    async function loadUserAvatars(userIds) {
+        if (!userIds || userIds.length === 0) return;
+        
+        try {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('id, avatar_url, full_name')
+                .in('id', userIds);
+            
+            if (!error && data) {
+                data.forEach(profile => {
+                    userAvatars[profile.id] = profile;
+                });
+            }
+        } catch (e) {
+            // Silent fail
+        }
     }
 
     async function loadAdminProfilePhoto(supabaseClient, adminId) {
@@ -132,27 +166,35 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (error) throw error;
 
+            // Get unique user IDs for avatars
+            const userIds = reports
+                .map(r => r.user_id)
+                .filter(id => id && !userAvatars[id]);
+            
+            if (userIds.length > 0) {
+                await loadUserAvatars(userIds);
+            }
+
             notifications = [];
-            const categoryIcons = {
-                'INFRASTRUCTURE': { icon: 'fa-road', color: 'blue' },
-                'PUBLIC SAFETY': { icon: 'fa-shield-halved', color: 'orange' },
-                'ENGINEERING': { icon: 'fa-people-group', color: 'purple' },
-                'TRAFFIC VIOLATION': { icon: 'fa-traffic-light', color: 'red' }
-            };
 
             (reports || []).forEach(report => {
-                const cat = categoryIcons[report.category] || { icon: 'fa-circle-exclamation', color: 'blue' };
                 const timeAgo = getTimeAgo(report.created_at);
+                const user = userAvatars[report.user_id] || {};
+                const avatarUrl = report.avatar_url || user.avatar_url;
+                const reporterName = report.reporter_name || user.full_name || 'Unknown';
+                const initials = getInitials(reporterName);
+                const color = getColorFromName(reporterName);
                 
                 notifications.push({
                     id: `report-${report.id}`,
                     reportId: report.id,
-                    icon: cat.icon,
-                    iconColor: cat.color,
-                    title: escapeHtml(report.reporter_name || 'Unknown'),
+                    title: escapeHtml(reporterName),
                     message: `${escapeHtml(report.category || 'Report')} • ${escapeHtml(report.description || 'No description')}`,
                     time: timeAgo,
-                    read: notifReadIds.includes(`report-${report.id}`)
+                    read: notifReadIds.includes(`report-${report.id}`),
+                    avatarUrl: avatarUrl,
+                    initials: initials,
+                    color: color
                 });
             });
 
@@ -164,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (notifList) {
                 notifList.innerHTML = `
                     <div class="notif-empty">
-                        <i class="fa-regular fa-bell-slash"></i>
+                        <i class="fas fa-bell-slash"></i>
                         <p>No notifications</p>
                     </div>
                 `;
@@ -206,24 +248,30 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (unreadNotifs.length === 0) {
             notifList.innerHTML = `
                 <div class="notif-empty">
-                    <i class="fa-regular fa-bell-slash"></i>
+                    <i class="fas fa-bell-slash"></i>
                     <p>No new reports</p>
                 </div>
             `;
             return;
         }
 
-        notifList.innerHTML = unreadNotifs.map(notif => `
-            <div class="notif-item unread" onclick="handleNotifClick(event, '${notif.id}', '${notif.reportId}')">
-                <div class="notif-icon ${notif.iconColor}">
-                    <i class="fa-solid ${notif.icon}"></i>
+        notifList.innerHTML = unreadNotifs.map(notif => {
+            const avatarHtml = notif.avatarUrl 
+                ? `<img src="${escapeHtml(notif.avatarUrl)}" alt="${escapeHtml(notif.title)}" class="notif-avatar-img">`
+                : `<span class="notif-avatar-initials" style="background: ${notif.color || '#6366f1'}">${notif.initials || 'U'}</span>`;
+
+            return `
+                <div class="notif-item unread" onclick="handleNotifClick(event, '${notif.id}', '${notif.reportId}')">
+                    <div class="notif-avatar">
+                        ${avatarHtml}
+                    </div>
+                    <div class="notif-content">
+                        <p>${notif.title}</p>
+                        <span>${notif.message} • ${notif.time}</span>
+                    </div>
                 </div>
-                <div class="notif-content">
-                    <p>${notif.title}</p>
-                    <span>${notif.message} • ${notif.time}</span>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function setupNotificationEvents() {
@@ -307,7 +355,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (container) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fa-regular fa-circle-exclamation"></i>
+                        <i class="fas fa-exclamation-circle"></i>
                         <p>Failed to load reports</p>
                     </div>
                 `;
@@ -323,7 +371,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!reports || reports.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <i class="fa-regular fa-folder-open"></i>
+                    <i class="fas fa-folder-open"></i>
                     <p>No reports submitted yet</p>
                 </div>
             `;
@@ -352,7 +400,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const hasImage = report.image_url && report.image_url.startsWith('data:');
             const imageHtml = hasImage
                 ? `<img src="${escapeHtml(report.image_url)}" alt="Report Image" class="report-image">`
-                : `<div class="report-icon ${cat.class}"><i class="fa-solid ${cat.icon}"></i></div>`;
+                : `<div class="report-icon ${cat.class}"><i class="fas ${cat.icon}"></i></div>`;
 
             return `
                 <div class="recent-report-item" onclick="viewReportOnMap('${report.id}')">

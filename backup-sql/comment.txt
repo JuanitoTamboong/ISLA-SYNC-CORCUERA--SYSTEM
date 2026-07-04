@@ -1,0 +1,136 @@
+-- Drop existing table if you want to recreate (this will delete all comments)
+-- DROP TABLE IF EXISTS public.report_comments CASCADE;
+
+-- Create comments table with correct foreign key referencing profiles
+CREATE TABLE IF NOT EXISTS public.report_comments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    report_id UUID NOT NULL REFERENCES public.reports(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    comment TEXT NOT NULL,
+    is_admin BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_report_comments_report_id ON public.report_comments(report_id);
+CREATE INDEX IF NOT EXISTS idx_report_comments_user_id ON public.report_comments(user_id);
+CREATE INDEX IF NOT EXISTS idx_report_comments_created_at ON public.report_comments(created_at);
+
+-- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_report_comments_updated_at ON public.report_comments;
+CREATE TRIGGER update_report_comments_updated_at
+    BEFORE UPDATE ON public.report_comments
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Enable RLS
+ALTER TABLE public.report_comments ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view comments on their reports" ON public.report_comments;
+DROP POLICY IF EXISTS "Users can insert comments on their reports" ON public.report_comments;
+DROP POLICY IF EXISTS "Admins can insert comments on any report" ON public.report_comments;
+DROP POLICY IF EXISTS "Admins can delete comments" ON public.report_comments;
+DROP POLICY IF EXISTS "Users can delete their own comments" ON public.report_comments;
+DROP POLICY IF EXISTS "Admins can delete any comment" ON public.report_comments;
+
+-- ============================================
+-- VIEW POLICIES
+-- ============================================
+
+-- Users can view comments on their own reports
+CREATE POLICY "Users can view comments on their reports"
+    ON public.report_comments
+    FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.reports 
+            WHERE reports.id = report_comments.report_id 
+            AND reports.user_id = auth.uid()
+        )
+        OR 
+        check_is_admin(auth.uid())
+    );
+
+-- ============================================
+-- INSERT POLICIES
+-- ============================================
+
+-- Users can insert comments on their own reports
+CREATE POLICY "Users can insert comments on their reports"
+    ON public.report_comments
+    FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.reports 
+            WHERE reports.id = report_comments.report_id 
+            AND reports.user_id = auth.uid()
+        )
+        OR 
+        check_is_admin(auth.uid())
+    );
+
+-- Admins can insert comments on any report
+CREATE POLICY "Admins can insert comments on any report"
+    ON public.report_comments
+    FOR INSERT
+    WITH CHECK (check_is_admin(auth.uid()));
+
+-- ============================================
+-- DELETE POLICIES - FIXED
+-- ============================================
+
+-- Users can delete ONLY their own comments
+CREATE POLICY "Users can delete their own comments"
+    ON public.report_comments
+    FOR DELETE
+    USING (auth.uid() = user_id);
+
+-- Admins can delete ANY comment
+CREATE POLICY "Admins can delete any comment"
+    ON public.report_comments
+    FOR DELETE
+    USING (check_is_admin(auth.uid()));
+
+-- ============================================
+-- UPDATE POLICIES (Optional - for editing comments)
+-- ============================================
+
+-- Users can update their own comments
+CREATE POLICY "Users can update their own comments"
+    ON public.report_comments
+    FOR UPDATE
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+-- Admins can update any comment
+CREATE POLICY "Admins can update any comment"
+    ON public.report_comments
+    FOR UPDATE
+    USING (check_is_admin(auth.uid()))
+    WITH CHECK (check_is_admin(auth.uid()));
+
+-- ============================================
+-- GRANT PERMISSIONS
+-- ============================================
+
+GRANT ALL ON public.report_comments TO authenticated;
+GRANT SELECT ON public.report_comments TO anon;
+GRANT ALL ON public.report_comments TO service_role;
+
+-- ============================================
+-- VERIFY POLICIES
+-- ============================================
+
+-- Check all policies on the table
+SELECT 
+    policyname,
+    permissive,
+    roles,
+    cmd,
+    qual,
+    with_check
+FROM pg_policies 
+WHERE tablename = 'report_comments'
+ORDER BY cmd, policyname;

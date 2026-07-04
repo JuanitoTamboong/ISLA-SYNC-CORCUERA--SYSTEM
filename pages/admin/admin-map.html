@@ -164,6 +164,23 @@
                 </div>
             </div>
 
+            <!-- COMMENTS SECTION -->
+            <div class="detail-section full-width">
+                <label><i class="fas fa-comment"></i> Comments</label>
+                <div id="modalCommentsContainer" class="comments-container">
+                    <div class="no-comments">
+                        <i class="fas fa-comment"></i>
+                        <p>No comments yet</p>
+                    </div>
+                </div>
+                <div class="admin-comment-input">
+                    <textarea id="adminCommentInput" placeholder="Add a comment as admin..." rows="2"></textarea>
+                    <button id="submitAdminCommentBtn" class="comment-submit-btn" onclick="submitAdminComment()">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+
             <!-- Actions -->
             <div class="detail-section full-width" id="modalActions">
                 <div class="action-buttons">

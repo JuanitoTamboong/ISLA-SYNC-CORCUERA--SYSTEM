@@ -12,6 +12,7 @@ let activeFilter = 'all';
 let currentReportId = null;
 let supabaseClient = null;
 let userAvatars = {};
+let currentAdmin = null;
 
 const AVATAR_COLORS = [
     '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
@@ -54,6 +55,7 @@ function createMarkerIcon(report) {
             overflow: hidden;
             transition: all 0.2s ease;
             cursor: pointer;
+            position: relative;
         ">
             <img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;">
             <div style="
@@ -125,8 +127,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     try {
-        const admin = JSON.parse(currentAdminStr);
-        if (!admin || !admin.id || admin.userType !== 'admin') {
+        currentAdmin = JSON.parse(currentAdminStr);
+        if (!currentAdmin || !currentAdmin.id || currentAdmin.userType !== 'admin') {
             throw new Error('Invalid admin');
         }
     } catch (e) {
@@ -363,7 +365,126 @@ function setupFilters() {
     });
 }
 
-function openReportModal(reportId) {
+// ============================================
+// COMMENTS FUNCTIONS
+// ============================================
+
+async function fetchComments(reportId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('report_comments')
+            .select(`
+                *,
+                profiles:user_id (
+                    full_name,
+                    avatar_url
+                )
+            `)
+            .eq('report_id', reportId)
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        return [];
+    }
+}
+
+async function addAdminComment(reportId, comment) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('report_comments')
+            .insert([{
+                report_id: reportId,
+                user_id: currentAdmin.id,
+                comment: comment,
+                is_admin: true
+            }])
+            .select(`
+                *,
+                profiles:user_id (
+                    full_name,
+                    avatar_url
+                )
+            `)
+            .single();
+        
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        return null;
+    }
+}
+
+function renderComments(comments) {
+    const container = document.getElementById('modalCommentsContainer');
+    
+    if (!container) return;
+    
+    if (!comments || comments.length === 0) {
+        container.innerHTML = `
+            <div class="no-comments">
+                <i class="fa-regular fa-comment"></i>
+                <p>No comments yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    comments.forEach(comment => {
+        const isAdmin = comment.is_admin || false;
+        const userName = comment.profiles?.full_name || (isAdmin ? 'Admin' : 'User');
+        const initials = getInitials(userName);
+        const avatarUrl = comment.profiles?.avatar_url || null;
+        const timeAgo = getTimeAgo(comment.created_at);
+        
+        const avatarHtml = avatarUrl 
+            ? `<img src="${avatarUrl}" alt="${escapeHtml(userName)}">`
+            : initials;
+        
+        html += `
+            <div class="comment-item">
+                <div class="comment-avatar ${isAdmin ? 'admin' : 'resident'}">
+                    ${avatarHtml}
+                </div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="comment-author">${escapeHtml(userName)}</span>
+                        ${isAdmin ? '<span class="comment-badge admin">Admin</span>' : '<span class="comment-badge resident">Resident</span>'}
+                        <span class="comment-time">${timeAgo}</span>
+                    </div>
+                    <p class="comment-text">${escapeHtml(comment.comment)}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function getTimeAgo(dateString) {
+    if (!dateString) return 'Just now';
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// ============================================
+// OPEN REPORT MODAL WITH COMMENTS
+// ============================================
+
+async function openReportModal(reportId) {
     const report = allReports.find(r => r.id === reportId);
     if (!report) return;
 
@@ -447,6 +568,11 @@ function openReportModal(reportId) {
         pendingBtn.style.display = 'none';
     }
 
+    // Load comments
+    const comments = await fetchComments(reportId);
+    renderComments(comments);
+
+    // Show modal
     document.getElementById('reportModal').classList.add('show');
     document.body.style.overflow = 'hidden';
 
@@ -464,12 +590,49 @@ function openReportModal(reportId) {
     }
 }
 
+// ============================================
+// SUBMIT ADMIN COMMENT
+// ============================================
+
+async function submitAdminComment() {
+    const input = document.getElementById('adminCommentInput');
+    const comment = input.value.trim();
+    
+    if (!comment || !currentReportId) return;
+    
+    const btn = document.getElementById('submitAdminCommentBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+    
+    const newComment = await addAdminComment(currentReportId, comment);
+    
+    if (newComment) {
+        input.value = '';
+        const comments = await fetchComments(currentReportId);
+        renderComments(comments);
+        showNotification('Comment added successfully!', 'success');
+    } else {
+        showNotification('Failed to add comment. Please try again.', 'error');
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-regular fa-paper-plane"></i> Send';
+}
+
+// ============================================
+// CLOSE MODAL
+// ============================================
+
 function closeModal() {
     document.getElementById('reportModal').classList.remove('show');
     document.body.style.overflow = 'auto';
     currentReportId = null;
     document.querySelectorAll('.report-item').forEach(item => item.classList.remove('highlighted'));
 }
+
+// ============================================
+// IMAGE FULLSCREEN
+// ============================================
 
 function openImageFullscreen() {
     document.getElementById('imageFullscreenModal').classList.add('show');
@@ -482,6 +645,10 @@ function closeImageFullscreen() {
     document.getElementById('imageFullscreenModal').style.display = 'none';
     document.body.style.overflow = '';
 }
+
+// ============================================
+// UPDATE REPORT STATUS
+// ============================================
 
 async function updateReportStatus(newStatus) {
     if (!currentReportId || !supabaseClient) return;
@@ -515,6 +682,10 @@ async function updateReportStatus(newStatus) {
     }
 }
 
+// ============================================
+// HIGHLIGHT REPORT
+// ============================================
+
 function highlightReport(reportId) {
     const report = allReports.find(r => r.id === reportId);
     if (!report) return;
@@ -530,6 +701,10 @@ function highlightReport(reportId) {
     setTimeout(() => openReportModal(reportId), 300);
 }
 
+// ============================================
+// REFRESH DATA
+// ============================================
+
 function refreshData() {
     const icon = document.querySelector('.header .refresh-btn i');
     if (icon) {
@@ -542,9 +717,17 @@ function refreshData() {
     showNotification('Refreshing data...', 'info');
 }
 
+// ============================================
+// NAVIGATION
+// ============================================
+
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
 };
+
+// ============================================
+// EXPOSE FUNCTIONS TO GLOBAL
+// ============================================
 
 window.openReportModal = openReportModal;
 window.closeModal = closeModal;
@@ -553,6 +736,11 @@ window.refreshData = refreshData;
 window.goBack = goBack;
 window.openImageFullscreen = openImageFullscreen;
 window.closeImageFullscreen = closeImageFullscreen;
+window.submitAdminComment = submitAdminComment;
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
 
 function escapeHtml(str) {
     if (!str) return '';

@@ -51,7 +51,7 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="modalBody">
                 <!-- STATUS -->
                 <div class="modal-status-box">
                     <span class="modal-badge" id="modalBadge">IN PROGRESS</span>
@@ -112,9 +112,26 @@
                     </div>
                 </div>
 
+                <!-- COMMENTS SECTION -->
+                <h3 class="modal-section-title">COMMENTS</h3>
+                <div id="commentsContainer" class="comments-container">
+                    <div class="no-comments">
+                        <i class="fa-regular fa-comment"></i>
+                        <p>No comments yet</p>
+                    </div>
+                </div>
+
+                <!-- ADD COMMENT -->
+                <div class="comment-input-wrapper">
+                    <textarea id="commentInput" placeholder="Add a comment..." rows="2"></textarea>
+                    <button id="submitCommentBtn" class="comment-submit-btn">
+                        <i class="fa-solid fa-paper-plane"></i> Send
+                    </button>
+                </div>
+
                 <!-- BOTTOM BUTTON -->
                 <div class="modal-bottom">
-                    <button>
+                    <button id="commentToggleBtn">
                         <i class="fa-solid fa-comment"></i>
                         Add Comment
                     </button>

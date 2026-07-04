@@ -5,6 +5,8 @@ let supabaseClient = null;
 let currentUser = null;
 let allReports = [];
 let activeFilter = 'all';
+let currentReportId = null;
+let currentReportComments = [];
 
 const CATEGORY_GROUPS = [
     { 
@@ -71,9 +73,18 @@ function formatStatusClass(status) {
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"]/g, function(m) {
-        const map = { '&': '&amp;', '<': '<', '>': '>', '"': '"' };
+        const map = { '&': '&amp;', '<': '<', '>': '>', '"': '&quot;' };
         return map[m];
     });
+}
+
+function getInitials(name) {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
 }
 
 function renderReportItem(report) {
@@ -191,10 +202,211 @@ async function fetchReportDetail(reportId) {
         .single();
     
     if (error || !data) {
-        console.error('Error fetching report:', error);
         return null;
     }
     return data;
+}
+
+// ============================================
+// COMMENTS FUNCTIONS - FIXED
+// ============================================
+
+async function fetchComments(reportId) {
+    try {
+        const { data: comments, error: commentsError } = await supabaseClient
+            .from('report_comments')
+            .select('*')
+            .eq('report_id', reportId)
+            .order('created_at', { ascending: true });
+        
+        if (commentsError) throw commentsError;
+        
+        if (!comments || comments.length === 0) {
+            return [];
+        }
+        
+        const userIds = comments.map(c => c.user_id).filter(id => id);
+        let profilesMap = {};
+        
+        if (userIds.length > 0) {
+            const { data: profiles, error: profilesError } = await supabaseClient
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .in('id', userIds);
+            
+            if (!profilesError && profiles) {
+                profilesMap = Object.fromEntries(
+                    profiles.map(p => [p.id, p])
+                );
+            }
+        }
+        
+        return comments.map(comment => ({
+            ...comment,
+            profiles: profilesMap[comment.user_id] || null
+        }));
+        
+    } catch {
+        return [];
+    }
+}
+
+async function addComment(reportId, comment) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('report_comments')
+            .insert([{
+                report_id: reportId,
+                user_id: currentUser.id,
+                comment: comment,
+                is_admin: currentUser.userType === 'admin'
+            }])
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', data.user_id)
+                .single();
+            
+            return {
+                ...data,
+                profiles: profile || null
+            };
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+// ============================================
+// FIXED DELETE COMMENT
+// ============================================
+
+async function deleteComment(commentId) {
+    try {
+        // First verify the comment exists and get its data
+        const { data: comment, error: fetchError } = await supabaseClient
+            .from('report_comments')
+            .select('user_id, report_id')
+            .eq('id', commentId)
+            .single();
+        
+        if (fetchError) {
+            showNotification('Comment not found.', 'error');
+            return false;
+        }
+        
+        // Check authorization
+        if (comment.user_id !== currentUser.id && currentUser.userType !== 'admin') {
+            showNotification('You are not authorized to delete this comment.', 'error');
+            return false;
+        }
+        
+        // Delete the comment using the correct ID
+        const { error: deleteError } = await supabaseClient
+            .from('report_comments')
+            .delete()
+            .eq('id', commentId);
+        
+        if (deleteError) {
+            showNotification('Failed to delete comment: ' + deleteError.message, 'error');
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        showNotification('An error occurred while deleting.', 'error');
+        return false;
+    }
+}
+
+function renderComments(comments) {
+    const container = document.getElementById('commentsContainer');
+    
+    if (!container) return;
+    
+    if (!comments || comments.length === 0) {
+        container.innerHTML = `
+            <div class="no-comments">
+                <i class="fa-regular fa-comment"></i>
+                <p>No comments yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    comments.forEach(comment => {
+        const isAdmin = comment.is_admin || false;
+        const userName = comment.profiles?.full_name || (isAdmin ? 'Admin' : 'User');
+        const initials = getInitials(userName);
+        const avatarUrl = comment.profiles?.avatar_url || null;
+        const timeAgo = getTimeAgo(comment.created_at);
+        
+        const avatarHtml = avatarUrl 
+            ? `<img src="${avatarUrl}" alt="${escapeHtml(userName)}">`
+            : initials;
+        
+        const canDelete = (comment.user_id === currentUser?.id) || (currentUser?.userType === 'admin');
+        
+        html += `
+            <div class="comment-item" data-comment-id="${comment.id}">
+                <div class="comment-avatar ${isAdmin ? 'admin' : 'resident'}">
+                    ${avatarHtml}
+                </div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="comment-author">${escapeHtml(userName)}</span>
+                        ${isAdmin ? '<span class="comment-badge admin">Admin</span>' : '<span class="comment-badge resident">Resident</span>'}
+                        <span class="comment-time">${timeAgo}</span>
+                        ${canDelete ? `<button class="comment-delete-btn" onclick="handleDeleteComment('${comment.id}')" title="Delete comment">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>` : ''}
+                    </div>
+                    <p class="comment-text">${escapeHtml(comment.comment)}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+window.handleDeleteComment = async function(commentId) {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    const success = await deleteComment(commentId);
+    
+    if (success) {
+        showNotification('Comment deleted successfully!', 'success');
+        // Force refresh comments from database
+        if (currentReportId) {
+            const freshComments = await fetchComments(currentReportId);
+            currentReportComments = freshComments;
+            renderComments(freshComments);
+        }
+    }
+};
+
+function getTimeAgo(dateString) {
+    if (!dateString) return 'Just now';
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function populateModal(report) {
@@ -216,19 +428,15 @@ function populateModal(report) {
     }) : 'Unknown';
     document.getElementById('modalDateTime').textContent = `Submitted on ${dateStr}`;
     
-    // Category
     const category = report.category || detectCategory(report);
     const categoryTitle = category.toString().toUpperCase().replace(/_/g, ' ');
     document.getElementById('modalCategory').textContent = categoryTitle;
     
-    // Location
     const location = report.location_address || report.location || 'Not specified';
     document.getElementById('modalLocationText').textContent = location.length > 25 ? location.substring(0, 25) + '...' : location;
     
-    // Description
     document.getElementById('modalDescription').textContent = report.description || 'No description provided.';
     
-    // Timeline time
     const timelineTime = report.created_at ? new Date(report.created_at).toLocaleString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -237,7 +445,6 @@ function populateModal(report) {
     }) : 'Recently';
     document.getElementById('modalTimelineTime').textContent = timelineTime;
     
-    // Timeline based on status
     const step2 = document.getElementById('modalTimelineStep2');
     const step3 = document.getElementById('modalTimelineStep3');
     const step2Time = document.getElementById('modalTimelineStep2Time');
@@ -262,7 +469,6 @@ function populateModal(report) {
         if (step3Desc) step3Desc.textContent = 'Your report has been resolved. Thank you!';
     }
     
-    // Image
     const imgSection = document.getElementById('modalImageSection');
     const imgEl = document.getElementById('modalImage');
     const imgName = document.getElementById('modalImageName');
@@ -273,6 +479,16 @@ function populateModal(report) {
     } else {
         imgSection.style.display = 'none';
     }
+}
+
+async function loadReportWithComments(reportId) {
+    const report = await fetchReportDetail(reportId);
+    if (!report) return null;
+    
+    const comments = await fetchComments(reportId);
+    currentReportComments = comments;
+    
+    return { report, comments };
 }
 
 function showModal() {
@@ -287,6 +503,8 @@ function hideModal() {
     modal.style.display = 'none';
     document.body.style.overflow = 'auto';
     modal.classList.remove('show');
+    currentReportId = null;
+    currentReportComments = [];
 }
 
 async function initPage() {
@@ -305,7 +523,7 @@ async function initPage() {
             window.location.href = '../pages/login.html';
             return;
         }
-    } catch(e) {
+    } catch {
         window.location.href = '../pages/login.html';
         return;
     }
@@ -317,34 +535,70 @@ async function initPage() {
     
     renderCategorizedReports();
     
-    // Filter tabs
     document.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
+        tab.addEventListener('click', function() {
             document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            activeFilter = tab.dataset.filter;
+            this.classList.add('active');
+            activeFilter = this.dataset.filter;
             renderCategorizedReports();
         });
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     initPage();
     
-    // Navigation buttons
-    document.getElementById('backBtn').onclick = () => window.history.back();
-    document.getElementById('submitNewBtn').onclick = () => window.location.href = '../pages/report.html';
-    document.getElementById('emptySubmitBtn').onclick = () => window.location.href = '../pages/report.html';
+    document.getElementById('backBtn').onclick = function() { window.history.back(); };
+    document.getElementById('submitNewBtn').onclick = function() { window.location.href = '../pages/report.html'; };
+    document.getElementById('emptySubmitBtn').onclick = function() { window.location.href = '../pages/report.html'; };
     
-    // Modal controls
     document.getElementById('modalClose').onclick = hideModal;
     document.getElementById('modalOverlay').onclick = hideModal;
     
-    // Report view click handler
-    document.body.addEventListener('click', async (e) => {
+    document.getElementById('commentToggleBtn').addEventListener('click', function() {
+        const input = document.getElementById('commentInput');
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    
+    document.getElementById('submitCommentBtn').addEventListener('click', async function() {
+        const input = document.getElementById('commentInput');
+        const comment = input.value.trim();
+        
+        if (!comment || !currentReportId) return;
+        
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+        
+        const newComment = await addComment(currentReportId, comment);
+        
+        if (newComment) {
+            input.value = '';
+            currentReportComments.push(newComment);
+            renderComments(currentReportComments);
+            showNotification('Comment added successfully!', 'success');
+        } else {
+            showNotification('Failed to add comment. Please try again.', 'error');
+        }
+        
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send';
+    });
+    
+    document.getElementById('commentInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('submitCommentBtn').click();
+        }
+    });
+    
+    document.body.addEventListener('click', async function(e) {
         const reportItem = e.target.closest('.report-item');
         if (reportItem && reportItem.dataset.id && supabaseClient) {
             const reportId = reportItem.dataset.id;
+            currentReportId = reportId;
+            
             const loadingDiv = document.getElementById('loadingState');
             loadingDiv.innerHTML = '<div class="loader-overlay">'
                 + '<div class="loader-box">'
@@ -354,17 +608,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 + '</div>';
             loadingDiv.style.display = 'flex';
 
-            const report = await fetchReportDetail(reportId);
+            const result = await loadReportWithComments(reportId);
 
             loadingDiv.style.display = 'none';
             loadingDiv.innerHTML = '';
 
-            if (report) {
-
-                populateModal(report);
+            if (result) {
+                populateModal(result.report);
+                renderComments(result.comments);
                 showModal();
             }
         }
     });
 });
 
+function showNotification(message, type) {
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+        <span>${message}</span>
+    `;
+
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 3000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        font-family: 'Poppins', sans-serif;
+        max-width: 90%;
+        word-break: break-word;
+    `;
+
+    document.body.appendChild(notification);
+    setTimeout(function() {
+        if (notification && notification.parentNode) notification.remove();
+    }, 4000);
+}
