@@ -168,7 +168,6 @@ function initMap() {
     }).addTo(map);
 
     map.zoomControl.setPosition('bottomright');
-    L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
 }
 
 async function loadReports() {
@@ -258,8 +257,6 @@ function renderMarkers() {
         currentMarkers.push(marker);
     });
 
-    document.getElementById('mapMarkerCount').textContent = `${currentMarkers.length} marker${currentMarkers.length !== 1 ? 's' : ''}`;
-
     if (currentMarkers.length > 0) {
         const group = L.featureGroup(currentMarkers);
         map.fitBounds(group.getBounds().pad(0.1));
@@ -276,7 +273,6 @@ function renderReportsList() {
             <div class="empty-state">
                 <i class="fa-regular fa-folder-open"></i>
                 <p>No reports found</p>
-                <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Try changing the filter</p>
             </div>
         `;
         return;
@@ -352,7 +348,6 @@ function updateStats() {
     document.getElementById('totalReports').textContent = total;
     document.getElementById('pendingCount').textContent = pending;
     document.getElementById('resolvedCount').textContent = resolved;
-    document.getElementById('reportCount').textContent = total;
 }
 
 function setupFilters() {
@@ -381,7 +376,6 @@ async function fetchComments(reportId) {
         
         if (!data || data.length === 0) return [];
         
-        // Fetch user profiles separately
         const userIds = data.map(c => c.user_id).filter(id => id);
         let profilesMap = {};
         
@@ -441,25 +435,8 @@ async function addAdminComment(reportId, comment) {
     }
 }
 
-// ============================================
-// DELETE COMMENT - ADMIN
-// ============================================
-
 async function deleteAdminComment(commentId) {
     try {
-        // Verify comment exists
-        const { data: comment, error: fetchError } = await supabaseClient
-            .from('report_comments')
-            .select('id')
-            .eq('id', commentId)
-            .single();
-        
-        if (fetchError) {
-            showNotification('Comment not found.', 'error');
-            return false;
-        }
-        
-        // Delete the comment
         const { error: deleteError } = await supabaseClient
             .from('report_comments')
             .delete()
@@ -518,9 +495,6 @@ function renderComments(comments) {
             ? `<img src="${avatarUrl}" alt="${escapeHtml(userName)}">`
             : initials;
         
-        // Admin can delete any comment
-        const canDelete = true;
-        
         html += `
             <div class="comment-item" data-comment-id="${comment.id}">
                 <div class="comment-avatar ${isAdmin ? 'admin' : 'resident'}">
@@ -531,9 +505,9 @@ function renderComments(comments) {
                         <span class="comment-author">${escapeHtml(userName)}</span>
                         ${isAdmin ? '<span class="comment-badge admin">Admin</span>' : '<span class="comment-badge resident">Resident</span>'}
                         <span class="comment-time">${timeAgo}</span>
-                        ${canDelete ? `<button class="comment-delete-btn" onclick="handleAdminDeleteComment('${comment.id}')" title="Delete comment">
+                        <button class="comment-delete-btn" onclick="handleAdminDeleteComment('${comment.id}')" title="Delete comment">
                             <i class="fa-solid fa-trash-can"></i>
-                        </button>` : ''}
+                        </button>
                     </div>
                     <p class="comment-text">${escapeHtml(comment.comment)}</p>
                 </div>
@@ -574,7 +548,6 @@ async function openReportModal(reportId) {
     const color = getColorFromName(reporterName);
     const avatarUrl = report.avatar_url || userAvatars[report.user_id]?.avatar_url;
 
-    // Set avatar
     const avatarEl = document.getElementById('modalAvatar');
     const avatarImg = document.getElementById('modalAvatarImg');
     const avatarInitials = document.getElementById('modalAvatarInitials');
@@ -647,11 +620,9 @@ async function openReportModal(reportId) {
         pendingBtn.style.display = 'none';
     }
 
-    // Load comments
     const comments = await fetchComments(reportId);
     renderComments(comments);
 
-    // Show modal
     document.getElementById('reportModal').classList.add('show');
     document.body.style.overflow = 'hidden';
 
