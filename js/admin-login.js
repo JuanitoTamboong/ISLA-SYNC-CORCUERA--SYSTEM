@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Forgot password handler
+    // Forgot password handler - ADMIN SPECIFIC
     if (forgotPassword) {
         forgotPassword.addEventListener('click', async () => {
             const email = emailInput ? emailInput.value.trim() : ''
@@ -153,9 +153,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 return
             }
             
+            // First, verify this email belongs to an admin
             try {
+                // Check if the email exists and is an admin
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .select('user_type')
+                    .eq('email', email)
+                    .maybeSingle()
+                
+                if (profileError || !profile) {
+                    showNotification('No account found with this email', 'error')
+                    return
+                }
+                
+                if (profile.user_type !== 'admin') {
+                    showNotification('This email is not associated with an admin account', 'error')
+                    return
+                }
+                
+                // Send password reset email
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/pages/reset-password.html`
+                    redirectTo: `${window.location.origin}/pages/admin/admin-reset-password.html`
                 })
                 
                 if (error) {
