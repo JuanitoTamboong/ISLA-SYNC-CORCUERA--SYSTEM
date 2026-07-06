@@ -1,17 +1,13 @@
+// Navigation functions
 window.navigateTo = function(page) {
-    switch(page) {
-        case 'home':
-            window.location.href = 'admin-homepage.html';
-            break;
-        case 'map':
-            window.location.href = 'admin-map.html';
-            break;
-        case 'news':
-            window.location.href = 'admin-news.html';
-            break;
-        case 'settings':
-            window.location.href = 'admin-settings.html';
-            break;
+    const pages = {
+        'home': 'admin-homepage.html',
+        'map': 'admin-map.html',
+        'news': 'admin-news.html',
+        'settings': 'admin-settings.html'
+    };
+    if (pages[page]) {
+        window.location.href = pages[page];
     }
 };
 
@@ -36,6 +32,7 @@ window.viewReportOnMap = function(reportId) {
     window.location.href = 'admin-map.html';
 };
 
+// Main application
 document.addEventListener('DOMContentLoaded', async function() {
     if (typeof supabase === 'undefined') {
         showNotification('Error: Configuration failed to load.', 'error');
@@ -64,11 +61,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // Update UI
+    // Initialize
     updateGreeting();
     document.getElementById('adminName').textContent = admin.fullName || 'Admin';
 
-    // Set profile initials
     const initials = getInitials(admin.fullName || 'Admin');
     document.getElementById('profileInitials').textContent = initials;
 
@@ -80,6 +76,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadNotifications(supabaseClient);
     await loadDashboardData(supabaseClient);
 
+    // Helper functions
     function getInitials(name) {
         if (!name) return 'A';
         const parts = name.trim().split(' ');
@@ -166,7 +163,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (error) throw error;
 
-            // Get unique user IDs for avatars
             const userIds = reports
                 .map(r => r.user_id)
                 .filter(id => id && !userAvatars[id]);
@@ -323,6 +319,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function loadDashboardData(supabaseClient) {
         try {
+            const now = new Date();
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
             const { data: reports, error: reportsError } = await supabaseClient
                 .from('reports_with_users')
                 .select('*')
@@ -338,13 +338,45 @@ document.addEventListener('DOMContentLoaded', async function() {
             animateNumber('pendingReports', pending.length);
             animateNumber('resolvedReports', resolved.length);
 
-            const { count: userCount, error: userError } = await supabaseClient
+            // Calculate percentages
+            const thisMonthReports = allReports.filter(r => 
+                new Date(r.created_at) >= firstDayOfMonth
+            );
+            const lastMonthReports = allReports.filter(r => 
+                new Date(r.created_at) >= firstDayOfLastMonth && 
+                new Date(r.created_at) < firstDayOfMonth
+            );
+            
+            const totalPercent = calculatePercentChange(thisMonthReports.length, lastMonthReports.length);
+            updateTrendDisplay('totalTrend', 'totalPercent', totalPercent);
+
+            const resolvedThisMonth = thisMonthReports.filter(r => 
+                r.status === 'resolved' || r.status === 'Resolved'
+            ).length;
+            const resolvedLastMonth = lastMonthReports.filter(r => 
+                r.status === 'resolved' || r.status === 'Resolved'
+            ).length;
+            const resolvedPercent = calculatePercentChange(resolvedThisMonth, resolvedLastMonth);
+            updateTrendDisplay('resolvedTrend', 'resolvedPercent', resolvedPercent);
+
+            // Get user data
+            const { data: users, error: userError } = await supabaseClient
                 .from('profiles')
-                .select('*', { count: 'exact', head: true })
+                .select('created_at')
                 .eq('user_type', 'resident');
 
-            if (!userError) {
-                animateNumber('totalUsers', userCount || 0);
+            if (!userError && users) {
+                animateNumber('totalUsers', users.length);
+                
+                const thisMonthUsers = users.filter(u => 
+                    new Date(u.created_at) >= firstDayOfMonth
+                ).length;
+                const lastMonthUsers = users.filter(u => 
+                    new Date(u.created_at) >= firstDayOfLastMonth && 
+                    new Date(u.created_at) < firstDayOfMonth
+                ).length;
+                const userPercent = calculatePercentChange(thisMonthUsers, lastMonthUsers);
+                updateTrendDisplay('userTrend', 'userPercent', userPercent);
             }
 
             renderRecentReports(allReports.slice(0, 5));
@@ -363,9 +395,30 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    function calculatePercentChange(current, previous) {
+        if (previous === 0) {
+            return current > 0 ? 100 : 0;
+        }
+        return Math.round(((current - previous) / previous) * 100);
+    }
+
+    function updateTrendDisplay(trendId, percentId, percent) {
+        const trendElement = document.getElementById(trendId);
+        const percentElement = document.getElementById(percentId);
+        
+        if (!trendElement || !percentElement) return;
+        
+        const isPositive = percent >= 0;
+        const arrow = isPositive ? 'fa-arrow-up' : 'fa-arrow-down';
+        const className = isPositive ? 'positive' : 'negative';
+        const displayPercent = Math.abs(percent);
+        
+        trendElement.className = `stat-trend ${className}`;
+        trendElement.innerHTML = `<i class="fas ${arrow}"></i> <span id="${percentId}">${displayPercent}</span>% this month`;
+    }
+
     function renderRecentReports(reports) {
         const container = document.getElementById('recentReportsList');
-
         if (!container) return;
 
         if (!reports || reports.length === 0) {
