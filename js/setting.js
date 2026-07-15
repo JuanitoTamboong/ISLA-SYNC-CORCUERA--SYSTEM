@@ -79,10 +79,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Back button
-    document.querySelector('.header i').addEventListener('click', () => {
-        window.location.href = '../pages/resident-homepage.html'
-    })
+    // Back button (only if present on this page)
+    const backBtn = document.querySelector('.header i');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            window.location.href = '../pages/resident-homepage.html'
+        })
+    }
+
     
     // Logout button
     document.querySelector('.logout').addEventListener('click', function(e) {
@@ -128,8 +132,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Bottom nav home
-    document.querySelector('.nav-item i.fa-home').parentElement.onclick = () => {
-        window.location.href = '../pages/resident-homepage.html'
+    // Bottom nav home (only if present; injected component may change timing)
+    const homeIcon = document.querySelector('.nav-item i.fa-home');
+    if (homeIcon && homeIcon.parentElement) {
+        homeIcon.parentElement.onclick = () => {
+            window.location.href = '../pages/resident-homepage.html'
+        }
     }
 })

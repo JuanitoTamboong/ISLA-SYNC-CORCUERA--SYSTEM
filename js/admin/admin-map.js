@@ -771,13 +771,31 @@ function refreshData() {
 // NAVIGATION
 // ============================================
 
+window.navigateTo = function(page) {
+    const pages = {
+        'home': 'admin-homepage.html',
+        'map': 'admin-map.html',
+        'news': 'admin-news.html',
+        'settings': 'admin-settings.html'
+    };
+    if (pages[page]) {
+        window.location.href = pages[page];
+    }
+};
+
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
 };
 
+// (Optional) admin-specific helpers for other components/pages
+window.goToNews = function() { window.location.href = 'admin-news.html'; };
+window.goToSettings = function() { window.location.href = 'admin-settings.html'; };
+window.goToHome = function() { window.location.href = 'admin-homepage.html'; };
+
 // ============================================
 // EXPOSE FUNCTIONS TO GLOBAL
 // ============================================
+
 
 window.openReportModal = openReportModal;
 window.closeModal = closeModal;

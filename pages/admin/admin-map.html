@@ -87,6 +87,7 @@
 
 <!-- REPORT DETAIL MODAL -->
 <div id="reportModal" class="report-modal">
+
     <div class="modal-overlay" onclick="closeModal()"></div>
     <div class="modal-content">
         <div class="modal-header">
@@ -198,8 +199,12 @@
     </div>
 </div>
 
+<!-- Shared BOTTOM NAV -->
+<div data-component="admin-bottom-nav" data-active="map"></div>
+
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../../js/components/loadComponents.js"></script>
 <script src="../../js/admin/admin-map.js"></script>
 </body>
 </html>

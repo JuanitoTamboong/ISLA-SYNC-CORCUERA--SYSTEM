@@ -110,30 +110,11 @@
 
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-    <div class="nav-item" onclick="window.location.href='resident-homepage.html'">
-        <i class="fa fa-home"></i>
-        <span>Home</span>
-    </div>
-    <div class="nav-item" onclick="navigateTo('map')">
-        <i class="fa fa-map"></i>
-        <span>Map</span>
-    </div>
-    <div class="nav-item center-logo">
-        <img src="../assets/isla-logo.png" alt="">
-    </div>
-    <div class="nav-item" onclick="navigateTo('notifications')">
-        <i class="fa fa-newspaper"></i>
-        <span>News</span>
-    </div>
+<!-- Shared BOTTOM NAV -->
+<div data-component="bottom-nav" data-active="settings"></div>
 
-    <div class="nav-item active">
-        <i class="fa fa-gear"></i>
-        <span>Settings</span>
-    </div>
-</div>
 
+<script src="../js/components/loadComponents.js"></script>
 <script src="../js/setting.js"></script>
 </body>
 </html>

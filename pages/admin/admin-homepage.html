@@ -159,29 +159,10 @@
 
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-    <div class="nav-item active" onclick="navigateTo('home')">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
-    </div>
-    <div class="nav-item" onclick="navigateTo('map')">
-        <i class="fas fa-map"></i>
-        <span>Map</span>
-    </div>
-    <div class="nav-item center-logo">
-        <img src="../../assets/isla-logo.png" alt="Isla-Sync Logo">
-    </div>
-    <div class="nav-item" onclick="navigateTo('news')">
-        <i class="fas fa-newspaper"></i>
-        <span>News</span>
-    </div>
-    <div class="nav-item" onclick="navigateTo('settings')">
-        <i class="fas fa-cog"></i>
-        <span>Settings</span>
-    </div>
-</div>
+<!-- Shared BOTTOM NAV -->
+<div data-component="admin-bottom-nav" data-active="home"></div>
 
+<script src="../../js/components/loadComponents.js"></script>
 <script src="../../js/admin/admin-homepage.js"></script>
 </body>
 </html>

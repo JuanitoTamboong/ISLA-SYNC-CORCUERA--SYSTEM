@@ -1,0 +1,38 @@
+<!-- Shared Bottom Navigation Component -->
+<!--
+Required placeholder markup on pages:
+  <div data-component="bottom-nav" data-active="map"></div>
+Active values supported:
+  home, map, notifications, settings
+
+This component expects a global navigateTo(pageKey) function when used.
+It uses data-key attributes so JS can toggle the active class.
+-->
+
+<div class="bottom-nav" data-bottom-nav>
+  <div class="nav-item" data-key="home" onclick="window.navigateTo?.('home') || window.goToHome?.()">
+    <i class="fa fa-home" aria-hidden="true"></i>
+    <span>Home</span>
+  </div>
+
+  <div class="nav-item" data-key="map" onclick="window.navigateTo?.('map') || window.goToMap?.()">
+    <i class="fa fa-map" aria-hidden="true"></i>
+    <span>Map</span>
+  </div>
+
+  <div class="nav-item center-logo">
+    <img src="__LOGO_SRC__" alt="" />
+  </div>
+
+  <div class="nav-item" data-key="notifications" onclick="window.navigateTo?.('notifications') || window.goToNews?.()">
+    <i class="fa fa-newspaper" aria-hidden="true"></i>
+    <span>News</span>
+  </div>
+
+  <div class="nav-item" data-key="settings" onclick="window.navigateTo?.('settings') || window.goToSettings?.()">
+    <i class="fa fa-gear" aria-hidden="true"></i>
+    <span>Settings</span>
+  </div>
+</div>
+
+
