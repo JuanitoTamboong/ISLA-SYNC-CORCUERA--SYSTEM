@@ -470,6 +470,21 @@ window.navigateTo = function(page) {
     }
 };
 
+// Bottom-nav helpers (used directly by inline onclick in admin pages)
+window.goToHome = function() {
+    window.navigateTo('home');
+};
+window.goToMap = function() {
+    window.navigateTo('map');
+};
+window.goToNews = function() {
+    window.navigateTo('news');
+};
+window.goToSettings = function() {
+    window.navigateTo('settings');
+};
+
+
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
 };

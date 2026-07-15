@@ -78,16 +78,39 @@
 
 </div>
 
-<!-- Shared BOTTOM NAV -->
-<div data-component="bottom-nav" data-active="map"></div>
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="navigateTo('home')">
+        <i class="fa fa-home" aria-hidden="true"></i>
+        <span>Home</span>
+    </div>
 
+    <div class="nav-item active" onclick="navigateTo('map')">
+        <i class="fa fa-map" aria-hidden="true"></i>
+        <span>Map</span>
+    </div>
+
+    <div class="nav-item center-logo">
+        <img src="../assets/isla-logo.png" alt="Isla Sync Logo">
+    </div>
+
+    <div class="nav-item" onclick="navigateTo('notifications')">
+        <i class="fa fa-newspaper" aria-hidden="true"></i>
+        <span>News</span>
+    </div>
+
+    <div class="nav-item" onclick="navigateTo('settings')">
+        <i class="fa fa-gear" aria-hidden="true"></i>
+        <span>Settings</span>
+    </div>
+</div>
 
 <!-- Leaflet & Plugins JS (critical order) -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-geosearch@3.11.1/dist/geosearch.umd.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 <script src="../js/weather.js"></script>
-<script src="../js/components/loadComponents.js"></script>
+
 <script src="../js/map.js"></script>
 </body>
 </html>

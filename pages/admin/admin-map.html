@@ -199,12 +199,34 @@
     </div>
 </div>
 
-<!-- Shared BOTTOM NAV -->
-<div data-component="admin-bottom-nav" data-active="map"></div>
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="goToHome()" role="button" aria-label="Home">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+
+    <div class="nav-item active" onclick="goToMap()">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="../../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item" onclick="goToNews()">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="goToSettings()">
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="../../js/components/loadComponents.js"></script>
 <script src="../../js/admin/admin-map.js"></script>
+
+
 </body>
 </html>

@@ -15,6 +15,24 @@ window.goToNews = function() {
     window.location.href = 'admin-news.html';
 };
 
+function goToHome() {
+    window.location.href = 'admin-homepage.html';
+}
+
+function goToMap() {
+    window.location.href = 'admin-map.html';
+}
+
+function goToNews() {
+    window.location.href = 'admin-news.html';
+}
+
+function goToSettings() {
+    window.location.href = 'admin-settings.html';
+}
+
+
+
 window.goToTouristSpots = function() {
     window.location.href = 'admin-tourist-spots.html';
 };

@@ -134,11 +134,34 @@
     </div>
 </div>
 
-<!-- Shared BOTTOM NAV -->
-<div data-component="admin-bottom-nav" data-active="notifications"></div>
+<!-- BOTTOM NAV -->
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="window.goToHome()">
 
-<script src="../../js/components/loadComponents.js"></script>
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+<div class="nav-item" onclick="window.goToMap()">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+
+    <div class="nav-item center-logo">
+        <img src="../../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item active" onclick="window.goToNews()">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="window.goToSettings()">
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
+
 <script src="../../js/admin/admin-news.js"></script>
 </body>
 </html>
+
 
