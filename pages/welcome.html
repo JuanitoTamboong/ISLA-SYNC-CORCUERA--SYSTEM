@@ -10,20 +10,29 @@
 
     <!-- Font Awesome (Modern Icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <div class="container">
 
     <!-- Top Image -->
-    <div class="hero"></div>
+    <div class="hero">
+        <!-- Overlay on image -->
+        <div class="hero-overlay">
+            <!-- Back Button -->
+            <a href="../index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        </div>
+    </div>
 
     <!-- Content Card -->
     <div class="card">
 
-        <!-- Logo -->
-        <div class="logo">
-            <img src="../assets/isla-logo.png" alt="Logo">
+        <!-- Logo - No background circle, just the logo -->
+        <div class="logo-wrapper">
+            <img src="../assets/isla-logo.png" alt="Logo" class="logo-img">
         </div>
 
         <h1>Isla-Sync Corcuera</h1>
@@ -36,10 +45,11 @@
             <div class="icon blue">
                 <i class="fa-solid fa-house"></i>
             </div>
-            <div>
+            <div class="option-content">
                 <h3>Resident User</h3>
                 <p>Access local services and news</p>
             </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
         </div>
 
         <!-- Admin -->
@@ -47,10 +57,11 @@
             <div class="icon gray">
                 <i class="fa-solid fa-user-shield"></i>
             </div>
-            <div>
+            <div class="option-content">
                 <h3>Admin User</h3>
                 <p>Manage island operations</p>
             </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
         </div>
 
     </div>
