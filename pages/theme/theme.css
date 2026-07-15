@@ -1,0 +1,207 @@
+@import "../../css/shared.css";
+
+/* Design Tokens */
+:root {
+  --font-family: 'Poppins', sans-serif;
+  --container-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #f1f5f9;
+  --text-color: #1e293b;
+  --muted-text: #64748b;
+  --section-title: #94a3b8;
+  --hover-bg: #f1f5f9;
+  --accent-color: #3b82f6;
+  --accent-light: rgba(59, 130, 246, 0.08);
+  --radio-border: #cbd5e1;
+}
+
+:root[data-theme="dark"] {
+  --container-bg: #090d16;
+  --card-bg: #111b2d;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-color: #f1f5f9;
+  --muted-text: #94a3b8;
+  --section-title: #64748b;
+  --hover-bg: rgba(255, 255, 255, 0.04);
+  --radio-border: #475569;
+}
+
+/* 1. FORCE background color on HTML and Body to override parent containers */
+html, body {
+  background-color: var(--container-bg) !important;
+  color: var(--text-color) !important;
+  font-family: var(--font-family);
+  margin: 0;
+  padding: 0;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* 2. FORCE background color on the settings container */
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: var(--container-bg) !important; /* Forces the background color */
+}
+
+.card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 16px;
+  color: var(--text-color) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+/* Header Elements & Fonts */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+/* Force header and icon fonts to use the correct theme text color */
+.header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+  color: var(--text-color) !important; 
+}
+
+.header i {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-color) !important; /* Fixes the invisible back arrow */
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.header i:hover {
+  background: var(--hover-bg);
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--section-title) !important;
+  margin: 0 4px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Theme Options */
+.theme-card {
+  padding: 4px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 4px;
+}
+
+.theme-option:hover {
+  background: var(--hover-bg);
+}
+
+.theme-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.theme-meta h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color) !important;
+}
+
+.theme-meta p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted-text) !important;
+  line-height: 1.4;
+}
+
+/* Modern Gradient Preview Dots */
+.theme-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+}
+
+.light-dot {
+  background: linear-gradient(135deg, #f8fafc 50%, #cbd5e1 50%);
+}
+
+.dark-dot {
+  background: linear-gradient(135deg, #0f172a 50%, #334155 50%);
+}
+
+/* Custom Checkbox/Radio */
+.custom-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--radio-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.custom-radio i {
+  font-size: 10px;
+  color: #ffffff !important;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Active Highlight States */
+.theme-option.selected {
+  background: var(--accent-light);
+}
+
+.theme-option.selected .custom-radio {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.theme-option.selected .custom-radio i {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0 12px;
+}
+
+.hint {
+  margin: 16px 6px 0;
+  font-size: 12px;
+  color: var(--muted-text) !important;
+  line-height: 1.5;
+  text-align: left;
+}
