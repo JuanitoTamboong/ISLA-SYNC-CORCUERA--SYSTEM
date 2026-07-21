@@ -27,14 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             const type = newPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             newPasswordInput.setAttribute('type', type);
-            // Toggle between eye and eye-slash
-            if (type === 'text') {
-                this.classList.remove('fa-eye');
-                this.classList.add('fa-eye-slash');
-            } else {
-                this.classList.remove('fa-eye-slash');
-                this.classList.add('fa-eye');
-            }
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
         });
     }
     
@@ -43,14 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             confirmPasswordInput.setAttribute('type', type);
-            // Toggle between eye and eye-slash
-            if (type === 'text') {
-                this.classList.remove('fa-eye');
-                this.classList.add('fa-eye-slash');
-            } else {
-                this.classList.remove('fa-eye-slash');
-                this.classList.add('fa-eye');
-            }
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
         });
     }
     
@@ -241,10 +229,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Session exists, user can reset password
-            console.log('Valid admin reset session detected');
             
         } catch (error) {
-            console.error('Session check error:', error);
+            // Allow user to try anyway
         }
     }
     
