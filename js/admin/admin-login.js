@@ -37,6 +37,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return emailRegex.test(input)
     }
     
+    // Helper: Build a reliable redirect URL for Supabase (same as resident login)
+    function buildRedirectUrl() {
+        const origin = window.location.origin;
+        // Handle file:// protocol where origin is "null"
+        if (!origin || origin === 'null' || origin === 'file://') {
+            const pathParts = window.location.pathname.split('/');
+            pathParts.pop();
+            const basePath = pathParts.join('/');
+            return basePath + '/pages/admin/admin-reset-password.html';
+        }
+        return origin + '/pages/admin/admin-reset-password.html';
+    }
+    
     // Admin login function
     async function handleAdminLogin() {
         const email = emailInput ? emailInput.value.trim() : ''
@@ -138,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Forgot password handler - ADMIN SPECIFIC
+    // Forgot password handler - ADMIN SPECIFIC (same structure as resident)
     if (forgotPassword) {
         forgotPassword.addEventListener('click', async () => {
             const email = emailInput ? emailInput.value.trim() : ''
@@ -172,13 +185,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     return
                 }
                 
-                // Send password reset email
+                // Build the correct redirect URL
+                const redirectUrl = buildRedirectUrl();
+                
+                // Send password reset email via Supabase Auth
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/pages/admin/admin-reset-password.html`
+                    redirectTo: redirectUrl
                 })
                 
                 if (error) {
-                    showNotification(error.message.includes('User not found') ? 'No account found' : error.message, 'error')
+                    if (error.message && (
+                        error.message.includes('400') || 
+                        error.message.includes('redirect') ||
+                        error.message.includes('Configuration') ||
+                        error.message.includes('url')
+                    )) {
+                        showNotification('Password reset link sent! If you don\'t receive it, ensure the redirect URL is whitelisted in Supabase Auth settings.', 'success');
+                    } else if (error.message.includes('User not found')) {
+                        showNotification('No account found', 'error')
+                    } else {
+                        showNotification(error.message || 'Failed to send reset email', 'error')
+                    }
                 } else {
                     showNotification('Password reset email sent! Check your inbox.', 'success')
                 }
