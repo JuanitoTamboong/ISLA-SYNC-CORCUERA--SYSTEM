@@ -31,12 +31,16 @@
 html, body {
     background: var(--bg);
     color: var(--text);
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
 }
 
 body {
     display: flex;
     justify-content: center;
     padding: 0;
+    overflow-y: auto;
 }
 
 .container {
@@ -46,7 +50,7 @@ body {
     background: var(--bg);
     padding: 18px 16px 40px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .header {
