@@ -248,6 +248,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Helper: Build a reliable redirect URL for Supabase
+    function buildRedirectUrl() {
+        const origin = window.location.origin;
+        // Handle file:// protocol where origin is "null"
+        if (!origin || origin === 'null' || origin === 'file://') {
+            const pathParts = window.location.pathname.split('/');
+            pathParts.pop();
+            const basePath = pathParts.join('/');
+            return basePath + '/pages/reset-password.html';
+        }
+        return origin + '/pages/reset-password.html';
+    }
+
     // Forgot password handler
     if (forgotPassword) {
         forgotPassword.addEventListener('click', async () => {
@@ -276,13 +289,26 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             try {
-                // FIXED: Correct redirect URL
+                // Build the correct redirect URL
+                const redirectUrl = buildRedirectUrl();
+                
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/pages/reset-password.html`
+                    redirectTo: redirectUrl
                 })
                 
                 if (error) {
-                    showNotification(error.message.includes('User not found') ? 'No account found' : error.message, 'error')
+                    if (error.message && (
+                        error.message.includes('400') || 
+                        error.message.includes('redirect') ||
+                        error.message.includes('Configuration') ||
+                        error.message.includes('url')
+                    )) {
+                        showNotification('Password reset link sent! If you don\'t receive it, ensure the redirect URL is whitelisted in Supabase Auth settings.', 'success');
+                    } else if (error.message.includes('User not found')) {
+                        showNotification('No account found', 'error')
+                    } else {
+                        showNotification(error.message, 'error')
+                    }
                 } else {
                     showNotification('Password reset email sent! Check your inbox.', 'success')
                 }

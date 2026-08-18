@@ -19,6 +19,7 @@
     color: #374151;
     transition: all 0.2s;
 }
+
 .page-header h1 {
     font-size: 20px;
     font-weight: 700;
@@ -39,14 +40,14 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     transition: all 0.2s;
 }
 
 .submit-new-btn:hover {
     background: #1d4ed8;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .submit-new-btn i {
@@ -103,7 +104,7 @@
 .category-section {
     background: white;
     border-radius: 20px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
     overflow: hidden;
     border: 1px solid #f1f5f9;
 }
@@ -139,6 +140,20 @@
     color: #6b7280;
 }
 
+/* CATEGORY COUNT BADGE */
+.category-count {
+    margin-left: auto;
+    background: #2563eb;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    min-width: 24px;
+    text-align: center;
+}
+
 .reports-list {
     padding: 12px 16px;
 }
@@ -158,16 +173,17 @@
 
 .report-item:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .report-info {
     flex: 1;
 }
+
 .report-action {
     color: #6b7280;
-
 }
+
 .report-action:hover {
     color: #2563eb;
 }
@@ -209,11 +225,23 @@
     text-transform: uppercase;
 }
 
-.status-pending { background: #fef3c7; color: #92400e; }
-.status-resolved { background: #d1fae5; color: #065f46; }
-.status-in_review { background: #dbeafe; color: #1e40af; }
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
 
-.loading-state, .empty-state {
+.status-resolved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-in_review {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.loading-state,
+.empty-state {
     text-align: center;
     padding: 50px 20px;
     color: #6b7280;
@@ -241,17 +269,17 @@
     .page-header {
         padding: 0 5px;
     }
-    
+
     .category-header {
         padding: 16px;
     }
-    
+
     .report-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
     }
-    
+
     .submit-new-btn {
         padding: 8px 14px;
         font-size: 12px;
@@ -260,8 +288,14 @@
 
 /* ANIMATIONS */
 @keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .category-section {
@@ -337,7 +371,7 @@
     overflow: hidden;
     position: relative;
     animation: modalPop 0.3s ease-out;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .modal-header {
@@ -513,9 +547,18 @@
     flex-shrink: 0;
 }
 
-.modal-circle.blue { background: #2f80ed; }
-.modal-circle.gray { background: #cbd5e1; color: #374151; }
-.modal-circle.green { background: #10b981; }
+.modal-circle.blue {
+    background: #2f80ed;
+}
+
+.modal-circle.gray {
+    background: #cbd5e1;
+    color: #374151;
+}
+
+.modal-circle.green {
+    background: #10b981;
+}
 
 .modal-timeline-content .modal-time {
     font-size: 11px;
@@ -536,7 +579,7 @@
 }
 
 /* ============================================
-   COMMENTS SECTION - Updated (No Send button)
+   COMMENTS SECTION
    ============================================ */
 .comments-container {
     margin-bottom: 16px;
@@ -685,7 +728,7 @@
     word-break: break-word;
 }
 
-/* Comment Input - No Send button */
+/* Comment Input */
 .comment-input-wrapper {
     display: flex;
     gap: 10px;
@@ -720,7 +763,7 @@
     color: #94a3b8;
 }
 
-/* BOTTOM BUTTON - Now the submit button */
+/* BOTTOM BUTTON */
 .modal-bottom {
     margin-top: 10px;
     padding-top: 10px;
@@ -749,12 +792,6 @@
     opacity: 0.95;
 }
 
-.modal-bottom button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
 @keyframes modalPop {
     0% {
         opacity: 0;
@@ -772,12 +809,12 @@
         width: 95vw;
         border-radius: 20px;
     }
-    
+
     .modal-body {
         padding: 16px 20px 24px;
         max-height: 70vh;
     }
-    
+
     .comment-input-wrapper {
         flex-direction: column;
         align-items: stretch;
@@ -800,4 +837,296 @@
 
 .modal-body::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+
+/* ============================================
+   DARK THEME - COMPLETE FIXES
+   ============================================ */
+
+/* Base dark theme variables */
+html[data-theme="dark"] {
+    --text-color: #e2e8f0;
+    --muted-text: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --card-bg: #1e293b;
+    --container-bg: #0f172a;
+}
+
+/* Body and container background */
+html[data-theme="dark"] body,
+html[data-theme="dark"] .container {
+    background: var(--container-bg) !important;
+}
+
+/* ========== ALL TEXT COLORS ========== */
+html[data-theme="dark"] .page-header h1,
+html[data-theme="dark"] .category-title,
+html[data-theme="dark"] .report-title,
+html[data-theme="dark"] .modal-header h2,
+html[data-theme="dark"] .modal-status-box h2,
+html[data-theme="dark"] .modal-info h4,
+html[data-theme="dark"] .modal-timeline-content h4,
+html[data-theme="dark"] .comment-author,
+html[data-theme="dark"] .comment-text,
+html[data-theme="dark"] .filter-tab,
+html[data-theme="dark"] .category-sub,
+html[data-theme="dark"] .report-desc,
+html[data-theme="dark"] .report-date,
+html[data-theme="dark"] .report-location,
+html[data-theme="dark"] .modal-status-box p,
+html[data-theme="dark"] .modal-label,
+html[data-theme="dark"] .modal-section-title,
+html[data-theme="dark"] .modal-desc,
+html[data-theme="dark"] .modal-timeline-content p,
+html[data-theme="dark"] .comment-time,
+html[data-theme="dark"] .no-comments,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .loading-state,
+html[data-theme="dark"] .modal-badge,
+html[data-theme="dark"] .report-action {
+    color: var(--text-color) !important;
+}
+
+/* ========== CATEGORY COUNT BADGE - FIXED ========== */
+html[data-theme="dark"] .category-count {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Override inline styles for count badge */
+html[data-theme="dark"] .category-header span[style*="margin-left:auto"],
+html[data-theme="dark"] .category-header span[style*="background"] {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+    border-radius: 20px !important;
+    padding: 4px 14px !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* ========== MUTED TEXT ========== */
+html[data-theme="dark"] .filter-tab {
+    color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .filter-tab:hover {
+    color: #93c5fd !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+html[data-theme="dark"] .filter-tab.active {
+    color: #dbeafe !important;
+    background: rgba(96, 165, 250, 0.2) !important;
+}
+
+/* ========== BACK BUTTON ========== */
+html[data-theme="dark"] .back-btn {
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .back-btn:hover {
+    background: transparent !important;
+    color: #93c5fd !important;
+}
+
+/* ========== CARDS & CONTAINERS ========== */
+html[data-theme="dark"] .category-section,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-image-box,
+html[data-theme="dark"] .loader-box {
+    background: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* ========== REPORT ITEMS ========== */
+html[data-theme="dark"] .report-item {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .report-item:hover {
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ========== REPORT ACTION ICONS ========== */
+html[data-theme="dark"] .report-action {
+    color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .report-action:hover {
+    color: #93c5fd !important;
+}
+
+/* ========== CATEGORY HEADER ========== */
+html[data-theme="dark"] .category-header {
+    border-bottom-color: var(--border-color) !important;
+}
+
+/* ========== FILTER TABS BORDER ========== */
+html[data-theme="dark"] .filter-tabs {
+    border-bottom-color: var(--border-color) !important;
+}
+
+/* ========== MODAL ELEMENTS ========== */
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-info-grid,
+html[data-theme="dark"] .modal-header,
+html[data-theme="dark"] .modal-image-box,
+html[data-theme="dark"] .comment-input-wrapper,
+html[data-theme="dark"] .comment-item,
+html[data-theme="dark"] .comment-input-wrapper textarea,
+html[data-theme="dark"] .modal-bottom {
+    border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .modal-status-box {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html[data-theme="dark"] .modal-info {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .modal-info i {
+    background: rgba(96, 165, 250, 0.12) !important;
+    color: #93c5fd !important;
+}
+
+html[data-theme="dark"] .modal-close {
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .modal-close:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #fca5a5 !important;
+}
+
+/* ========== COMMENTS SECTION ========== */
+html[data-theme="dark"] .comment-input-wrapper textarea {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .comment-input-wrapper textarea:focus {
+    border-color: #2563eb !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+html[data-theme="dark"] .comment-input-wrapper textarea::placeholder {
+    color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .comment-badge.admin {
+    background: rgba(245, 158, 11, 0.18) !important;
+    color: #fbbf24 !important;
+}
+
+html[data-theme="dark"] .comment-badge.resident {
+    background: rgba(96, 165, 250, 0.18) !important;
+    color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .comment-delete-btn {
+    color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .comment-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #fca5a5 !important;
+}
+
+html[data-theme="dark"] .comments-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+html[data-theme="dark"] .comments-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ========== EMPTY STATE ========== */
+html[data-theme="dark"] .empty-state i,
+html[data-theme="dark"] .no-comments i {
+    color: var(--muted-text) !important;
+}
+
+/* ========== LOADING OVERLAY ========== */
+html[data-theme="dark"] #loadingState {
+    background: rgba(2, 6, 23, 0.72) !important;
+}
+
+html[data-theme="dark"] .loader-box {
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* ========== MODAL OVERLAY ========== */
+html[data-theme="dark"] .modal-overlay {
+    background: rgba(2, 6, 23, 0.7) !important;
+}
+
+/* ========== STATUS BADGES ========== */
+html[data-theme="dark"] .modal-badge {
+    background: rgba(251, 191, 36, 0.18) !important;
+    color: #fbbf24 !important;
+}
+
+html[data-theme="dark"] .status-pending {
+    color: #fef3c7 !important;
+    background: rgba(251, 191, 36, 0.15) !important;
+}
+
+html[data-theme="dark"] .status-resolved {
+    color: #d1fae5 !important;
+    background: rgba(16, 185, 129, 0.15) !important;
+}
+
+html[data-theme="dark"] .status-in_review {
+    color: #dbeafe !important;
+    background: rgba(59, 130, 246, 0.15) !important;
+}
+
+/* ========== TIMELINE CIRCLES ========== */
+html[data-theme="dark"] .modal-circle.blue {
+    background: #2563eb !important;
+}
+
+html[data-theme="dark"] .modal-circle.gray {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .modal-circle.green {
+    background: #059669 !important;
+}
+
+/* ========== BUTTONS ========== */
+html[data-theme="dark"] .submit-new-btn,
+html[data-theme="dark"] .submit-first,
+html[data-theme="dark"] .modal-bottom button {
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .submit-new-btn {
+    background: #2563eb !important;
+    color: white !important;
+}
+
+html[data-theme="dark"] .submit-new-btn:hover {
+    background: #1d4ed8 !important;
+}
+
+/* ========== SCROLLBARS ========== */
+html[data-theme="dark"] .modal-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+html[data-theme="dark"] .modal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
 }

@@ -30,13 +30,22 @@
 }
 
 .header i:hover {
-    background: #f3f4f6;
+    background: transparent;
 }
 
 .header h2 {
     font-size: 18px;
     font-weight: 600;
     color: #1f2937;
+}
+
+html[data-theme="dark"] .header i {
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .header i:hover {
+    background: transparent !important;
+    color: #ffffff !important;
 }
 
 .header p {

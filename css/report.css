@@ -378,9 +378,149 @@ textarea:focus {
     background: linear-gradient(135deg, #1c64d1, #1a56c0);
     transform: scale(0.98);
 }
-.submit:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+html[data-theme="dark"] .header i {
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .header i:hover {
+    background: transparent !important;
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .section-title span,
+html[data-theme="dark"] .section-title p,
+html[data-theme="dark"] .label,
+html[data-theme="dark"] .required-star {
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .card {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .card i,
+html[data-theme="dark"] .card h4,
+html[data-theme="dark"] .card p {
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .card.active {
+    background: rgba(96, 165, 250, 0.12) !important;
+    border-color: #60a5fa !important;
+}
+
+html[data-theme="dark"] .card.active i,
+html[data-theme="dark"] .card.active h4 {
+    color: #60a5fa !important;
+}
+
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .upload-box,
+html[data-theme="dark"] .location-card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .input-group input,
+html[data-theme="dark"] .cancel-btn,
+html[data-theme="dark"] .success-modal-phone {
+    background: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .input-group input {
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] textarea::placeholder,
+html[data-theme="dark"] .input-group input::placeholder {
+    color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .upload-box {
+    color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .upload-box:hover {
+    background: rgba(96, 165, 250, 0.08) !important;
+    border-color: #60a5fa !important;
+}
+
+html[data-theme="dark"] .location-header,
+html[data-theme="dark"] .location-header i,
+html[data-theme="dark"] .address-row,
+html[data-theme="dark"] .coords-row,
+html[data-theme="dark"] #locationAddress,
+html[data-theme="dark"] #locationCoords,
+html[data-theme="dark"] .modal-header h3,
+html[data-theme="dark"] .modal-hint,
+html[data-theme="dark"] .input-group label,
+html[data-theme="dark"] .close-modal,
+html[data-theme="dark"] .modal-label,
+html[data-theme="dark"] .modal-desc {
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .location-card,
+html[data-theme="dark"] .modal-header,
+html[data-theme="dark"] .input-group input,
+html[data-theme="dark"] .cancel-btn {
+    border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .refresh-btn {
+    background: rgba(96, 165, 250, 0.12) !important;
+    color: #dbeafe !important;
+}
+
+html[data-theme="dark"] .change-btn {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .change-btn:hover {
+    background: rgba(255, 255, 255, 0.07) !important;
+}
+
+html[data-theme="dark"] .close-modal,
+html[data-theme="dark"] .modal-hint,
+html[data-theme="dark"] .input-group label,
+html[data-theme="dark"] .modal-buttons .cancel-btn,
+html[data-theme="dark"] .success-status,
+html[data-theme="dark"] .success-title,
+html[data-theme="dark"] .success-description,
+html[data-theme="dark"] .success-reference-label,
+html[data-theme="dark"] .success-reference-number {
+    color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .success-modal {
+    background: rgba(2, 6, 23, 0.75) !important;
+}
+
+html[data-theme="dark"] .success-content {
+    background: var(--card-bg) !important;
+}
+
+html[data-theme="dark"] .success-modal-phone {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-theme="dark"] .success-check-circle {
+    background: rgba(34, 197, 94, 0.12) !important;
+}
+
+html[data-theme="dark"] .success-reference-box {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .btn.btn-secondary {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
 }
 
 /* UTILITIES */

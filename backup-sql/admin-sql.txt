@@ -1,23 +1,81 @@
-INSERT INTO public.profiles (
-    id,
-    full_name,
-    email,
-    user_type,
-    is_active,
-    created_at,
-    updated_at
-) VALUES (
-    '15ab0b06-a1e0-4228-8265-c8d2ba0edf23',
-    'System Administrator',
-    'islasyncorqueraadmin@gmail.com',
-    'admin',
-    true,
-    NOW(),
-    NOW()
-)
-ON CONFLICT (id) DO UPDATE 
-SET 
-    full_name = EXCLUDED.full_name,
-    user_type = 'admin',
-    is_active = true,
-    updated_at = NOW();
+-- ============================================
+-- SIMPLE ADMIN SETUP - ONE CLICK SOLUTION
+-- ============================================
+
+DO $$
+DECLARE
+    admin_id UUID := '6e7f3b8e-8f02-4824-b419-7e36a1c165ed'; -- Your existing profile ID
+    admin_email TEXT := 'islasyncorcueraadmin@gmail.com';
+BEGIN
+    -- 1. Check if user exists in auth.users
+    IF EXISTS (SELECT 1 FROM auth.users WHERE email = admin_email) THEN
+        RAISE NOTICE 'Admin already exists in auth.users';
+    ELSE
+        -- 2. Create user in auth.users
+        INSERT INTO auth.users (
+            id,
+            instance_id,
+            email,
+            encrypted_password,
+            email_confirmed_at,
+            aud,
+            role,
+            raw_app_meta_data,
+            raw_user_meta_data,
+            created_at,
+            updated_at
+        ) VALUES (
+            admin_id,
+            '00000000-0000-0000-0000-000000000000',
+            admin_email,
+            '', -- Empty - user will set password via reset
+            NOW(),
+            'authenticated',
+            'authenticated',
+            '{"provider":"email","providers":["email"]}',
+            jsonb_build_object('full_name', 'System Admin', 'user_type', 'admin'),
+            NOW(),
+            NOW()
+        );
+        RAISE NOTICE '✅ Admin created in auth.users';
+    END IF;
+
+    -- 3. Ensure profile exists and is up to date
+    INSERT INTO public.profiles (
+        id,
+        full_name,
+        email,
+        user_type,
+        is_active,
+        created_at,
+        updated_at
+    ) VALUES (
+        admin_id,
+        'System Admin',
+        admin_email,
+        'admin',
+        true,
+        NOW(),
+        NOW()
+    )
+    ON CONFLICT (id) DO UPDATE 
+    SET 
+        full_name = EXCLUDED.full_name,
+        user_type = 'admin',
+        is_active = true,
+        updated_at = NOW();
+    
+    RAISE NOTICE '✅ Admin profile updated';
+
+END $$;
+
+-- 4. Verify everything worked
+SELECT 
+    '✅ Admin exists in auth.users' as status
+FROM auth.users 
+WHERE email = 'islasyncorcueraadmin@gmail.com'
+UNION ALL
+SELECT 
+    '✅ Admin profile exists' as status
+FROM public.profiles 
+WHERE email = 'islasyncorcueraadmin@gmail.com';

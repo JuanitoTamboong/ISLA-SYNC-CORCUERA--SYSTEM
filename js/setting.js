@@ -1,5 +1,25 @@
 // Settings page
 document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initial Theme setup matching local preference
+    const STORAGE_KEY = 'islaTheme';
+    function loadAppliedTheme() {
+        const savedTheme = localStorage.getItem(STORAGE_KEY) || 'light';
+        const root = document.documentElement;
+        
+        if (savedTheme === 'dark') {
+            root.setAttribute('data-theme', 'dark');
+        } else {
+            root.removeAttribute('data-theme');
+        }
+
+        // Display current choice in the preferences row
+        const themeLabel = document.getElementById('current-theme-label');
+        if (themeLabel) {
+            themeLabel.innerHTML = `${savedTheme === 'dark' ? 'Dark' : 'Light'} Mode <i class="fa fa-chevron-right"></i>`;
+        }
+    }
+    loadAppliedTheme();
+
     // Check if Supabase is loaded
     if (typeof supabase === 'undefined') {
         showNotification('Error: Supabase SDK failed to load. Please refresh.', 'error');
@@ -79,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Back button (only if present on this page)
+    // Back button routing
     const backBtn = document.querySelector('.header i');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
@@ -87,13 +107,15 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
 
-    
-    // Logout button
-    document.querySelector('.logout').addEventListener('click', function(e) {
-        e.preventDefault()
-        e.stopPropagation()
-        window.location.href = 'resident-logout.html'
-    })
+    // Logout button routing
+    const logoutBtn = document.querySelector('.logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault()
+            e.stopPropagation()
+            window.location.href = 'resident-logout.html'
+        })
+    }
     
     // Notification function
     function showNotification(message, type = 'info') {
@@ -112,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => notification.remove(), 4000)
     }
     
-    // Navigation function
+    // Navigation routing utility
     window.navigateTo = function(page) {
         switch(page) {
             case 'home':
@@ -132,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Bottom nav home (only if present; injected component may change timing)
+    // Bottom nav fallback click handling
     const homeIcon = document.querySelector('.nav-item i.fa-home');
     if (homeIcon && homeIcon.parentElement) {
         homeIcon.parentElement.onclick = () => {
