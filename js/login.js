@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!googleBtn) return
         googleBtn.style.opacity = '1'
         googleBtn.style.pointerEvents = 'auto'
-        googleBtn.innerHTML = '<i class="fa-brands fa-google"></i>'
+        googleBtn.innerHTML = '<img class="google-icon" src="../assets/google-icon.png" alt=""><span>Continue with Google</span>'
         googleBtn.setAttribute('aria-busy', 'false')
     }
 
