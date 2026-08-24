@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = document.getElementById('passwordInput')
     const confirmPasswordInput = document.getElementById('confirmPasswordInput')
     const signupButton = document.getElementById('signupButton')
+    const googleSignupButton = document.getElementById('googleSignupButton')
 
     // Prevent duplicate submissions
     let isSubmitting = false
@@ -29,6 +30,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     console.log('All elements found');
+
+    function resetGoogleSignupButton() {
+        if (!googleSignupButton) return
+        googleSignupButton.style.opacity = '1'
+        googleSignupButton.style.pointerEvents = 'auto'
+        googleSignupButton.innerHTML = '<img class="google-icon" src="../assets/google-icon.png" alt=""><span>Continue with Google</span>'
+        googleSignupButton.setAttribute('aria-busy', 'false')
+    }
+
+    window.addEventListener('pageshow', resetGoogleSignupButton)
+
+    async function handleGoogleSignup() {
+        if (!googleSignupButton) return
+
+        googleSignupButton.style.opacity = '0.6'
+        googleSignupButton.style.pointerEvents = 'none'
+        googleSignupButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>Connecting to Google...</span>'
+        googleSignupButton.setAttribute('aria-busy', 'true')
+
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/pages/login.html'
+                }
+            })
+
+            if (error) {
+                showNotification('Google sign-up failed: ' + error.message, 'error')
+                resetGoogleSignupButton()
+                return
+            }
+
+            if (data && data.url) {
+                window.location.href = data.url
+            }
+        } catch (error) {
+            showNotification('Unable to connect to Google. Please try again.', 'error')
+            resetGoogleSignupButton()
+        }
+    }
+
+    if (googleSignupButton) {
+        googleSignupButton.addEventListener('click', handleGoogleSignup)
+        googleSignupButton.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                handleGoogleSignup()
+            }
+        })
+    }
 
     // Toggle password visibility
     document.querySelectorAll('.toggle').forEach(toggle => {

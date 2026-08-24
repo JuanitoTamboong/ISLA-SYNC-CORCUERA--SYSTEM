@@ -128,25 +128,39 @@ body {
 /* Social */
 .social {
     display: flex;
-    justify-content: center;
-    gap: 15px;
+    width: 100%;
 }
 
-.circle {
-    width: 40px;
-    height: 40px;
+.social-btn {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 18px;
     background: #e9edf3;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    border: 1px solid #d8dee8;
+    border-radius: 10px;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.social-btn:hover {
+    background: #dde4ee;
+    transform: translateY(-1px);
 }
 
 .google-icon {
     width: 20px;
     height: 20px;
     object-fit: contain;
+}
+
+.social-btn span {
+    color: #1e2a3a;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 /* Login text */
