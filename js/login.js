@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginButton = document.getElementById('loginButton')
     const forgotPassword = document.getElementById('forgotPassword')
     const togglePassword = document.getElementById('togglePassword')
+    const googleBtn = document.querySelector('.social-btn[data-provider="google"]')
+    const facebookBtn = document.querySelector('.social-btn[data-provider="facebook"]')
     
     // Toggle password visibility
     if (togglePassword && passwordInput) {
@@ -59,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create profile function with retry logic
     async function createUserProfile(userId, email, fullName) {
         try {
-            // First, check if profile already exists
             const { data: existingProfile, error: checkError } = await supabaseClient
                 .from('profiles')
                 .select('*')
@@ -70,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return existingProfile;
             }
             
-            // Create new profile with minimal required fields
             const profileData = {
                 id: userId,
                 full_name: fullName || email.split('@')[0] || 'User',
@@ -86,7 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .single()
             
             if (insertError) {
-                // If unique violation, try to fetch again
                 if (insertError.code === '23505') {
                     const { data: fetchedProfile, error: fetchError } = await supabaseClient
                         .from('profiles')
@@ -105,6 +104,213 @@ document.addEventListener('DOMContentLoaded', function() {
             return newProfile;
         } catch (error) {
             return null;
+        }
+    }
+    
+    // Process user after authentication
+    async function processUserAfterAuth(user) {
+        try {
+            let profile = null;
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            while (attempts < maxAttempts && !profile) {
+                const { data: profileData, error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .maybeSingle()
+                
+                if (profileData) {
+                    profile = profileData;
+                    break;
+                }
+                
+                if (!profileData) {
+                    profile = await createUserProfile(
+                        user.id,
+                        user.email,
+                        user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0]
+                    );
+                    
+                    if (profile) break;
+                }
+                
+                attempts++;
+                if (attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+            
+            if (!profile) {
+                profile = {
+                    id: user.id,
+                    full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0] || 'User',
+                    email: user.email,
+                    user_type: 'resident',
+                    is_active: true
+                };
+            }
+            
+            if (profile.is_active === false) {
+                showNotification('Your account has been deactivated.', 'error');
+                await supabaseClient.auth.signOut();
+                return false;
+            }
+            
+            if (profile.user_type === 'admin') {
+                showNotification('Access denied: Please use the Admin Portal to login.', 'error');
+                await supabaseClient.auth.signOut();
+                return false;
+            }
+            
+            const userData = {
+                id: profile.id,
+                fullName: profile.full_name,
+                email: profile.email,
+                userType: profile.user_type,
+                is_active: profile.is_active,
+                isLoggedIn: true,
+                loginTime: new Date().toISOString(),
+                authProvider: 'google'
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            
+            showNotification(`Welcome ${profile.full_name}!`, 'success');
+            
+            // Clear URL parameters
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            setTimeout(() => {
+                window.location.href = '../pages/resident-homepage.html';
+            }, 1500);
+            
+            return true;
+            
+        } catch (error) {
+            showNotification('Error processing your account. Please try again.', 'error');
+            return false;
+        }
+    }
+    
+    // Google Sign-In function
+    async function handleGoogleSignIn() {
+        try {
+            if (googleBtn) {
+                googleBtn.style.opacity = '0.5';
+                googleBtn.style.pointerEvents = 'none';
+                googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+            
+            showNotification('Redirecting to Google...', 'info');
+            
+            // Redirect back to the SAME page (login) to handle callback
+            const redirectUrl = window.location.href;
+            
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: redirectUrl,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    }
+                }
+            });
+            
+            if (error) {
+                showNotification('Google sign-in failed: ' + error.message, 'error');
+                if (googleBtn) {
+                    googleBtn.style.opacity = '1';
+                    googleBtn.style.pointerEvents = 'auto';
+                    googleBtn.innerHTML = '<i class="fa-brands fa-google"></i>';
+                }
+                return;
+            }
+            
+            if (data && data.url) {
+                window.location.href = data.url;
+            }
+            
+        } catch (error) {
+            showNotification('An unexpected error occurred. Please try again.', 'error');
+            if (googleBtn) {
+                googleBtn.style.opacity = '1';
+                googleBtn.style.pointerEvents = 'auto';
+                googleBtn.innerHTML = '<i class="fa-brands fa-google"></i>';
+            }
+        }
+    }
+    
+    // Handle Google OAuth callback - FIXED
+    async function handleGoogleCallback() {
+        try {
+            // Try to get the session
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            
+            if (sessionError) {
+                showNotification('Session error: ' + sessionError.message, 'error');
+                return;
+            }
+            
+            if (session) {
+                // We have a session, process the user
+                await processUserAfterAuth(session.user);
+                return;
+            }
+            
+            // If no session, check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                // Exchange the code for a session
+                const { data: { session: newSession }, error: exchangeError } = 
+                    await supabaseClient.auth.exchangeCodeForSession(code);
+                
+                if (exchangeError) {
+                    showNotification('Failed to complete sign-in: ' + exchangeError.message, 'error');
+                    return;
+                }
+                
+                if (newSession) {
+                    await processUserAfterAuth(newSession.user);
+                    return;
+                }
+            }
+            
+            // Check for hash fragment (sometimes used by OAuth)
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            if (hashParams.get('access_token')) {
+                const { data: { session: newSession }, error: exchangeError } = 
+                    await supabaseClient.auth.setSession({
+                        access_token: hashParams.get('access_token'),
+                        refresh_token: hashParams.get('refresh_token') || ''
+                    });
+                
+                if (exchangeError) {
+                    showNotification('Failed to complete sign-in', 'error');
+                    return;
+                }
+                
+                if (newSession) {
+                    await processUserAfterAuth(newSession.user);
+                    return;
+                }
+            }
+            
+            // If we get here, no valid session was found
+            // But maybe the user is already signed in - check again
+            const { data: { session: retrySession } } = await supabaseClient.auth.getSession();
+            if (retrySession) {
+                await processUserAfterAuth(retrySession.user);
+                return;
+            }
+            
+        } catch (error) {
+            showNotification('An error occurred during sign-in', 'error');
         }
     }
     
@@ -162,7 +368,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return
             }
             
-            // Get or create profile with retries
             let profile = null;
             let attempts = 0;
             const maxAttempts = 3;
@@ -195,7 +400,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Use fallback data if profile creation failed
             if (!profile) {
                 profile = {
                     id: authData.user.id,
@@ -214,7 +418,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return
             }
             
-            // STRICT SEPARATION: Resident login only for residents
             if (profile.user_type === 'admin') {
                 showNotification('Access denied: Please use the Admin Portal to login.', 'error')
                 await supabaseClient.auth.signOut()
@@ -223,7 +426,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return
             }
             
-            // Store user data
             const userData = {
                 id: profile.id,
                 fullName: profile.full_name,
@@ -231,7 +433,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 userType: profile.user_type,
                 is_active: profile.is_active,
                 isLoggedIn: true,
-                loginTime: new Date().toISOString()
+                loginTime: new Date().toISOString(),
+                authProvider: 'email'
             }
             localStorage.setItem('currentUser', JSON.stringify(userData))
             
@@ -251,7 +454,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper: Build a reliable redirect URL for Supabase
     function buildRedirectUrl() {
         const origin = window.location.origin;
-        // Handle file:// protocol where origin is "null"
         if (!origin || origin === 'null' || origin === 'file://') {
             const pathParts = window.location.pathname.split('/');
             pathParts.pop();
@@ -289,7 +491,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             try {
-                // Build the correct redirect URL
                 const redirectUrl = buildRedirectUrl();
                 
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
@@ -326,6 +527,30 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
     
+    // Google Sign-In button handler
+    if (googleBtn) {
+        googleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleGoogleSignIn();
+        });
+        
+        googleBtn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleGoogleSignIn();
+            }
+        });
+    }
+    
+    // Facebook button handler (placeholder)
+    if (facebookBtn) {
+        facebookBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showNotification('Facebook login coming soon!', 'info');
+        });
+    }
+    
     // Check for new user from signup
     const newUserEmail = localStorage.getItem('newUserEmail')
     const newUserName = localStorage.getItem('newUserName')
@@ -335,6 +560,45 @@ document.addEventListener('DOMContentLoaded', function() {
         if (emailInput) emailInput.value = newUserEmail
         localStorage.removeItem('newUserEmail')
         localStorage.removeItem('newUserName')
+    }
+    
+    // CHECK FOR GOOGLE OAUTH CALLBACK - FIXED
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    
+    // Check if we're returning from Google OAuth
+    if (urlParams.get('code') || urlParams.get('error') || 
+        hashParams.get('access_token') || hashParams.get('id_token')) {
+        handleGoogleCallback();
+    } else {
+        // Also check for existing session on page load
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                // Check if we have a profile for this user
+                supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .maybeSingle()
+                    .then(({ data: profile }) => {
+                        if (profile && profile.user_type === 'resident' && profile.is_active !== false) {
+                            // Already logged in, redirect to homepage
+                            const userData = {
+                                id: profile.id,
+                                fullName: profile.full_name,
+                                email: profile.email,
+                                userType: profile.user_type,
+                                is_active: profile.is_active,
+                                isLoggedIn: true,
+                                loginTime: new Date().toISOString(),
+                                authProvider: 'google'
+                            };
+                            localStorage.setItem('currentUser', JSON.stringify(userData));
+                            window.location.href = '../pages/resident-homepage.html';
+                        }
+                    });
+            }
+        });
     }
     
     // Check existing session - ONLY for residents
@@ -400,4 +664,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 4000)
     }
-})
+});
