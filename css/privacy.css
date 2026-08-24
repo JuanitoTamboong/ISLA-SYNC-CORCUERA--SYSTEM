@@ -1,0 +1,141 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --ink: #172033;
+    --muted: #64748b;
+    --line: #dbe4ee;
+    --surface: #ffffff;
+    --page: #eef5f8;
+    --accent: #087f8c;
+    --accent-soft: #d9f0ed;
+}
+
+html {
+    background: var(--page);
+}
+
+body {
+    margin: 0;
+    color: var(--ink);
+    background: linear-gradient(145deg, #eef8f7 0%, var(--page) 48%, #f8f4eb 100%);
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.7;
+}
+
+.policy-page {
+    width: min(100% - 32px, 820px);
+    margin: 0 auto;
+    padding: 24px 0 56px;
+}
+
+.policy-header {
+    padding: 8px 0 28px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 32px;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.back-link:hover,
+.policy-content a:hover {
+    text-decoration: underline;
+}
+
+.eyebrow {
+    margin: 0 0 6px;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+h1,
+h2,
+p {
+    margin-top: 0;
+}
+
+h1 {
+    margin-bottom: 4px;
+    font-size: clamp(30px, 7vw, 48px);
+    line-height: 1.15;
+    letter-spacing: 0;
+}
+
+.updated {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.policy-content {
+    padding: 28px clamp(20px, 5vw, 48px);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 14px 35px rgba(23, 32, 51, 0.08);
+}
+
+.policy-content > p:first-child {
+    padding: 16px 18px;
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    background: var(--accent-soft);
+}
+
+h2 {
+    margin: 30px 0 8px;
+    color: var(--ink);
+    font-size: 19px;
+    line-height: 1.35;
+}
+
+p,
+li {
+    font-size: 15px;
+}
+
+ul {
+    margin: 0 0 14px;
+    padding-left: 24px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+.policy-content a {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+@media (max-width: 520px) {
+    .policy-page {
+        width: min(100% - 24px, 820px);
+        padding-top: 16px;
+    }
+
+    .policy-header {
+        padding-bottom: 20px;
+    }
+
+    .back-link {
+        margin-bottom: 24px;
+    }
+
+    .policy-content {
+        padding: 22px 18px;
+    }
+
+    p,
+    li {
+        font-size: 14px;
+    }
+}
