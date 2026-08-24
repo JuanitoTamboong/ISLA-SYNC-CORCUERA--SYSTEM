@@ -21,19 +21,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const forgotPassword = document.getElementById('forgotPassword')
     const togglePassword = document.getElementById('togglePassword')
     const googleBtn = document.querySelector('.social-btn[data-provider="google"]')
-    const facebookBtn = document.querySelector('.social-btn[data-provider="facebook"]')
 
+    // Reset Google button function
     function resetGoogleButton() {
         if (!googleBtn) return
-
         googleBtn.style.opacity = '1'
         googleBtn.style.pointerEvents = 'auto'
         googleBtn.innerHTML = '<i class="fa-brands fa-google"></i>'
         googleBtn.setAttribute('aria-busy', 'false')
     }
 
-    // Restore the button when the browser brings this page back from its cache.
-    window.addEventListener('pageshow', resetGoogleButton)
+    window.addEventListener('pageshow', function() {
+        resetGoogleButton();
+    });
     
     // Toggle password visibility
     if (togglePassword && passwordInput) {
@@ -109,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         return fetchedProfile;
                     }
                 }
-                
                 throw insertError;
             }
             
@@ -119,12 +118,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Process user after authentication
-    async function processUserAfterAuth(user) {
+    // Process user after authentication (works for Google and Email)
+    async function processUserAfterAuth(user, provider = 'social') {
         try {
             let profile = null;
             let attempts = 0;
             const maxAttempts = 3;
+            
+            // Get user's full name from various possible sources
+            let fullName = user.user_metadata?.full_name || 
+                          user.user_metadata?.name || 
+                          user.user_metadata?.user_name ||
+                          user.email?.split('@')[0] || 
+                          'User';
             
             while (attempts < maxAttempts && !profile) {
                 const { data: profileData, error: profileError } = await supabaseClient
@@ -142,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     profile = await createUserProfile(
                         user.id,
                         user.email,
-                        user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0]
+                        fullName
                     );
                     
                     if (profile) break;
@@ -157,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!profile) {
                 profile = {
                     id: user.id,
-                    full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0] || 'User',
+                    full_name: fullName,
                     email: user.email,
                     user_type: 'resident',
                     is_active: true
@@ -184,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 is_active: profile.is_active,
                 isLoggedIn: true,
                 loginTime: new Date().toISOString(),
-                authProvider: 'google'
+                authProvider: provider
             };
             localStorage.setItem('currentUser', JSON.stringify(userData));
             
@@ -219,17 +225,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             showNotification('Redirecting to Google...', 'info');
             
-            // Redirect back to the SAME page (login) to handle callback
-            const redirectUrl = window.location.href;
-            
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: redirectUrl,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    }
+                    redirectTo: window.location.origin + '/pages/login.html'
                 }
             });
             
@@ -249,74 +248,61 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Handle Google OAuth callback - FIXED
-    async function handleGoogleCallback() {
+    // Handle OAuth callback with error handling
+    async function handleOAuthCallback() {
         try {
-            // Try to get the session
-            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-            
-            if (sessionError) {
-                showNotification('Session error: ' + sessionError.message, 'error');
-                return;
-            }
-            
-            if (session) {
-                // We have a session, process the user
-                await processUserAfterAuth(session.user);
-                return;
-            }
-            
-            // If no session, check URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
+            const error = urlParams.get('error');
             
-            if (code) {
-                // Exchange the code for a session
-                const { data: { session: newSession }, error: exchangeError } = 
-                    await supabaseClient.auth.exchangeCodeForSession(code);
-                
-                if (exchangeError) {
-                    showNotification('Failed to complete sign-in: ' + exchangeError.message, 'error');
-                    return;
-                }
-                
-                if (newSession) {
-                    await processUserAfterAuth(newSession.user);
-                    return;
-                }
-            }
-            
-            // Check for hash fragment (sometimes used by OAuth)
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            if (hashParams.get('access_token')) {
-                const { data: { session: newSession }, error: exchangeError } = 
-                    await supabaseClient.auth.setSession({
-                        access_token: hashParams.get('access_token'),
-                        refresh_token: hashParams.get('refresh_token') || ''
-                    });
-                
-                if (exchangeError) {
-                    showNotification('Failed to complete sign-in', 'error');
-                    return;
-                }
-                
-                if (newSession) {
-                    await processUserAfterAuth(newSession.user);
-                    return;
-                }
-            }
-            
-            // If we get here, no valid session was found
-            // But maybe the user is already signed in - check again
-            const { data: { session: retrySession } } = await supabaseClient.auth.getSession();
-            if (retrySession) {
-                await processUserAfterAuth(retrySession.user);
+            if (error) {
+                showNotification('Authentication error: ' + error, 'error');
+                resetGoogleButton();
                 return;
             }
             
+            if (code) {
+                const { data, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
+                
+                if (exchangeError) {
+                    console.error('Exchange error:', exchangeError);
+                    
+                    // Try to get session anyway
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session) {
+                        const provider = session.user.app_metadata?.provider || 'social';
+                        await processUserAfterAuth(session.user, provider);
+                        resetGoogleButton();
+                        return;
+                    }
+                    
+                    showNotification('Failed to complete sign-in. Please try again.', 'error');
+                    resetGoogleButton();
+                    return;
+                }
+                
+                if (data && data.session) {
+                    const provider = data.session.user.app_metadata?.provider || 'social';
+                    await processUserAfterAuth(data.session.user, provider);
+                    resetGoogleButton();
+                    return;
+                }
+            }
+            
+            // Check for existing session
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                const provider = session.user.app_metadata?.provider || 'social';
+                await processUserAfterAuth(session.user, provider);
+                resetGoogleButton();
+                return;
+            }
+            
+            resetGoogleButton();
+            
         } catch (error) {
+            console.error('Callback error:', error);
             showNotification('An error occurred during sign-in', 'error');
-        } finally {
             resetGoogleButton();
         }
     }
@@ -550,14 +536,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Facebook button handler (placeholder)
-    if (facebookBtn) {
-        facebookBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            showNotification('Facebook login coming soon!', 'info');
-        });
-    }
-    
     // Check for new user from signup
     const newUserEmail = localStorage.getItem('newUserEmail')
     const newUserName = localStorage.getItem('newUserName')
@@ -569,27 +547,38 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('newUserName')
     }
     
-    // CHECK FOR GOOGLE OAUTH CALLBACK - FIXED
+    // Check for OAuth callback (Google)
     const urlParams = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     
-    // Check if we're returning from Google OAuth
-    if (urlParams.get('code') || urlParams.get('error') || 
-        hashParams.get('access_token') || hashParams.get('id_token')) {
-        handleGoogleCallback();
+    // ALWAYS check if we have a code parameter (not just in URL params, but ANYWHERE in the URL)
+    const hasCode = window.location.search.includes('code=') || 
+                    window.location.hash.includes('code=') ||
+                    urlParams.get('code') ||
+                    hashParams.get('code');
+    
+    const hasError = window.location.search.includes('error=') || 
+                     window.location.hash.includes('error=') ||
+                     urlParams.get('error') ||
+                     hashParams.get('error');
+    
+    if (hasCode || hasError || 
+        hashParams.get('access_token') || 
+        hashParams.get('id_token')) {
+        // We have an OAuth callback
+        handleOAuthCallback();
     } else {
-        // Also check for existing session on page load
+        // Also check for existing session on page load (for redirects)
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) {
-                // Check if we have a profile for this user
+                const user = session.user;
                 supabaseClient
                     .from('profiles')
                     .select('*')
-                    .eq('id', session.user.id)
+                    .eq('id', user.id)
                     .maybeSingle()
                     .then(({ data: profile }) => {
                         if (profile && profile.user_type === 'resident' && profile.is_active !== false) {
-                            // Already logged in, redirect to homepage
                             const userData = {
                                 id: profile.id,
                                 fullName: profile.full_name,
@@ -598,9 +587,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 is_active: profile.is_active,
                                 isLoggedIn: true,
                                 loginTime: new Date().toISOString(),
-                                authProvider: 'google'
+                                authProvider: session.user.app_metadata?.provider || 'social'
                             };
                             localStorage.setItem('currentUser', JSON.stringify(userData));
+                            // Clear URL before redirect
+                            if (window.history && window.history.replaceState) {
+                                window.history.replaceState({}, document.title, window.location.pathname);
+                            }
                             window.location.href = '../pages/resident-homepage.html';
                         }
                     });
