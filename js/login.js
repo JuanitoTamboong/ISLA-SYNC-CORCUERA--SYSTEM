@@ -22,6 +22,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.getElementById('togglePassword')
     const googleBtn = document.querySelector('.social-btn[data-provider="google"]')
     const facebookBtn = document.querySelector('.social-btn[data-provider="facebook"]')
+
+    function resetGoogleButton() {
+        if (!googleBtn) return
+
+        googleBtn.style.opacity = '1'
+        googleBtn.style.pointerEvents = 'auto'
+        googleBtn.innerHTML = '<i class="fa-brands fa-google"></i>'
+        googleBtn.setAttribute('aria-busy', 'false')
+    }
+
+    // Restore the button when the browser brings this page back from its cache.
+    window.addEventListener('pageshow', resetGoogleButton)
     
     // Toggle password visibility
     if (togglePassword && passwordInput) {
@@ -202,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 googleBtn.style.opacity = '0.5';
                 googleBtn.style.pointerEvents = 'none';
                 googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                googleBtn.setAttribute('aria-busy', 'true');
             }
             
             showNotification('Redirecting to Google...', 'info');
@@ -222,11 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (error) {
                 showNotification('Google sign-in failed: ' + error.message, 'error');
-                if (googleBtn) {
-                    googleBtn.style.opacity = '1';
-                    googleBtn.style.pointerEvents = 'auto';
-                    googleBtn.innerHTML = '<i class="fa-brands fa-google"></i>';
-                }
+                resetGoogleButton();
                 return;
             }
             
@@ -236,11 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             showNotification('An unexpected error occurred. Please try again.', 'error');
-            if (googleBtn) {
-                googleBtn.style.opacity = '1';
-                googleBtn.style.pointerEvents = 'auto';
-                googleBtn.innerHTML = '<i class="fa-brands fa-google"></i>';
-            }
+            resetGoogleButton();
         }
     }
     
@@ -311,6 +316,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             showNotification('An error occurred during sign-in', 'error');
+        } finally {
+            resetGoogleButton();
         }
     }
     
