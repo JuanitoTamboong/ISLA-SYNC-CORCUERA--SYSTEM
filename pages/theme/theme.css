@@ -64,6 +64,12 @@ html, body {
   margin-bottom: 28px;
 }
 
+.header-spacer {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
 /* Force header and icon fonts to use the correct theme text color */
 .header h2 {
   font-size: 18px;

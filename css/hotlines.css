@@ -12,6 +12,7 @@
     --danger: #ef4444;
     --danger-soft: #fee2e2;
     --shadow: rgba(15, 23, 42, 0.08);
+    --hover-bg: #f1f5f9;
 }
 
 :root[data-theme="dark"] {
@@ -26,6 +27,7 @@
     --danger: #f87171;
     --danger-soft: rgba(248, 113, 113, 0.12);
     --shadow: rgba(0, 0, 0, 0.25);
+    --hover-bg: rgba(255, 255, 255, 0.04);
 }
 
 html, body {
@@ -60,18 +62,28 @@ body {
     margin-bottom: 18px;
 }
 
+.header-spacer {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+}
+
 .back-btn {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text);
     text-decoration: none;
-    background: var(--container);
-    border: 1px solid var(--border);
-    box-shadow: 0 2px 8px var(--shadow);
+    background: transparent;
+    border: 0;
+}
+
+.back-btn:hover,
+.back-btn:focus-visible {
+    background: var(--hover-bg);
 }
 
 .header h1 {
