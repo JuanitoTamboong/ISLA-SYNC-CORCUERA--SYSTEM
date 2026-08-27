@@ -215,9 +215,12 @@ async function renderSpots() {
                     <p class="spot-drivers-label"><i class="fa-solid fa-users"></i> Local Drivers:</p>
                     ${drivers.map(driver => `
                         <div class="spot-driver-item">
-                            <i class="fa-solid fa-user"></i> ${escapeHtml(driver.driver_name)}
-                            ${driver.driver_contact_number ? `<span class="spot-driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</span>` : ''}
-                            ${driver.fare !== null && driver.fare !== undefined ? `<span class="spot-driver-fare">Fare: ₱${Number(driver.fare).toFixed(2)}</span>` : ''}
+                            <span class="spot-driver-avatar"><i class="fa-solid fa-user"></i></span>
+                            <span class="spot-driver-details">
+                                <strong class="spot-driver-name">${escapeHtml(driver.driver_name)}</strong>
+                                ${driver.driver_contact_number ? `<span class="spot-driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</span>` : ''}
+                            </span>
+                            ${driver.fare !== null && driver.fare !== undefined ? `<span class="spot-driver-fare"><small>Fare</small> ₱${Number(driver.fare).toFixed(2)}</span>` : ''}
                         </div>
                     `).join('')}
                 </div>

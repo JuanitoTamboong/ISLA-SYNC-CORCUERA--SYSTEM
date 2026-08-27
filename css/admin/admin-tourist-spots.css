@@ -186,51 +186,112 @@
 
 /* LOCAL DRIVERS SECTION IN SPOT CARD */
 .spot-drivers-list {
-    margin-bottom: 12px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
+    margin: 14px 0 16px;
+    padding: 12px;
+    background: linear-gradient(135deg, #f7fbff 0%, #f8fafc 100%);
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
 }
 
 .spot-drivers-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #374151;
-    margin: 0 0 8px 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin: 0 0 9px;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .spot-drivers-label i {
-    color: #0d6efd;
+    color: #2563eb;
+    font-size: 12px;
 }
 
 .spot-driver-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #495057;
-    padding: 6px 0;
-    border-bottom: 1px solid #e9ecef;
+    gap: 9px;
+    min-width: 0;
+    padding: 9px 0;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .spot-driver-item:last-child {
     border-bottom: none;
+    padding-bottom: 1px;
 }
 
-.spot-driver-item i {
-    width: 16px;
-    color: #6c757d;
-    font-size: 11px;
+.spot-driver-avatar {
+    display: grid;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    color: #2563eb;
+    background: #dbeafe;
+    border-radius: 50%;
+}
+
+.spot-driver-avatar i {
+    font-size: 12px;
+}
+
+.spot-driver-details {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.spot-driver-name {
+    overflow: hidden;
+    color: #1e293b;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .spot-driver-contact {
-    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #64748b;
     font-size: 11px;
-    color: #0d6efd;
+    line-height: 1.2;
+}
+
+.spot-driver-contact i {
+    color: #2563eb;
+    font-size: 10px;
+}
+
+.spot-driver-fare {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: baseline;
+    gap: 3px;
+    padding: 5px 8px;
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.spot-driver-fare small {
+    color: #059669;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .spot-no-drivers {

@@ -401,15 +401,16 @@ async function viewSpotDetails(spotId) {
         }
     }
     
-    // Display drivers in modal - WITHOUT user circle icon and WITHOUT call driver button
+    // Display drivers in modal without exposing editing controls.
     if (driversContainer) {
         if (drivers.length > 0) {
             driversContainer.innerHTML = drivers.map(driver => `
                 <div class="driver-card">
                     <div class="driver-info">
+                        <span class="driver-avatar"><i class="fa-solid fa-user"></i></span>
                         <div class="driver-details">
                             <div class="driver-name">
-                                <i class="fa-solid fa-user"></i> ${escapeHtml(driver.driver_name)}
+                                ${escapeHtml(driver.driver_name)}
                             </div>
                             ${driver.driver_contact_number ? `
                                 <div class="driver-contact">
@@ -419,7 +420,7 @@ async function viewSpotDetails(spotId) {
                             ` : ''}
                             ${driver.fare !== null && driver.fare !== undefined ? `
                                 <div class="driver-fare">
-                                    Fare: ₱${Number(driver.fare).toFixed(2)}
+                                    <small>Fare</small> ₱${Number(driver.fare).toFixed(2)}
                                 </div>
                             ` : ''}
                         </div>
