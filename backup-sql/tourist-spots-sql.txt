@@ -194,6 +194,7 @@ CREATE TABLE IF NOT EXISTS public.spot_drivers (
     tourist_spot_id UUID NOT NULL,
     driver_name TEXT NOT NULL,
     driver_contact_number TEXT,
+    fare NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (fare >= 0),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     FOREIGN KEY (tourist_spot_id) REFERENCES public.tourist_spots(id) ON DELETE CASCADE
@@ -204,6 +205,7 @@ ALTER TABLE public.spot_drivers
     ADD COLUMN IF NOT EXISTS tourist_spot_id UUID NOT NULL,
     ADD COLUMN IF NOT EXISTS driver_name TEXT NOT NULL,
     ADD COLUMN IF NOT EXISTS driver_contact_number TEXT,
+    ADD COLUMN IF NOT EXISTS fare NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (fare >= 0),
     ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 

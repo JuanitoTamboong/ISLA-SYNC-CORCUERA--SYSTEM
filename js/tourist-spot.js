@@ -417,6 +417,11 @@ async function viewSpotDetails(spotId) {
                                     <a href="tel:${escapeHtml(driver.driver_contact_number)}">${escapeHtml(driver.driver_contact_number)}</a>
                                 </div>
                             ` : ''}
+                            ${driver.fare !== null && driver.fare !== undefined ? `
+                                <div class="driver-fare">
+                                    Fare: ₱${Number(driver.fare).toFixed(2)}
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 </div>

@@ -102,6 +102,13 @@ function setupInputValidation() {
             this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11);
         });
     }
+
+    const driverFareInput = document.getElementById('driverFare');
+    if (driverFareInput) {
+        driverFareInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
     
     const souvenirNameInput = document.getElementById('souvenirName');
     if (souvenirNameInput) {
@@ -210,6 +217,7 @@ async function renderSpots() {
                         <div class="spot-driver-item">
                             <i class="fa-solid fa-user"></i> ${escapeHtml(driver.driver_name)}
                             ${driver.driver_contact_number ? `<span class="spot-driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</span>` : ''}
+                            ${driver.fare !== null && driver.fare !== undefined ? `<span class="spot-driver-fare">Fare: ₱${Number(driver.fare).toFixed(2)}</span>` : ''}
                         </div>
                     `).join('')}
                 </div>
@@ -498,6 +506,7 @@ function renderLocalDrivers() {
                         <div class="driver-details">
                             <p class="driver-name">${escapeHtml(driver.driver_name)} <span class="pending-badge">Pending</span></p>
                             ${driver.driver_contact_number ? `<p class="driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</p>` : ''}
+                            ${driver.fare !== null && driver.fare !== undefined ? `<p class="driver-fare">Fare: ₱${Number(driver.fare).toFixed(2)}</p>` : ''}
                         </div>
                     </div>
                     <div class="driver-actions">
@@ -537,6 +546,7 @@ function renderLocalDrivers() {
                     <div class="driver-details">
                         <p class="driver-name">${escapeHtml(driver.driver_name)}</p>
                         ${driver.driver_contact_number ? `<p class="driver-contact"><i class="fa-solid fa-phone"></i> ${escapeHtml(driver.driver_contact_number)}</p>` : ''}
+                        ${driver.fare !== null && driver.fare !== undefined ? `<p class="driver-fare">Fare: ₱${Number(driver.fare).toFixed(2)}</p>` : ''}
                     </div>
                 </div>
                 <div class="driver-actions">
@@ -660,6 +670,7 @@ window.openDriverModal = function(driverId = null) {
         document.getElementById('driverId').value = driver.tempId || driver.id;
         document.getElementById('driverName').value = driver.driver_name || '';
         document.getElementById('driverContactNumber').value = driver.driver_contact_number || '';
+        document.getElementById('driverFare').value = driver.fare ?? '';
     } else {
         title.textContent = 'Add Local Driver';
     }
@@ -687,6 +698,7 @@ window.saveDriver = async function() {
         const driverId = document.getElementById('driverId').value;
         const driverName = document.getElementById('driverName').value.trim();
         const driverContactNumber = document.getElementById('driverContactNumber').value.trim();
+        const driverFareRaw = document.getElementById('driverFare').value.trim();
         let spotId = document.getElementById('spotId').value;
 
         if (!driverName) {
@@ -695,6 +707,15 @@ window.saveDriver = async function() {
             saveBtn.disabled = false;
             return;
         }
+
+        if (!/^\d+$/.test(driverFareRaw)) {
+            showNotification('Fare should contain numbers only', 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+            return;
+        }
+
+        const driverFare = Number(driverFareRaw);
         
         const lettersOnlyRegex = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
         if (!lettersOnlyRegex.test(driverName)) {
@@ -712,7 +733,8 @@ window.saveDriver = async function() {
                     pendingDrivers[existingDriverIndex] = {
                         ...pendingDrivers[existingDriverIndex],
                         driver_name: driverName,
-                        driver_contact_number: driverContactNumber || null
+                        driver_contact_number: driverContactNumber || null,
+                        fare: driverFare
                     };
                     showInContainerNotification('driverModalNotification', 'Pending local driver updated successfully!', 'success');
                 } else {
@@ -720,6 +742,7 @@ window.saveDriver = async function() {
                         tempId: driverId,
                         driver_name: driverName,
                         driver_contact_number: driverContactNumber || null,
+                        fare: driverFare,
                         pending: true
                     });
                     showInContainerNotification('driverModalNotification', 'Pending local driver added successfully!', 'success');
@@ -738,6 +761,7 @@ window.saveDriver = async function() {
                     tempId: 'pending_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                     driver_name: driverName,
                     driver_contact_number: driverContactNumber || null,
+                    fare: driverFare,
                     pending: true
                 });
                 showInContainerNotification('driverModalNotification', 'Pending local driver added successfully!', 'success');
@@ -764,7 +788,8 @@ window.saveDriver = async function() {
         const driverData = {
             tourist_spot_id: String(spotId),
             driver_name: driverName,
-            driver_contact_number: driverContactNumber || null
+            driver_contact_number: driverContactNumber || null,
+            fare: driverFare
         };
 
         let success = false;
@@ -1183,7 +1208,8 @@ async function saveSpot() {
                     const driverData = {
                         tourist_spot_id: String(spotId),
                         driver_name: pendingDriver.driver_name,
-                        driver_contact_number: pendingDriver.driver_contact_number || null
+                        driver_contact_number: pendingDriver.driver_contact_number || null,
+                        fare: pendingDriver.fare
                     };
                     
                     await window.supabaseClient

@@ -172,6 +172,17 @@
                     <small>11 digits only (numbers)</small>
                 </div>
 
+                <div class="form-group">
+                    <label>Fare <span class="required">*</span></label>
+                    <div class="fare-input-wrap">
+                        <span class="fare-prefix" aria-hidden="true">₱</span>
+                        <input type="text" id="driverFare" placeholder="e.g., 50" required
+                               inputmode="numeric" pattern="[0-9]+"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <small>Numbers only, in Philippine pesos</small>
+                </div>
+
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeDriverModal()">Cancel</button>
                     <button type="submit" class="btn-primary" id="driverSaveBtn">
