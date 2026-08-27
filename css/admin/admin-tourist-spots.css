@@ -566,15 +566,17 @@
 .fare-prefix {
     position: absolute;
     top: 50%;
-    left: 12px;
+    left: 14px;
     transform: translateY(-50%);
     color: #6c757d;
+    font-size: 14px;
     font-weight: 600;
+    line-height: 1;
     pointer-events: none;
 }
 
 .fare-input-wrap input {
-    padding-left: 30px;
+    padding-left: 42px;
 }
 
 .driver-fare,
@@ -970,6 +972,10 @@
     background: #fafafa;
     transition: all 0.2s;
     outline: none;
+}
+
+.form-group .fare-input-wrap input {
+    padding-left: 48px;
 }
 
 .form-group input:focus,
