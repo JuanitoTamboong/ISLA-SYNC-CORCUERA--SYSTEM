@@ -511,16 +511,7 @@ function setupFilters() {
             currentFilter = filter;
             
             if (searchInput) searchInput.value = '';
-            
-            if (filter === 'all') {
-                renderAllViews('');
-            } else if (filter === 'beaches') {
-                renderBeaches('');
-            } else if (filter === 'landmarks') {
-                renderLandmarks('');
-            } else if (filter === 'souvenirs') {
-                renderSouvenirs('');
-            }
+            renderAllViews('');
         });
     });
     
