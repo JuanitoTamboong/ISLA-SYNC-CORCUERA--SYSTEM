@@ -40,27 +40,27 @@
         "lat": 12.808,
         "lon": 122.045,
         "type": "nature",
-        "address": "Mahogany Farm, Simara Island, Corcuera, Romblon, Philippines",
+        "address": "San Roque, Simara Island, Corcuera, Romblon, Philippines",
         "description": "Shaded mahogany forest and nature area",
         "rating": 4.9,
         "image": "assets/places/nature-mahogany-farm.jpg"
       },
       {
-        "name": "Simara Parola",
+        "name": "Parola",
         "lat": 12.811,
         "lon": 122.053,
         "type": "nature",
-        "address": "Parola, Simara Island, Corcuera, Romblon, Philippines",
+        "address": "San Roque, Simara Island, Corcuera, Romblon, Philippines",
         "description": "Coastal lighthouse landmark at the edge of Simara Island",
         "rating": 4.6,
         "image": "assets/places/nature-parola.jpg"
       },
       {
-        "name": "Siki T'Elipante",
+        "name": "Siki it'Elipante",
         "lat": 12.804,
         "lon": 122.046,
         "type": "nature",
-        "address": "Siki T'Elipante, Simara Island, Corcuera, Romblon, Philippines",
+        "address": "Labnig, Simara Island, Corcuera, Romblon, Philippines",
         "description": "Distinctive coastal rock formation and natural landmark",
         "rating": 4.7,
         "image": "assets/places/nature-siki it elipante.jpg"
