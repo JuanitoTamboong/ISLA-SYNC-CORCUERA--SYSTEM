@@ -3,130 +3,113 @@
     "// Discovery places": "",
     "discovery": [
       {
-        "name": "Corcuera Lighthouse, Corcuera, Romblon",
+        "name": "Bakdar Rockies",
         "lat": 12.8092,
         "lon": 122.0512,
-        "type": "lighthouse",
-        "description": "Historic lighthouse guiding ships through Romblon waters",
+        "type": "viewpoint",
+        "address": "Bakdar, Simara Island, Corcuera, Romblon, Philippines",
+        "description": "Rocky coastal formation with views across Simara Island waters",
         "rating": 4.8,
-        "image": "assets/places/corcuera-lighthouse.jpg"
+        "image": "assets/places/discovery-Bakdar Rockies.jpg"
       },
       {
-        "name": "Corcuera Municipal Hall",
+        "name": "Pagalihir View Deck",
         "lat": 12.8055,
         "lon": 122.0474,
-        "type": "government",
-        "description": "Town hall of Corcuera",
-        "rating": 4.5,
-        "image": "assets/places/corcuera-municipal-hall.jpg"
+        "type": "viewpoint",
+        "address": "Pagalihir, Simara Island, Corcuera, Romblon, Philippines",
+        "description": "Scenic view deck overlooking the island and surrounding sea",
+        "rating": 4.9,
+        "image": "assets/places/discovery-pagalihir View Deck.jpg"
       },
       {
-        "name": "Colong-Colong Viewpoint",
+        "name": "Quebrada Cave",
         "lat": 12.81,
         "lon": 122.052,
-        "type": "viewpoint",
-        "description": "A scenic viewpoint with a stunning panoramic view of Simara Island and the sea.",
+        "type": "nature",
+        "address": "Quebrada, Simara Island, Corcuera, Romblon, Philippines",
+        "description": "Natural limestone cave and rock formation on Simara Island",
         "rating": 4.9,
-        "image": "assets/places/colong-colong-simara-island.jpg"
+        "image": "assets/places/discovery-Quebrada Cave.jpg"
       }
     ],
     "// Nature places": "",
     "nature": [
       {
-        "name": "Busay Falls",
+        "name": "Mahogany Farm",
         "lat": 12.808,
         "lon": 122.045,
-        "type": "waterfall",
-        "description": "Beautiful waterfall on Simara Island",
+        "type": "nature",
+        "address": "Mahogany Farm, Simara Island, Corcuera, Romblon, Philippines",
+        "description": "Shaded mahogany forest and nature area",
         "rating": 4.9,
-        "image": "assets/generate background image of corquera romblon sea-7.jpg"
+        "image": "assets/places/nature-mahogany-farm.jpg"
       },
       {
-        "name": "Simara Rock Formation",
+        "name": "Simara Parola",
         "lat": 12.811,
         "lon": 122.053,
         "type": "nature",
-        "description": "Unique rock formations along the coast",
+        "address": "Parola, Simara Island, Corcuera, Romblon, Philippines",
+        "description": "Coastal lighthouse landmark at the edge of Simara Island",
         "rating": 4.6,
-        "image": "assets/generate background of corquera romblon.jpg"
+        "image": "assets/places/nature-parola.jpg"
       },
       {
-        "name": "Mangrove Forest",
+        "name": "Siki T'Elipante",
         "lat": 12.804,
         "lon": 122.046,
         "type": "nature",
-        "description": "Protected mangrove ecosystem",
+        "address": "Siki T'Elipante, Simara Island, Corcuera, Romblon, Philippines",
+        "description": "Distinctive coastal rock formation and natural landmark",
         "rating": 4.7,
-        "image": "assets/generate background of corquera romblon (1).jpg"
+        "image": "assets/places/nature-siki it elipante.jpg"
       }
     ],
     "// Dining places": "",
     "dining": [
       {
-        "name": "Simara Seafood Grill",
+        "name": "Dhanas Food Hub",
         "lat": 12.806,
         "lon": 122.0475,
         "type": "restaurant",
-        "description": "Fresh seafood and local cuisine",
+        "address": "Poblacion, Corcuera, Romblon, Philippines",
+        "description": "Local meals and refreshments in Corcuera",
         "rating": 4.6,
-        "image": "assets/generate background image of corquera romblon.jpg"
+        "image": "assets/places/dining-Dhanas Food Hub.jpg"
       },
       {
-        "name": "Island View Cafe",
+        "name": "Lomi House",
         "lat": 12.805,
         "lon": 122.048,
-        "type": "cafe",
-        "description": "Coffee shop with island views",
+        "type": "restaurant",
+        "address": "Poblacion, Corcuera, Romblon, Philippines",
+        "description": "Comfort food and local lomi noodles",
         "rating": 4.5,
-        "image": "assets/generate background image of corquera romblon (1).jpg"
+        "image": "assets/places/dining-3j Lomi house.jpg"
       },
       {
-        "name": "Corcuera Eatery",
+        "name": "Simgao and Bakeshop",
         "lat": 12.8045,
         "lon": 122.047,
-        "type": "restaurant",
-        "description": "Local Filipino dishes",
+        "type": "cafe",
+        "address": "Poblacion, Corcuera, Romblon, Philippines",
+        "description": "Fresh baked goods, snacks, and refreshments",
         "rating": 4.4,
-        "image": "assets/generate background image of corquera romblon (2).jpg"
-      },
-      {
-        "name": "Beachfront Bar & Grill",
-        "lat": 12.803,
-        "lon": 122.049,
-        "type": "bar",
-        "description": "Beachside dining and drinks",
-        "rating": 4.5,
-        "image": "assets/generate background image of corquera romblon sea-7.jpg"
-      },
-      {
-        "name": "Taclobo Beach Resort Restaurant",
-        "lat": 12.8025,
-        "lon": 122.0505,
-        "type": "restaurant",
-        "description": "Dining with beach view",
-        "rating": 4.7,
-        "image": "assets/sea.jpg"
+        "image": "assets/places/dining-Simgao and Bakeshop.jpg"
       }
     ],
-    "// Beaches": "",
-    "beaches": [
+    "// Hotel places": "",
+    "hotel": [
       {
-        "name": "Taclobo Beach",
-        "lat": 12.802,
-        "lon": 122.05,
-        "type": "beach",
-        "description": "White sand beach with clear waters",
-        "rating": 4.8,
-        "image": "assets/sea.jpg"
-      },
-      {
-        "name": "Hidden Cove Beach",
-        "lat": 12.8075,
-        "lon": 122.0495,
-        "type": "beach",
-        "description": "Secluded beach perfect for swimming",
-        "rating": 4.8,
-        "image": "assets/7.jpg"
+        "name": "Hotel Melvicfoj",
+        "lat": 12.8051,
+        "lon": 122.0478,
+        "type": "hotel",
+        "address": "Poblacion, Corcuera, Romblon, Philippines",
+        "description": "Local hotel accommodation in Corcuera",
+        "rating": 4.5,
+        "image": "assets/places/hotel-Melvicfoj Hotel.jpg"
       }
     ]
   }

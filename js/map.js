@@ -82,7 +82,7 @@ const CATEGORY_ICON_TYPE = {
     'discovery': 'discovery',
     'nature': 'nature',
     'dining': 'dining',
-    'resort': 'resort'
+    'hotel': 'resort'
 };
 
 // Beautiful map tile options
@@ -128,8 +128,8 @@ function getFallbackPlaces() {
         dining: [
             { name: "Simara Seafood Grill", lat: 12.8060, lon: 122.0475, type: "restaurant", description: "Fresh seafood", rating: 4.6 }
         ],
-        resort: [
-            { name: "Simara Island Resort", lat: 12.8070, lon: 122.0500, type: "resort", description: "Beachfront resort", rating: 4.9 }
+        hotel: [
+            { name: "Hotel Melvicfoj", lat: 12.8051, lon: 122.0478, type: "hotel", address: "Poblacion, Corcuera, Romblon, Philippines", description: "Local hotel accommodation in Corcuera", rating: 4.5 }
         ]
     };
 }
@@ -244,6 +244,7 @@ function loadPlacesByCategory(category) {
                 img: imageUrl,
                 rating: rating,
                 distance: distanceText,
+                address: place.address || 'Simara Island, Corcuera, Romblon, Philippines',
                 description: place.description,
                 type: place.type,
                 category: category
@@ -260,7 +261,7 @@ function searchSimaraPlaces(searchText) {
     
     var searchLower = searchText.toLowerCase();
     var allResults = [];
-    var categories = ['discovery', 'nature', 'dining', 'resort'];
+    var categories = ['discovery', 'nature', 'dining', 'hotel'];
     
     for (var c = 0; c < categories.length; c++) {
         var places = placesData[categories[c]];
@@ -286,6 +287,7 @@ function searchSimaraPlaces(searchText) {
                     img: imageUrl,
                     rating: rating,
                     distance: distanceText,
+                    address: place.address || 'Simara Island, Corcuera, Romblon, Philippines',
                     description: place.description,
                     type: place.type,
                     category: categories[c]
@@ -371,6 +373,7 @@ function showLocationCard(place) {
     
     document.getElementById('cardRating').innerHTML = '<i class="fa-solid fa-star"></i> ' + place.rating;
     document.getElementById('cardDistance').innerHTML = '<i class="fa-solid fa-location-dot"></i> ' + place.distance;
+    document.getElementById('cardAddress').textContent = place.address || 'Simara Island, Corcuera, Romblon, Philippines';
     
     var cardDirectionsBtn = document.getElementById('cardDirections');
     cardDirectionsBtn.dataset.lat = place.coords[0];
@@ -499,7 +502,7 @@ function setupSearch() {
 
 function setupTabs() {
     var tabs = document.querySelectorAll('.tabs button');
-    var categories = ['discovery', 'nature', 'dining', 'resort'];
+    var categories = ['discovery', 'nature', 'dining', 'hotel'];
     
     for (var i = 0; i < tabs.length; i++) {
         (function(index) {
