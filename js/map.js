@@ -119,17 +119,22 @@ async function loadPlacesFromJSON() {
 function getFallbackPlaces() {
     return {
         discovery: [
-            { name: "Simara Island Lighthouse", lat: 12.8092, lon: 122.0512, type: "lighthouse", description: "Historic lighthouse", rating: 4.8 },
-            { name: "Corcuera Municipal Hall", lat: 12.8055, lon: 122.0474, type: "government", description: "Town hall", rating: 4.5 }
+            { name: "Bakdar Rockies", lat: 12.7955138, lon: 122.0641196, type: "viewpoint", address: "Ilijan, Simara Island, Corcuera, Romblon, Philippines", description: "Rocky coastal formation with views across Simara Island waters", rating: 4.8 },
+            { name: "Pagalihir View Deck", lat: 12.8055, lon: 122.0474, type: "viewpoint", address: "Alegria, Simara Island, Corcuera, Romblon, Philippines", description: "Scenic view deck overlooking the island and surrounding sea", rating: 4.9 },
+            { name: "Quebrada Cave", lat: 12.809208, lon: 122.049182, type: "nature", address: "Alegria, Simara Island, Corcuera, Romblon, Philippines", description: "Natural limestone cave and rock formation on Simara Island", rating: 4.9 }
         ],
         nature: [
-            { name: "Taclobo Beach", lat: 12.8020, lon: 122.0500, type: "beach", description: "White sand beach", rating: 4.8 }
+            { name: "Mahogany Farm", lat: 12.7983229, lon: 122.0255172, type: "nature", address: "San Roque, Simara Island, Corcuera, Romblon, Philippines", description: "Shaded mahogany forest and nature area", rating: 4.9 },
+            { name: "Parola", lat: 12.7983229, lon: 122.0255172, type: "nature", address: "San Roque, Simara Island, Corcuera, Romblon, Philippines", description: "Coastal lighthouse landmark at the edge of Simara Island", rating: 4.6 },
+            { name: "Siki it'Elipante", lat: 12.8143951, lon: 122.0733571, type: "nature", address: "Labnig, Simara Island, Corcuera, Romblon, Philippines", description: "Distinctive coastal rock formation and natural landmark", rating: 4.7 }
         ],
         dining: [
-            { name: "Simara Seafood Grill", lat: 12.8060, lon: 122.0475, type: "restaurant", description: "Fresh seafood", rating: 4.6 }
+            { name: "Dhanas Food Hub", lat: 12.7833644, lon: 122.0494957, type: "restaurant", address: "Poblacion, Corcuera, Romblon, Philippines", description: "Local meals and refreshments in Corcuera", rating: 4.6 },
+            { name: "Lomi House", lat: 12.8088263, lon: 122.0352241, type: "restaurant", address: "Mangansag, Corcuera, Romblon, Philippines", description: "Comfort food and local lomi noodles", rating: 4.5 },
+            { name: "Simgao and Bakeshop", lat: 12.8081858, lon: 122.0608322, type: "cafe", address: "Gobon, Corcuera, Romblon, Philippines", description: "Fresh baked goods, snacks, and refreshments", rating: 4.4 }
         ],
         hotel: [
-            { name: "Hotel Melvicfoj", lat: 12.8051, lon: 122.0478, type: "hotel", address: "Poblacion, Corcuera, Romblon, Philippines", description: "Local hotel accommodation in Corcuera", rating: 4.5 }
+            { name: "Hotel Melvicfoj", lat: 12.7833644, lon: 122.0494957, type: "hotel", address: "Poblacion, Corcuera, Romblon, Philippines", description: "Local hotel accommodation in Corcuera", rating: 4.5 }
         ]
     };
 }
