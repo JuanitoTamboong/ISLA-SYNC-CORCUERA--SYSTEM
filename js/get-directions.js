@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     const destLat = parseFloat(params.get('destLat')) || SIMARA_COORDS.lat;
     const destLng = parseFloat(params.get('destLng')) || SIMARA_COORDS.lon;
-    const title = decodeURIComponent(params.get('title') || 'San Jose, Corcuera');
+    const title = params.get('title') || 'San Jose, Corcuera';
+    const address = params.get('address') || 'Simara Island, Corcuera, Romblon, Philippines';
     const startLat = parseFloat(params.get('startLat')) || SIMARA_COORDS.lat;
     const startLng = parseFloat(params.get('startLng')) || SIMARA_COORDS.lon;
 
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update UI
     document.querySelector('.title').textContent = `Directions to ${title}`;
     document.getElementById('locationTitle').textContent = title;
-    document.getElementById('locationAddress').textContent = 'Simara Island, Corcuera, Romblon';
+    document.getElementById('locationAddress').textContent = address;
 
     // Initialize map
     const initMapDelayed = function() {

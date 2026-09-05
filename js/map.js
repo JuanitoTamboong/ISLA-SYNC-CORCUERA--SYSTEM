@@ -384,6 +384,7 @@ function showLocationCard(place) {
     cardDirectionsBtn.dataset.lat = place.coords[0];
     cardDirectionsBtn.dataset.lng = place.coords[1];
     cardDirectionsBtn.dataset.title = place.title;
+    cardDirectionsBtn.dataset.address = place.address || 'Simara Island, Corcuera, Romblon, Philippines';
     
     locationCard.dataset.currentTitle = place.title;
     
@@ -531,6 +532,7 @@ function setupDirectionsHandler() {
             var lat = parseFloat(this.dataset.lat);
             var lng = parseFloat(this.dataset.lng);
             var title = this.dataset.title || 'Destination';
+            var address = this.dataset.address || 'Simara Island, Corcuera, Romblon, Philippines';
             
             if (!isNaN(lat) && !isNaN(lng)) {
                 var startLat = userLocation ? userLocation.lat : SIMARA_COORDS.lat;
@@ -540,6 +542,7 @@ function setupDirectionsHandler() {
                     destLat: lat,
                     destLng: lng,
                     title: title,
+                    address: address,
                     startLat: startLat,
                     startLng: startLng
                 });
