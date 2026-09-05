@@ -87,8 +87,8 @@ const CATEGORY_ICON_TYPE = {
 
 // Beautiful map tile options
 const MAP_TILES = {
-    voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    positron: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    voyager: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    positron: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 };
 
 // Load places from JSON file
@@ -155,8 +155,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     }).setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
     
     L.tileLayer(MAP_TILES.voyager, {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: 'abcd',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        subdomains: 'abc',
         maxZoom: 19,
         minZoom: 3
     }).addTo(map);

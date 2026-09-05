@@ -12,8 +12,8 @@ let destinationTitle = 'San Jose, Corcuera';
 let isRouting = false;
 
 const MAP_TILES = {
-    voyager: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    positron: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    voyager: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    positron: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 };
 
 // ============ INITIALIZATION ============
@@ -63,7 +63,7 @@ function createMap(startLat, startLng, destLat, destLng, title) {
     }).setView([startLat, startLng], 14);
     
     L.tileLayer(MAP_TILES.voyager, {
-        attribution: '© OSM © CARTO',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
     }).addTo(map);
 

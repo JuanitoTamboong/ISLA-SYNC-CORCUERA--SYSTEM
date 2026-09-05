@@ -160,9 +160,9 @@ function initMap() {
         zoomAnimation: true
     }).setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OSM &copy; CARTO',
-        subdomains: 'abcd',
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        subdomains: 'abc',
         maxZoom: 19,
         minZoom: 3
     }).addTo(map);
