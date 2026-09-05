@@ -231,7 +231,7 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
     isRouting = true;
     
     if (routeControl) {
-        map.removeControl(routeControl);
+        map.removeLayer(routeControl);
         routeControl = null;
     }
 
@@ -239,63 +239,42 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
     confirmBtn.disabled = true;
     confirmBtn.innerHTML = '<span class="btn-loader"></span> Calculating Route...';
 
-    try {
-        routeControl = L.Routing.control({
-            waypoints: [
-                L.latLng(startLat, startLng),
-                L.latLng(endLat, endLng)
-            ],
-            routeWhileDragging: false,
-            showAlternatives: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: true,
-            show: false,
-            lineOptions: {
-                styles: [
-                    { 
-                        color: '#2563eb', 
-                        weight: 5, 
-                        opacity: 0.9,
-                        lineCap: 'round',
-                        lineJoin: 'round'
-                    }
-                ],
-                addWaypoints: false
-            },
-            router: L.Routing.osrmv1({
-                serviceUrl: 'https://router.project-osrm.org/route/v1',
-                profile: 'driving'
-            }),
-            createMarker: function() {
-                return null;
-            }
-        }).addTo(map);
+    const url = `https://api.geoapify.com/v1/routing?waypoints=${startLat},${startLng}|${endLat},${endLng}&mode=drive&apiKey=${GEOAPIFY_API_KEY}`;
 
-        routeControl.on('routesfound', function(e) {
-            const route = e.routes[0];
-            const distance = (route.summary.totalDistance / 1000).toFixed(1);
-            const time = Math.round(route.summary.totalTime / 60);
-            
+    fetch(url)
+        .then(function(response) {
+            if (!response.ok) throw new Error(`Routing request failed: ${response.status}`);
+            return response.json();
+        })
+        .then(function(data) {
+            if (!data.features || !data.features.length) {
+                throw new Error('No route returned');
+            }
+
+            const route = data.features[0];
+            routeControl = L.geoJSON(route, {
+                style: {
+                    color: '#2563eb',
+                    weight: 5,
+                    opacity: 0.9,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }
+            }).addTo(map);
+            map.fitBounds(routeControl.getBounds(), { padding: [50, 50] });
+
+            const distance = ((route.properties.distance || 0) / 1000).toFixed(1);
+            const time = Math.round((route.properties.time || 0) / 60);
             showRouteSummary(title, distance, time);
-            
-            // REMOVED the check marks - now just shows "Route Found"
             confirmBtn.innerHTML = 'Route Found ✓';
             confirmBtn.className = 'confirm-btn success';
             confirmBtn.disabled = false;
-            
             isRouting = false;
-        });
-
-        routeControl.on('routingerror', function(e) {
-            console.error('Routing error:', e);
+        })
+        .catch(function(error) {
+            console.error('Routing error:', error);
             showNoRouteError();
         });
-
-    } catch (error) {
-        console.error('Route error:', error);
-        showNoRouteError();
-    }
 }
 
 // ============ ROUTE SUMMARY ============
@@ -337,7 +316,7 @@ function showNoRouteError() {
 
 window.clearRoute = function() {
     if (routeControl) {
-        map.removeControl(routeControl);
+        map.removeLayer(routeControl);
         routeControl = null;
     }
     const summary = document.querySelector('.route-summary');
