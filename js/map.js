@@ -124,7 +124,7 @@ function getFallbackPlaces() {
             { name: "Quebrada Cave", lat: 12.809208, lon: 122.049182, type: "nature", address: "Alegria, Simara Island, Corcuera, Romblon, Philippines", description: "Natural limestone cave and rock formation on Simara Island", rating: 4.9 }
         ],
         nature: [
-            { name: "Mahogany Farm", lat: 12.7983229, lon: 122.0255172, type: "nature", address: "San Roque, Simara Island, Corcuera, Romblon, Philippines", description: "Shaded mahogany forest and nature area", rating: 4.9 },
+            { name: "Mahogany Farm", lat: 12.7983229, lon: 122.0249, type: "nature", address: "San Roque, Simara Island, Corcuera, Romblon, Philippines", description: "Shaded mahogany forest and nature area", rating: 4.9 },
             { name: "Parola", lat: 12.7983229, lon: 122.0255172, type: "nature", address: "San Roque, Simara Island, Corcuera, Romblon, Philippines", description: "Coastal lighthouse landmark at the edge of Simara Island", rating: 4.6 },
             { name: "Siki it'Elipante", lat: 12.8143951, lon: 122.0733571, type: "nature", address: "Labnig, Simara Island, Corcuera, Romblon, Philippines", description: "Distinctive coastal rock formation and natural landmark", rating: 4.7 }
         ],
