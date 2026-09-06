@@ -11,6 +11,7 @@ let userLocation = null;
 let destinationCoords = null;
 let destinationTitle = 'San Jose, Corcuera';
 let destinationImage = '';
+let locationReady = false;
 let isRouting = false;
 
 const MAP_TILES = {
@@ -33,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
     destinationTitle = title;
     destinationImage = image;
     destinationCoords = { lat: destLat, lon: destLng };
-    userLocation = { lat: startLat, lon: startLng };
 
     // Update UI
     document.querySelector('.title').textContent = `Directions to ${title}`;
@@ -55,6 +55,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners(title);
 
     // Get user's real location if available
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span class="btn-loader"></span> Locating You...';
     getUserLocation();
 });
 
@@ -88,6 +91,22 @@ function createMap(startLat, startLng, destLat, destLng, title) {
     // Fit bounds to show both points
     map.fitBounds([[startLat, startLng], [destLat, destLng]], { padding: [50, 50] });
 
+    // Allow a manual origin when GPS is unavailable. This never moves the destination pin.
+    map.on('click', function(event) {
+        setManualUserLocation(event.latlng.lat, event.latlng.lng);
+    });
+
+}
+
+function setManualUserLocation(lat, lng) {
+    userLocation = { lat: lat, lon: lng, manual: true };
+    locationReady = true;
+    addUserMarker(lat, lng);
+
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = 'Confirm Location';
+    confirmBtn.className = 'confirm-btn';
 }
 
 // ============ MARKERS - Using Pin Design (NO POPUPS) ============
@@ -476,7 +495,7 @@ function searchLocation(query) {
 function setupEventListeners(title) {
     const confirmBtn = document.getElementById('confirmBtn');
     confirmBtn.addEventListener('click', function() {
-        if (destinationCoords && userLocation) {
+        if (destinationCoords && userLocation && locationReady) {
             calculateRoute(
                 userLocation.lat, 
                 userLocation.lon, 
@@ -627,25 +646,35 @@ function getUserLocation(callback) {
             function(position) {
                 userLocation = {
                     lat: position.coords.latitude,
-                    lon: position.coords.longitude
+                    lon: position.coords.longitude,
+                    accuracy: position.coords.accuracy
                 };
+                locationReady = true;
                 addUserMarker(userLocation.lat, userLocation.lon);
                 map.setView([userLocation.lat, userLocation.lon], 15);
+                const confirmBtn = document.getElementById('confirmBtn');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = 'Confirm Location';
+                confirmBtn.className = 'confirm-btn';
                 if (callback) callback();
             },
             function(error) {
                 console.warn('Geolocation error:', error);
-                userLocation = SIMARA_COORDS;
-                addUserMarker(SIMARA_COORDS.lat, SIMARA_COORDS.lon);
-                map.setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
+                userLocation = null;
+                locationReady = false;
+                const confirmBtn = document.getElementById('confirmBtn');
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = 'Location Unavailable';
                 if (callback) callback();
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
     } else {
-        userLocation = SIMARA_COORDS;
-        addUserMarker(SIMARA_COORDS.lat, SIMARA_COORDS.lon);
-        map.setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
+        userLocation = null;
+        locationReady = false;
+        const confirmBtn = document.getElementById('confirmBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = 'Location Unavailable';
         if (callback) callback();
     }
 }
