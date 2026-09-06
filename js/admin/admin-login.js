@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('emailInput')
     const passwordInput = document.getElementById('passwordInput')
     const loginButton = document.getElementById('loginButton')
-    const forgotPassword = document.getElementById('forgotPassword')
     const togglePassword = document.getElementById('togglePassword')
     
     // Toggle password visibility
@@ -35,19 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function isEmail(input) {
         const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/
         return emailRegex.test(input)
-    }
-    
-    // Helper: Build a reliable redirect URL for Supabase (same as resident login)
-    function buildRedirectUrl() {
-        const origin = window.location.origin;
-        // Handle file:// protocol where origin is "null"
-        if (!origin || origin === 'null' || origin === 'file://') {
-            const pathParts = window.location.pathname.split('/');
-            pathParts.pop();
-            const basePath = pathParts.join('/');
-            return basePath + '/pages/admin/admin-reset-password.html';
-        }
-        return origin + '/pages/admin/admin-reset-password.html';
     }
     
     // Admin login function
@@ -149,70 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
             loginButton.disabled = false
             loginButton.textContent = 'Admin Log In'
         }
-    }
-    
-    // Forgot password handler - ADMIN SPECIFIC (same structure as resident)
-    if (forgotPassword) {
-        forgotPassword.addEventListener('click', async () => {
-            const email = emailInput ? emailInput.value.trim() : ''
-            
-            if (!email) {
-                showNotification('Please enter your email', 'error')
-                return
-            }
-            
-            if (!isEmail(email)) {
-                showNotification('Please enter a valid email address', 'error')
-                return
-            }
-            
-            // First, verify this email belongs to an admin
-            try {
-                // Check if the email exists and is an admin
-                const { data: profile, error: profileError } = await supabaseClient
-                    .from('profiles')
-                    .select('user_type')
-                    .eq('email', email)
-                    .maybeSingle()
-                
-                if (profileError || !profile) {
-                    showNotification('No account found with this email', 'error')
-                    return
-                }
-                
-                if (profile.user_type !== 'admin') {
-                    showNotification('This email is not associated with an admin account', 'error')
-                    return
-                }
-                
-                // Build the correct redirect URL
-                const redirectUrl = buildRedirectUrl();
-                
-                // Send password reset email via Supabase Auth
-                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: redirectUrl
-                })
-                
-                if (error) {
-                    if (error.message && (
-                        error.message.includes('400') || 
-                        error.message.includes('redirect') ||
-                        error.message.includes('Configuration') ||
-                        error.message.includes('url')
-                    )) {
-                        showNotification('Password reset link sent! If you don\'t receive it, ensure the redirect URL is whitelisted in Supabase Auth settings.', 'success');
-                    } else if (error.message.includes('User not found')) {
-                        showNotification('No account found', 'error')
-                    } else {
-                        showNotification(error.message || 'Failed to send reset email', 'error')
-                    }
-                } else {
-                    showNotification('Password reset email sent! Check your inbox.', 'success')
-                }
-            } catch (error) {
-                showNotification('Error sending reset email. Please try again.', 'error')
-            }
-        })
     }
     
     // Form submit handler
