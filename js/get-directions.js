@@ -1,5 +1,6 @@
 // ============ CONFIGURATION ============
 const SIMARA_COORDS = { lat: 12.8055, lon: 122.0474 };
+const SIMARA_ISLAND_RADIUS_KM = 20;
 const GEOAPIFY_API_KEY = '9a11bf7a766c45e29baf9f8eb1104500';
 
 let map;
@@ -9,6 +10,7 @@ let destinationMarker = null;
 let userLocation = null;
 let destinationCoords = null;
 let destinationTitle = 'San Jose, Corcuera';
+let destinationImage = '';
 let isRouting = false;
 
 const MAP_TILES = {
@@ -24,10 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const destLng = parseFloat(params.get('destLng')) || SIMARA_COORDS.lon;
     const title = params.get('title') || 'San Jose, Corcuera';
     const address = params.get('address') || 'Simara Island, Corcuera, Romblon, Philippines';
+    const image = params.get('image') || '';
     const startLat = parseFloat(params.get('startLat')) || SIMARA_COORDS.lat;
     const startLng = parseFloat(params.get('startLng')) || SIMARA_COORDS.lon;
 
     destinationTitle = title;
+    destinationImage = image;
     destinationCoords = { lat: destLat, lon: destLng };
     userLocation = { lat: startLat, lon: startLng };
 
@@ -35,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.title').textContent = `Directions to ${title}`;
     document.getElementById('locationTitle').textContent = title;
     document.getElementById('locationAddress').textContent = address;
+    updateLocationImage(image, title);
 
     // Initialize map
     const initMapDelayed = function() {
@@ -83,12 +88,6 @@ function createMap(startLat, startLng, destLat, destLng, title) {
     // Fit bounds to show both points
     map.fitBounds([[startLat, startLng], [destLat, destLng]], { padding: [50, 50] });
 
-    // Handle map click for manual location selection
-    map.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        updateDestination(lat, lng, 'Selected Location');
-    });
 }
 
 // ============ MARKERS - Using Pin Design (NO POPUPS) ============
@@ -225,6 +224,29 @@ function addDestinationMarker(lat, lng, title) {
         .addTo(map);
 }
 
+function updateLocationImage(imageUrl, title) {
+    const imageElement = document.getElementById('locationImage');
+    const iconElement = document.getElementById('locationIcon');
+    if (!imageElement || !iconElement) return;
+
+    if (imageUrl) {
+        imageElement.src = imageUrl;
+        imageElement.alt = `${title} image`;
+        imageElement.hidden = false;
+        imageElement.style.display = 'block';
+        iconElement.style.display = 'none';
+        imageElement.onerror = function() {
+            imageElement.hidden = true;
+            imageElement.style.display = 'none';
+            iconElement.style.display = 'block';
+        };
+    } else {
+        imageElement.hidden = true;
+        imageElement.style.display = 'none';
+        iconElement.style.display = 'block';
+    }
+}
+
 // ============ ROUTING ============
 function calculateRoute(startLat, startLng, endLat, endLng, title) {
     if (isRouting) return;
@@ -239,6 +261,8 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
     confirmBtn.disabled = true;
     confirmBtn.innerHTML = '<span class="btn-loader"></span> Calculating Route...';
 
+    const travelContext = getTravelContext(startLat, startLng, endLat, endLng);
+
     const url = `https://api.geoapify.com/v1/routing?waypoints=${startLat},${startLng}|${endLat},${endLng}&mode=drive&apiKey=${GEOAPIFY_API_KEY}`;
 
     fetch(url)
@@ -252,6 +276,10 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
             }
 
             const route = data.features[0];
+            const distance = ((route.properties.distance || 0) / 1000).toFixed(1);
+            const time = Math.round((route.properties.time || 0) / 60);
+            const recommendation = getRouteRecommendation(route, Number(distance), travelContext);
+
             routeControl = L.geoJSON(route, {
                 style: {
                     color: '#2563eb',
@@ -263,9 +291,12 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
             }).addTo(map);
             map.fitBounds(routeControl.getBounds(), { padding: [50, 50] });
 
-            const distance = ((route.properties.distance || 0) / 1000).toFixed(1);
-            const time = Math.round((route.properties.time || 0) / 60);
-            showRouteSummary(title, distance, time);
+            showRouteSummary(
+                title,
+                distance,
+                time,
+                recommendation
+            );
             confirmBtn.innerHTML = 'Route Found ✓';
             confirmBtn.className = 'confirm-btn success';
             confirmBtn.disabled = false;
@@ -273,12 +304,59 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
         })
         .catch(function(error) {
             console.error('Routing error:', error);
-            showNoRouteError();
+            showNoRouteError(title, startLat, startLng, endLat, endLng);
         });
 }
 
 // ============ ROUTE SUMMARY ============
-function showRouteSummary(title, distance, time) {
+function getTravelContext(startLat, startLng, endLat, endLng) {
+    const directDistanceKm = calculateDistance(startLat, startLng, endLat, endLng);
+    const originToSimaraKm = calculateDistance(startLat, startLng, SIMARA_COORDS.lat, SIMARA_COORDS.lon);
+    const destinationToSimaraKm = calculateDistance(endLat, endLng, SIMARA_COORDS.lat, SIMARA_COORDS.lon);
+
+    return {
+        directDistanceKm: directDistanceKm,
+        isIslandCrossing: destinationToSimaraKm <= SIMARA_ISLAND_RADIUS_KM && originToSimaraKm > SIMARA_ISLAND_RADIUS_KM
+    };
+}
+
+function getTravelRecommendation(distanceKm, hasRoadRoute, isIslandCrossing) {
+    if (isIslandCrossing) {
+        return { icon: 'fa-ship', label: 'Local boat or ferry needed', detail: `No road route is drawn for this sea crossing. Check the local boat or ferry schedule.` };
+    }
+
+    if (!hasRoadRoute) {
+        if (distanceKm > 100) {
+            return { icon: 'fa-plane', label: 'Long-distance travel required', detail: `No connected road route from your current location. Check boat/ferry and flight options for this ${distanceKm.toFixed(1)} km trip.` };
+        }
+        return { icon: 'fa-ship', label: 'Boat or ferry may be needed', detail: `No connected road route from your current location. This ${distanceKm.toFixed(1)} km trip may require an island crossing.` };
+    }
+
+    if (distanceKm <= 1.5) {
+        return { icon: 'fa-person-walking', label: 'Walking is recommended', detail: 'This destination is nearby.' };
+    }
+    return { icon: 'fa-car', label: 'Land travel is recommended', detail: `A road route is available from your current location by car, motorcycle, or tricycle.` };
+}
+
+function getRouteRecommendation(route, distanceKm, travelContext) {
+    const routeDetails = JSON.stringify(route.properties || {}).toLowerCase();
+    const includesWaterTransport = ['ferry', 'boat', 'ship'].some(function(keyword) {
+        return routeDetails.includes(keyword);
+    });
+
+    if (includesWaterTransport) {
+        return {
+            icon: 'fa-ship',
+            label: 'Boat or ferry included',
+            detail: 'No route line is drawn for this water crossing. Confirm the local schedule before travelling.',
+            isWaterTransport: true
+        };
+    }
+
+    return getTravelRecommendation(distanceKm, true, travelContext.isIslandCrossing);
+}
+
+function showRouteSummary(title, distance, time, recommendation) {
     const existingSummary = document.querySelector('.route-summary');
     if (existingSummary) existingSummary.remove();
 
@@ -291,17 +369,28 @@ function showRouteSummary(title, distance, time) {
                 <i class="fa fa-road"></i> ${distance} km &nbsp;|&nbsp;
                 <i class="fa fa-clock"></i> ${time} min
             </div>
+            <div class="travel-recommendation">
+                <i class="fa ${recommendation.icon}"></i>
+                <strong>${recommendation.label}</strong>
+                <small>${recommendation.detail}</small>
+            </div>
         </div>
-        <button class="route-close" onclick="clearRoute()">✕ Close</button>
+        <button class="route-close" type="button" onclick="clearRoute()" aria-label="Close route summary" title="Close route summary">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
     `;
     
-    const mapContainer = document.querySelector('.map');
-    if (mapContainer) {
-        mapContainer.appendChild(summaryDiv);
+    const locationSection = document.querySelector('.location-section');
+    if (locationSection) {
+        locationSection.parentNode.insertBefore(summaryDiv, locationSection);
     }
 }
 
-function showNoRouteError() {
+function showNoRouteError(title, startLat, startLng, endLat, endLng) {
+    if (title && startLat !== undefined) {
+        const travelContext = getTravelContext(startLat, startLng, endLat, endLng);
+        showRouteSummary(title, '--', '--', getTravelRecommendation(travelContext.directDistanceKm, false, travelContext.isIslandCrossing));
+    }
     const confirmBtn = document.getElementById('confirmBtn');
     confirmBtn.innerHTML = 'No Route Found';
     confirmBtn.className = 'confirm-btn error';
@@ -331,9 +420,11 @@ window.clearRoute = function() {
 function updateDestination(lat, lng, title) {
     destinationCoords = { lat: lat, lon: lng };
     destinationTitle = title || 'Selected Location';
+    destinationImage = '';
     
     document.getElementById('locationTitle').textContent = title || 'Selected Location';
     document.getElementById('locationAddress').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    updateLocationImage('', destinationTitle);
     
     addDestinationMarker(lat, lng, title || 'Selected Location');
     clearRoute();
@@ -557,6 +648,18 @@ function getUserLocation(callback) {
         map.setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
         if (callback) callback();
     }
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const earthRadiusKm = 6371;
+    const latitudeChange = (lat2 - lat1) * Math.PI / 180;
+    const longitudeChange = (lon2 - lon1) * Math.PI / 180;
+    const latitude1 = lat1 * Math.PI / 180;
+    const latitude2 = lat2 * Math.PI / 180;
+    const haversine = Math.sin(latitudeChange / 2) ** 2 +
+        Math.cos(latitude1) * Math.cos(latitude2) * Math.sin(longitudeChange / 2) ** 2;
+
+    return earthRadiusKm * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
 }
 
 // ============ RESPONSIVE HANDLING ============
