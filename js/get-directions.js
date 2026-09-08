@@ -10,8 +10,6 @@ let destinationMarker = null;
 let userLocation = null;
 let destinationCoords = null;
 let destinationTitle = 'San Jose, Corcuera';
-let destinationImage = '';
-let locationReady = false;
 let isRouting = false;
 
 const MAP_TILES = {
@@ -27,19 +25,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const destLng = parseFloat(params.get('destLng')) || SIMARA_COORDS.lon;
     const title = params.get('title') || 'San Jose, Corcuera';
     const address = params.get('address') || 'Simara Island, Corcuera, Romblon, Philippines';
-    const image = params.get('image') || '';
     const startLat = parseFloat(params.get('startLat')) || SIMARA_COORDS.lat;
     const startLng = parseFloat(params.get('startLng')) || SIMARA_COORDS.lon;
 
     destinationTitle = title;
-    destinationImage = image;
     destinationCoords = { lat: destLat, lon: destLng };
+    userLocation = { lat: startLat, lon: startLng };
 
     // Update UI
     document.querySelector('.title').textContent = `Directions to ${title}`;
     document.getElementById('locationTitle').textContent = title;
     document.getElementById('locationAddress').textContent = address;
-    updateLocationImage(image, title);
 
     // Initialize map
     const initMapDelayed = function() {
@@ -55,9 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners(title);
 
     // Get user's real location if available
-    const confirmBtn = document.getElementById('confirmBtn');
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span class="btn-loader"></span> Locating You...';
     getUserLocation();
 });
 
@@ -91,22 +84,12 @@ function createMap(startLat, startLng, destLat, destLng, title) {
     // Fit bounds to show both points
     map.fitBounds([[startLat, startLng], [destLat, destLng]], { padding: [50, 50] });
 
-    // Allow a manual origin when GPS is unavailable. This never moves the destination pin.
-    map.on('click', function(event) {
-        setManualUserLocation(event.latlng.lat, event.latlng.lng);
+    // Handle map click for manual location selection
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        updateDestination(lat, lng, 'Selected Location');
     });
-
-}
-
-function setManualUserLocation(lat, lng) {
-    userLocation = { lat: lat, lon: lng, manual: true };
-    locationReady = true;
-    addUserMarker(lat, lng);
-
-    const confirmBtn = document.getElementById('confirmBtn');
-    confirmBtn.disabled = false;
-    confirmBtn.innerHTML = 'Confirm Location';
-    confirmBtn.className = 'confirm-btn';
 }
 
 // ============ MARKERS - Using Pin Design (NO POPUPS) ============
@@ -243,29 +226,6 @@ function addDestinationMarker(lat, lng, title) {
         .addTo(map);
 }
 
-function updateLocationImage(imageUrl, title) {
-    const imageElement = document.getElementById('locationImage');
-    const iconElement = document.getElementById('locationIcon');
-    if (!imageElement || !iconElement) return;
-
-    if (imageUrl) {
-        imageElement.src = imageUrl;
-        imageElement.alt = `${title} image`;
-        imageElement.hidden = false;
-        imageElement.style.display = 'block';
-        iconElement.style.display = 'none';
-        imageElement.onerror = function() {
-            imageElement.hidden = true;
-            imageElement.style.display = 'none';
-            iconElement.style.display = 'block';
-        };
-    } else {
-        imageElement.hidden = true;
-        imageElement.style.display = 'none';
-        iconElement.style.display = 'block';
-    }
-}
-
 // ============ ROUTING ============
 function calculateRoute(startLat, startLng, endLat, endLng, title) {
     if (isRouting) return;
@@ -281,6 +241,29 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
     confirmBtn.innerHTML = '<span class="btn-loader"></span> Calculating Route...';
 
     const travelContext = getTravelContext(startLat, startLng, endLat, endLng);
+    if (travelContext.isIslandCrossing) {
+        routeControl = L.polyline(
+            [[startLat, startLng], [endLat, endLng]],
+            {
+                color: '#0f766e',
+                weight: 4,
+                opacity: 0.85,
+                dashArray: '10 8'
+            }
+        ).addTo(map);
+        map.fitBounds(routeControl.getBounds(), { padding: [50, 50] });
+        showRouteSummary(
+            title,
+            '--',
+            '--',
+            getTravelRecommendation(travelContext.directDistanceKm, false, true)
+        );
+        confirmBtn.innerHTML = 'Travel Plan Ready ✓';
+        confirmBtn.className = 'confirm-btn success';
+        confirmBtn.disabled = false;
+        isRouting = false;
+        return;
+    }
 
     const url = `https://api.geoapify.com/v1/routing?waypoints=${startLat},${startLng}|${endLat},${endLng}&mode=drive&apiKey=${GEOAPIFY_API_KEY}`;
 
@@ -295,10 +278,6 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
             }
 
             const route = data.features[0];
-            const distance = ((route.properties.distance || 0) / 1000).toFixed(1);
-            const time = Math.round((route.properties.time || 0) / 60);
-            const recommendation = getRouteRecommendation(route, Number(distance), travelContext);
-
             routeControl = L.geoJSON(route, {
                 style: {
                     color: '#2563eb',
@@ -310,12 +289,9 @@ function calculateRoute(startLat, startLng, endLat, endLng, title) {
             }).addTo(map);
             map.fitBounds(routeControl.getBounds(), { padding: [50, 50] });
 
-            showRouteSummary(
-                title,
-                distance,
-                time,
-                recommendation
-            );
+            const distance = ((route.properties.distance || 0) / 1000).toFixed(1);
+            const time = Math.round((route.properties.time || 0) / 60);
+            showRouteSummary(title, distance, time, getTravelRecommendation(Number(distance), true));
             confirmBtn.innerHTML = 'Route Found ✓';
             confirmBtn.className = 'confirm-btn success';
             confirmBtn.disabled = false;
@@ -341,7 +317,7 @@ function getTravelContext(startLat, startLng, endLat, endLng) {
 
 function getTravelRecommendation(distanceKm, hasRoadRoute, isIslandCrossing) {
     if (isIslandCrossing) {
-        return { icon: 'fa-ship', label: 'Local boat or ferry needed', detail: `No road route is drawn for this sea crossing. Check the local boat or ferry schedule.` };
+        return { icon: 'fa-ship', label: 'Local boat (barko) or ferry needed', detail: `Dashed line shows the approximate crossing from your location. Check the local boat or ferry schedule.` };
     }
 
     if (!hasRoadRoute) {
@@ -355,24 +331,6 @@ function getTravelRecommendation(distanceKm, hasRoadRoute, isIslandCrossing) {
         return { icon: 'fa-person-walking', label: 'Walking is recommended', detail: 'This destination is nearby.' };
     }
     return { icon: 'fa-car', label: 'Land travel is recommended', detail: `A road route is available from your current location by car, motorcycle, or tricycle.` };
-}
-
-function getRouteRecommendation(route, distanceKm, travelContext) {
-    const routeDetails = JSON.stringify(route.properties || {}).toLowerCase();
-    const includesWaterTransport = ['ferry', 'boat', 'ship'].some(function(keyword) {
-        return routeDetails.includes(keyword);
-    });
-
-    if (includesWaterTransport) {
-        return {
-            icon: 'fa-ship',
-            label: 'Boat or ferry included',
-            detail: 'No route line is drawn for this water crossing. Confirm the local schedule before travelling.',
-            isWaterTransport: true
-        };
-    }
-
-    return getTravelRecommendation(distanceKm, true, travelContext.isIslandCrossing);
 }
 
 function showRouteSummary(title, distance, time, recommendation) {
@@ -394,14 +352,12 @@ function showRouteSummary(title, distance, time, recommendation) {
                 <small>${recommendation.detail}</small>
             </div>
         </div>
-        <button class="route-close" type="button" onclick="clearRoute()" aria-label="Close route summary" title="Close route summary">
-            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
+        <button class="route-close" onclick="clearRoute()">✕ Close</button>
     `;
     
-    const locationSection = document.querySelector('.location-section');
-    if (locationSection) {
-        locationSection.parentNode.insertBefore(summaryDiv, locationSection);
+    const mapContainer = document.querySelector('.map');
+    if (mapContainer) {
+        mapContainer.appendChild(summaryDiv);
     }
 }
 
@@ -439,11 +395,9 @@ window.clearRoute = function() {
 function updateDestination(lat, lng, title) {
     destinationCoords = { lat: lat, lon: lng };
     destinationTitle = title || 'Selected Location';
-    destinationImage = '';
     
     document.getElementById('locationTitle').textContent = title || 'Selected Location';
     document.getElementById('locationAddress').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-    updateLocationImage('', destinationTitle);
     
     addDestinationMarker(lat, lng, title || 'Selected Location');
     clearRoute();
@@ -495,7 +449,7 @@ function searchLocation(query) {
 function setupEventListeners(title) {
     const confirmBtn = document.getElementById('confirmBtn');
     confirmBtn.addEventListener('click', function() {
-        if (destinationCoords && userLocation && locationReady) {
+        if (destinationCoords && userLocation) {
             calculateRoute(
                 userLocation.lat, 
                 userLocation.lon, 
@@ -646,35 +600,25 @@ function getUserLocation(callback) {
             function(position) {
                 userLocation = {
                     lat: position.coords.latitude,
-                    lon: position.coords.longitude,
-                    accuracy: position.coords.accuracy
+                    lon: position.coords.longitude
                 };
-                locationReady = true;
                 addUserMarker(userLocation.lat, userLocation.lon);
                 map.setView([userLocation.lat, userLocation.lon], 15);
-                const confirmBtn = document.getElementById('confirmBtn');
-                confirmBtn.disabled = false;
-                confirmBtn.innerHTML = 'Confirm Location';
-                confirmBtn.className = 'confirm-btn';
                 if (callback) callback();
             },
             function(error) {
                 console.warn('Geolocation error:', error);
-                userLocation = null;
-                locationReady = false;
-                const confirmBtn = document.getElementById('confirmBtn');
-                confirmBtn.disabled = true;
-                confirmBtn.innerHTML = 'Location Unavailable';
+                userLocation = SIMARA_COORDS;
+                addUserMarker(SIMARA_COORDS.lat, SIMARA_COORDS.lon);
+                map.setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
                 if (callback) callback();
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
     } else {
-        userLocation = null;
-        locationReady = false;
-        const confirmBtn = document.getElementById('confirmBtn');
-        confirmBtn.disabled = true;
-        confirmBtn.innerHTML = 'Location Unavailable';
+        userLocation = SIMARA_COORDS;
+        addUserMarker(SIMARA_COORDS.lat, SIMARA_COORDS.lon);
+        map.setView([SIMARA_COORDS.lat, SIMARA_COORDS.lon], 14);
         if (callback) callback();
     }
 }
