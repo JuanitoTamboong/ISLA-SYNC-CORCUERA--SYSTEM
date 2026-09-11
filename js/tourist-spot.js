@@ -3,6 +3,7 @@
 let allSpots = [];
 let allSouvenirs = [];
 let allDrivers = {}; // Store drivers for each spot
+let allDining = [];
 let currentFilter = 'all';
 let isLoading = true;
 
@@ -34,6 +35,7 @@ function showSkeletonLoaders() {
     const beachesContainer = document.getElementById('beachesScroll');
     const landmarksContainer = document.getElementById('landmarkScroll');
     const souvenirGrid = document.getElementById('souvenirGrid');
+    const diningContainer = document.getElementById('diningScroll');
     
     if (beachesContainer && beachesContainer.children.length === 0) {
         beachesContainer.innerHTML = generateSkeletonCards(3);
@@ -45,6 +47,10 @@ function showSkeletonLoaders() {
     
     if (souvenirGrid && souvenirGrid.children.length === 0) {
         souvenirGrid.innerHTML = generateSkeletonProducts(4);
+    }
+
+    if (diningContainer && diningContainer.children.length === 0) {
+        diningContainer.innerHTML = generateSkeletonCards(3);
     }
 }
 
@@ -85,6 +91,15 @@ async function loadData() {
         
         if (souvenirsError) throw souvenirsError;
         allSouvenirs = souvenirs || [];
+
+        const { data: dining, error: diningError } = await window.supabaseClient
+            .from('spot_dining')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        allDining = diningError ? [] : (dining || []).filter(item =>
+            allSpots.some(spot => String(spot.id) === String(item.tourist_spot_id))
+        );
         
         // Load drivers for all spots
         for (let spot of allSpots) {
@@ -130,7 +145,16 @@ function renderAllViews(searchQuery = '') {
         const landmarkSection = document.getElementById('landmarkSection');
         if (landmarkSection) landmarkSection.style.display = 'none';
     }
-    
+
+    if (currentFilter === 'all' || currentFilter === 'dining') {
+        const diningSection = document.getElementById('diningSection');
+        if (diningSection) diningSection.style.display = 'block';
+        renderDining(searchQuery);
+    } else {
+        const diningSection = document.getElementById('diningSection');
+        if (diningSection) diningSection.style.display = 'none';
+    }
+
     if (currentFilter === 'all' || currentFilter === 'souvenirs') {
         const souvenirSection = document.getElementById('souvenirSection');
         if (souvenirSection) souvenirSection.style.display = 'block';
@@ -185,6 +209,46 @@ function renderLandmarks(searchQuery = '') {
     container.innerHTML = landmarks.map(spot => generateSpotCard(spot)).join('');
 }
 
+function renderDining(searchQuery = '') {
+    const container = document.getElementById('diningScroll');
+    if (!container) return;
+
+    let dining = allDining.map(item => {
+        const spot = allSpots.find(currentSpot => String(currentSpot.id) === String(item.tourist_spot_id));
+        return spot ? { ...spot, diningId: item.id, name: item.name, image_url: item.image_url } : null;
+    }).filter(Boolean);
+
+    if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        dining = dining.filter(spot =>
+            spot.name.toLowerCase().includes(query) ||
+            (spot.location && spot.location.toLowerCase().includes(query))
+        );
+    }
+
+    if (dining.length === 0) {
+        container.innerHTML = '<div class="empty-card"><i class="fas fa-utensils"></i><p>No dining places found</p></div>';
+        return;
+    }
+
+    container.innerHTML = dining.map(spot => generateDiningCard(spot)).join('');
+}
+
+function generateDiningCard(spot) {
+    const hasImage = spot.image_url && spot.image_url.trim() !== '';
+    return `
+        <div class="card" data-dining-id="${escapeHtml(spot.diningId)}">
+            ${hasImage
+                ? `<img src="${escapeHtml(spot.image_url)}" alt="${escapeHtml(spot.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E'">`
+                : '<div class="no-image"><i class="fas fa-utensils"></i></div>'}
+            <div class="card-body">
+                <h4>${escapeHtml(spot.name)}</h4>
+                <p><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location || 'Corcuera, Romblon')}</p>
+            </div>
+        </div>
+    `;
+}
+
 function generateSpotCard(spot) {
     const hasImage = spot.image_url && spot.image_url.trim() !== '';
     const rating = spot.rating ? parseFloat(spot.rating).toFixed(1) : '4.5';
@@ -226,12 +290,18 @@ function generateSpotCard(spot) {
 function setupSpotCardDelegation() {
     const beachesContainer = document.getElementById('beachesScroll');
     const landmarkContainer = document.getElementById('landmarkScroll');
+    const diningContainer = document.getElementById('diningScroll');
 
     const handler = (event) => {
         const card = event.target.closest('.card');
         if (!card) return;
 
         const spotId = card.getAttribute('data-spot-id');
+        const diningId = card.getAttribute('data-dining-id');
+        if (diningId) {
+            viewDiningDetails(String(diningId));
+            return;
+        }
         if (!spotId) return;
 
         viewSpotDetails(String(spotId));
@@ -246,6 +316,39 @@ function setupSpotCardDelegation() {
         landmarkContainer.removeEventListener('click', handler);
         landmarkContainer.addEventListener('click', handler);
     }
+
+    if (diningContainer) {
+        diningContainer.removeEventListener('click', handler);
+        diningContainer.addEventListener('click', handler);
+    }
+}
+
+function viewDiningDetails(diningId) {
+    const dining = allDining.find(item => String(item.id) === String(diningId));
+    if (!dining) {
+        showNotification('Dining place not found', 'error');
+        return;
+    }
+
+    const spot = allSpots.find(item => String(item.id) === String(dining.tourist_spot_id));
+    const modal = document.getElementById('spotModal');
+    const modalName = document.getElementById('modalSpotName');
+    const modalImage = document.getElementById('modalSpotImage');
+    const modalRatingRow = document.getElementById('modalSpotRating');
+    const modalLocation = document.querySelector('#modalSpotLocation span');
+    const modalCategory = document.querySelector('#modalSpotCategory span');
+    const driversSection = document.getElementById('modalDriversSection');
+
+    modalName.textContent = dining.name || 'Dining Place';
+    modalImage.src = dining.image_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%239ca3af%22%3E%3Cpath d=%22M4 4h16v16H4z%22/%3E%3C/svg%3E';
+    modalImage.alt = dining.name || 'Dining Place';
+    modalLocation.textContent = spot?.location || 'Corcuera, Romblon';
+    modalCategory.textContent = 'Dining';
+    if (modalRatingRow) modalRatingRow.style.display = 'none';
+    if (driversSection) driversSection.style.display = 'none';
+
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
 
 function renderSouvenirs(searchQuery = '') {
@@ -340,6 +443,11 @@ async function viewSpotDetails(spotId) {
     const modalLocation = document.querySelector('#modalSpotLocation span');
     const modalCategory = document.querySelector('#modalSpotCategory span');
     const driversContainer = document.getElementById('modalDriversList');
+    const modalRatingRow = document.getElementById('modalSpotRating');
+    const driversSection = document.getElementById('modalDriversSection');
+
+    if (modalRatingRow) modalRatingRow.style.display = '';
+    if (driversSection) driversSection.style.display = '';
 
     // Try from already-loaded list first
     let spot = allSpots.find(s => String(s.id) === String(spotId));
@@ -527,6 +635,9 @@ function setupFilters() {
                 const landmarkCount = allSpots.filter(s => s.category === 'Landmark').length;
                 showNotification(`${landmarkCount} landmarks to explore`, 'info');
                 document.getElementById('landmarkSection').scrollIntoView({ behavior: 'smooth' });
+            } else if (section === 'dining') {
+                showNotification(`${allDining.length} dining places in Corcuera`, 'info');
+                document.getElementById('diningSection').scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
@@ -545,6 +656,8 @@ function setupSearch() {
             renderBeaches(query);
         } else if (currentFilter === 'landmarks') {
             renderLandmarks(query);
+        } else if (currentFilter === 'dining') {
+            renderDining(query);
         } else if (currentFilter === 'souvenirs') {
             renderSouvenirs(query);
         }

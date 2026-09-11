@@ -6,15 +6,21 @@ let spotImageFile = null;
 let souvenirImageFile = null;
 let spotImageDataUrl = null;
 let souvenirImageDataUrl = null;
+let diningImageDataUrl = null;
 let spotSouvenirs = {};
+let spotDining = {};
 let souvenirs = [];
+let diningItems = [];
 let deleteSpotId = null;
 let deleteDriverId = null;
 let deleteSouvenirId = null;
+let deleteDiningId = null;
 let pendingSouvenirs = [];
+let pendingDining = [];
 let pendingDrivers = [];
 let spotDrivers = {};
 let isSaving = false;
+let spotRenderVersion = 0;
 
 window.goBack = function() {
     window.location.href = 'admin-homepage.html';
@@ -75,9 +81,11 @@ function closeAllModals() {
     closeSpotModal();
     closeDriverModal();
     closeSouvenirModal();
+    closeDiningModal();
     closeDeleteModal();
     closeDeleteDriverModal();
     closeDeleteSouvenirModal();
+    closeDeleteDiningModal();
 }
 
 // ========== INPUT VALIDATION SETUP ==========
@@ -157,7 +165,7 @@ async function loadSpots() {
             spot.souvenirCount = count || 0;
         }
         
-        renderSpots();
+        await renderSpots();
     } catch (error) {
         showNotification('Failed to load tourist spots', 'error');
         document.getElementById('spotList').innerHTML = `
@@ -170,6 +178,7 @@ async function loadSpots() {
 }
 
 async function renderSpots() {
+    const renderVersion = ++spotRenderVersion;
     const container = document.getElementById('spotList');
     
     const filteredSpots = currentFilter === 'all' 
@@ -188,6 +197,7 @@ async function renderSpots() {
     }
 
     for (let spot of filteredSpots) {
+        if (renderVersion !== spotRenderVersion) return;
         try {
             const { data, error } = await window.supabaseClient
                 .from('souvenirs')
@@ -199,7 +209,22 @@ async function renderSpots() {
         } catch (err) {
             spotSouvenirs[spot.id] = [];
         }
+
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('spot_dining')
+                .select('*')
+                .eq('tourist_spot_id', String(spot.id))
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            spotDining[spot.id] = data || [];
+        } catch (err) {
+            spotDining[spot.id] = [];
+        }
     }
+
+    if (renderVersion !== spotRenderVersion) return;
 
     container.innerHTML = filteredSpots.map(spot => {
         const categoryClass = spot.category === 'Beach' ? 'beach' : 'landmark';
@@ -234,6 +259,20 @@ async function renderSpots() {
             : '';
 
         const souvenirsForSpot = spotSouvenirs[spot.id] || [];
+        const diningForSpot = spotDining[spot.id] || [];
+
+        const diningHtml = diningForSpot.length > 0
+            ? diningForSpot.map(dining => `
+                <div class="spot-dining-item">
+                    <div class="spot-dining-img-wrap">
+                        ${dining.image_url
+                            ? `<img class="spot-dining-img" src="${escapeHtml(dining.image_url)}" alt="${escapeHtml(dining.name)}" onerror="this.style.display='none'">`
+                            : '<div class="spot-dining-img-placeholder"><i class="fa-solid fa-utensils"></i></div>'}
+                    </div>
+                    <span class="spot-dining-name">${escapeHtml(dining.name)}</span>
+                </div>
+            `).join('')
+            : '<p class="spot-no-dining">No dining places yet</p>';
         
         let souvenirsHtml = '';
         if (souvenirsForSpot.length > 0) {
@@ -278,6 +317,10 @@ async function renderSpots() {
                     <h3 class="spot-name">${escapeHtml(spot.name)}</h3>
                     ${spot.location ? `<p class="spot-location"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(spot.location)}</p>` : ''}
                     ${driversHtml}
+                    <div class="spot-dining-list">
+                        <p class="spot-dining-label"><i class="fa-solid fa-utensils"></i> Dining:</p>
+                        ${diningHtml}
+                    </div>
                     <div class="spot-souvenirs-list">
                         <p class="spot-souvenirs-label"><i class="fa-solid fa-gift"></i> Souvenirs:</p>
                         ${souvenirsHtml}
@@ -362,6 +405,7 @@ window.openSpotModal = function(spotId = null) {
         souvenirSection.style.display = 'block';
         loadSouvenirs(spotId);
         loadLocalDrivers(spotId);
+        loadDining(spotId);
     } else {
         currentEditingSpot = null;
         title.textContent = 'Add Tourist Spot';
@@ -369,6 +413,8 @@ window.openSpotModal = function(spotId = null) {
         souvenirs = [];
         renderSouvenirs();
         renderLocalDrivers();
+        diningItems = [];
+        renderDining();
     }
     
     modal.classList.add('show');
@@ -388,6 +434,7 @@ window.closeSpotModal = function(event) {
     
     currentEditingSpot = null;
     pendingSouvenirs = [];
+    pendingDining = [];
     pendingDrivers = [];
     spotImageDataUrl = null;
     spotImageFile = null;
@@ -868,6 +915,15 @@ function setupForms() {
             await saveSouvenir();
         });
     }
+
+    const diningForm = document.getElementById('diningForm');
+    if (diningForm) {
+        diningForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            await saveDining();
+        });
+    }
     
     const driverForm = document.getElementById('driverForm');
     if (driverForm) {
@@ -1112,6 +1168,30 @@ function setupImageUploads() {
             reader.readAsDataURL(file);
         });
     }
+
+    const diningImageInput = document.getElementById('diningImageInput');
+    if (diningImageInput) {
+        diningImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
+                showNotification('Please upload a JPEG or PNG image', 'error');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showNotification('Image must be less than 5MB', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                diningImageDataUrl = event.target.result;
+                document.getElementById('diningPreviewImg').src = diningImageDataUrl;
+                document.getElementById('diningUploadBox').style.display = 'none';
+                document.getElementById('diningPreviewDiv').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 }
 
 // ========== SAVE SPOT ==========
@@ -1238,8 +1318,23 @@ async function saveSpot() {
                         .insert([souvenirData]);
                 }
             }
+
+            if (pendingDining.length > 0) {
+                const diningToSave = [...pendingDining];
+                pendingDining = [];
+                for (const dining of diningToSave) {
+                    await window.supabaseClient
+                        .from('spot_dining')
+                        .insert([{
+                            tourist_spot_id: String(spotId),
+                            name: dining.name,
+                            image_url: dining.image_url || null
+                        }]);
+                }
+            }
             
             await loadSouvenirs(spotId);
+            await loadDining(spotId);
             document.getElementById('modalTitle').textContent = 'Edit Tourist Spot';
             await loadSpots();
             
@@ -1288,35 +1383,54 @@ window.closeDeleteModal = function(event) {
 window.confirmDelete = async function() {
     if (!deleteSpotId) return;
 
+    const spotIdToDelete = deleteSpotId;
+
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     const originalText = confirmBtn.innerHTML;
     confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
     confirmBtn.disabled = true;
 
     try {
-        await window.supabaseClient
+        const { error: driversError } = await window.supabaseClient
             .from('spot_drivers')
             .delete()
-            .eq('tourist_spot_id', deleteSpotId);
+            .eq('tourist_spot_id', spotIdToDelete);
 
-        await window.supabaseClient
+        if (driversError) throw driversError;
+
+        const { error: souvenirsError } = await window.supabaseClient
             .from('souvenirs')
             .delete()
-            .eq('tourist_spot_id', deleteSpotId);
+            .eq('tourist_spot_id', spotIdToDelete);
+
+        if (souvenirsError) throw souvenirsError;
+
+        const { error: diningError } = await window.supabaseClient
+            .from('spot_dining')
+            .delete()
+            .eq('tourist_spot_id', spotIdToDelete);
+
+        if (diningError && diningError.code !== 'PGRST205') throw diningError;
 
         const { error } = await window.supabaseClient
             .from('tourist_spots')
             .delete()
-            .eq('id', deleteSpotId);
+            .eq('id', spotIdToDelete);
 
         if (error) throw error;
 
+        spots = spots.filter(spot => String(spot.id) !== String(spotIdToDelete));
+        delete spotDrivers[spotIdToDelete];
+        delete spotSouvenirs[spotIdToDelete];
+        delete spotDining[spotIdToDelete];
+        diningItems = [];
+
         showInContainerNotification('mainPageNotification', 'Tourist spot deleted successfully!', 'success');
         closeDeleteModal();
-        await loadSpots();
+        await renderSpots();
 
     } catch (error) {
-        showNotification('Failed to delete tourist spot', 'error');
+        showNotification('Failed to delete tourist spot: ' + (error.message || 'Unknown error'), 'error');
     } finally {
         confirmBtn.innerHTML = originalText;
         confirmBtn.disabled = false;
@@ -1661,6 +1775,164 @@ async function saveSouvenir() {
 
 window.editSouvenir = function(souvenirId) {
     openSouvenirModal(souvenirId);
+};
+
+async function loadDining(spotId) {
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('spot_dining')
+            .select('*')
+            .eq('tourist_spot_id', String(spotId))
+            .order('created_at', { ascending: true });
+        if (error) throw error;
+        diningItems = data || [];
+    } catch (error) {
+        diningItems = [];
+    }
+    renderDining();
+}
+
+function renderDining() {
+    const grid = document.getElementById('diningGrid');
+    if (!grid) return;
+    const items = [...diningItems, ...pendingDining];
+    if (items.length === 0) {
+        grid.innerHTML = '<div class="souvenir-empty"><i class="fa-solid fa-utensils"></i><p>No dining places yet</p><p class="souvenir-hint">Click + Add to add dining places</p></div>';
+        return;
+    }
+    grid.innerHTML = items.map(item => {
+        const isPending = item.pending === true;
+        const id = isPending ? item.tempId : item.id;
+        const image = item.image_url
+            ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}">`
+            : '<i class="fa-solid fa-utensils"></i>';
+        const actions = isPending
+            ? `<button type="button" onclick="removePendingDining('${id}')" title="Remove"><i class="fa-solid fa-times"></i></button>`
+            : `<button type="button" onclick="openDiningModal('${id}')" title="Edit"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="openDeleteDiningModal('${id}', event)" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
+        return `<div class="dining-item">
+            <div class="dining-image">${image}</div>
+            <div class="dining-details"><p class="dining-name">${escapeHtml(item.name)}</p></div>
+            <div class="dining-actions">${actions}</div>
+        </div>`;
+    }).join('');
+}
+
+window.openDiningModal = function(diningId = null) {
+    const form = document.getElementById('diningForm');
+    form.reset();
+    diningImageDataUrl = null;
+    document.getElementById('diningId').value = '';
+    document.getElementById('diningModalTitle').textContent = diningId ? 'Edit Dining' : 'Add Dining';
+    document.getElementById('diningUploadBox').style.display = 'flex';
+    document.getElementById('diningPreviewDiv').style.display = 'none';
+    document.getElementById('diningPreviewImg').src = '';
+
+    if (diningId) {
+        const item = diningItems.find(d => String(d.id) === String(diningId));
+        if (!item) return;
+        document.getElementById('diningId').value = item.id;
+        document.getElementById('diningName').value = item.name || '';
+        if (item.image_url) {
+            document.getElementById('diningUploadBox').style.display = 'none';
+            document.getElementById('diningPreviewDiv').style.display = 'block';
+            document.getElementById('diningPreviewImg').src = item.image_url;
+        }
+    }
+    document.getElementById('diningModal').classList.add('show');
+};
+
+window.closeDiningModal = function() {
+    const modal = document.getElementById('diningModal');
+    if (modal) modal.classList.remove('show');
+};
+
+window.removeDiningImage = function() {
+    diningImageDataUrl = null;
+    document.getElementById('diningUploadBox').style.display = 'flex';
+    document.getElementById('diningPreviewDiv').style.display = 'none';
+    document.getElementById('diningPreviewImg').src = '';
+};
+
+async function saveDining() {
+    const name = document.getElementById('diningName').value.trim();
+    const diningId = document.getElementById('diningId').value;
+    const lettersOnlyRegex = /^[A-Za-z]+(?:\s+[A-Za-z]+)*$/;
+    if (!lettersOnlyRegex.test(name)) {
+        showNotification('Dining name should contain letters only (A-Z, spaces allowed)', 'error');
+        return;
+    }
+
+    const spotId = document.getElementById('spotId').value;
+    const existing = diningId ? diningItems.find(d => String(d.id) === String(diningId)) : null;
+    const data = { name, image_url: diningImageDataUrl || existing?.image_url || null };
+
+    try {
+        if (!spotId) {
+            pendingDining.push({ ...data, tempId: 'pending_' + Date.now(), pending: true });
+        } else if (diningId) {
+            const { error } = await window.supabaseClient.from('spot_dining').update(data).eq('id', diningId);
+            if (error) throw error;
+            await loadDining(spotId);
+        } else {
+            const { error } = await window.supabaseClient
+                .from('spot_dining')
+                .insert([{ ...data, tourist_spot_id: String(spotId) }]);
+            if (error) throw error;
+            await loadDining(spotId);
+        }
+        renderDining();
+        closeDiningModal();
+    } catch (error) {
+        showNotification('Failed to save dining: ' + error.message, 'error');
+    }
+}
+
+window.removePendingDining = function(id) {
+    pendingDining = pendingDining.filter(item => item.tempId !== id);
+    renderDining();
+};
+
+window.closeDeleteDiningModal = function(event) {
+    if (event) event.stopPropagation();
+    const modal = document.getElementById('deleteDiningModal');
+    if (modal) modal.classList.remove('show');
+    deleteDiningId = null;
+};
+
+window.openDeleteDiningModal = function(diningId, event) {
+    if (event) event.stopPropagation();
+    deleteDiningId = diningId;
+    const modal = document.getElementById('deleteDiningModal');
+    if (modal) modal.classList.add('show');
+};
+
+window.confirmDeleteDining = async function(event) {
+    if (event) event.stopPropagation();
+    if (!deleteDiningId) return;
+
+    const confirmBtn = document.getElementById('confirmDeleteDiningBtn');
+    if (!confirmBtn) return;
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    confirmBtn.disabled = true;
+
+    try {
+        const { error } = await window.supabaseClient
+            .from('spot_dining')
+            .delete()
+            .eq('id', deleteDiningId);
+        if (error) throw error;
+
+        showInContainerNotification('spotModalNotification', 'Dining deleted successfully!', 'success');
+        closeDeleteDiningModal();
+        await loadDining(document.getElementById('spotId').value);
+        await renderSpots();
+    } catch (error) {
+        showNotification('Failed to delete dining: ' + error.message, 'error');
+    } finally {
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    }
 };
 
 // ========== NOTIFICATION SYSTEM ==========

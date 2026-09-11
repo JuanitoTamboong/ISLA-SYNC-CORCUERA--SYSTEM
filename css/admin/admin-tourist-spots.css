@@ -458,6 +458,53 @@
     border: 1px solid #e9ecef;
 }
 
+    .spot-dining-list {
+        margin-top: 12px;
+    }
+    .spot-dining-label {
+        color: #db2777;
+        font-size: 11px;
+        font-weight: 600;
+        margin: 0 0 7px;
+    }
+    .spot-dining-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+    .spot-dining-img-wrap,
+    .spot-dining-img,
+    .spot-dining-img-placeholder {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+    }
+    .spot-dining-img-wrap {
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #fce7f3;
+    }
+    .spot-dining-img {
+        display: block;
+        object-fit: cover;
+    }
+    .spot-dining-img-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #db2777;
+    }
+    .spot-dining-name {
+        color: #374151;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .spot-no-dining {
+        color: #9ca3af;
+        font-size: 11px;
+        margin: 0;
+    }
 .drivers-section-header {
     display: flex;
     justify-content: space-between;
@@ -690,6 +737,80 @@
     max-height: 200px;
     overflow-y: auto;
 }
+
+.dining-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.dining-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dining-section-header h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.dining-add-btn {
+    font-size: 11px;
+    color: #db2777;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: #fce7f3;
+    border-radius: 8px;
+}
+
+.dining-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.dining-item {
+    background: #fdf2f8;
+    border: 1px solid #fbcfe8;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dining-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    background: #fce7f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.dining-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dining-image i { color: #db2777; font-size: 20px; }
+.dining-details { flex: 1; min-width: 0; }
+.dining-name { margin: 0; font-size: 13px; font-weight: 600; color: #1f2937; }
+.dining-actions { display: flex; gap: 5px; }
+.dining-actions button { background: none; border: none; cursor: pointer; color: #6b7280; padding: 7px; }
 
 /* Improved souvenir item styling */
 .souvenir-item {
