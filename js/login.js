@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.getElementById('togglePassword')
     const googleBtn = document.querySelector('.social-btn[data-provider="google"]')
 
-    // ✅ FIXED: Use the WEB client ID (not the Android one)
     const googleWebClientId = '659865928046-bf6g0ofasnkic8qgrs745e258bfgfgp1.apps.googleusercontent.com'
 
     function isNativeApp() {
