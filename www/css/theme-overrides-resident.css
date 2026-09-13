@@ -1,0 +1,244 @@
+/* Resident page dark-mode overrides
+   Uses existing tokens defined in css/shared.css via `data-theme="dark"`.
+*/
+
+/* Resident Homepage */
+
+
+html[data-theme="dark"] .container {
+  background: var(--container-inner-bg) !important;
+}
+
+/* resident-homepage.css had many hardcoded colors; override major blocks */
+html[data-theme="dark"] .notification-panel,
+html[data-theme="dark"] .notification-panel.show {
+  background: var(--card-bg) !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35) !important;
+}
+
+html[data-theme="dark"] .notification-bell {
+  background: rgba(59,130,246,0.15) !important;
+}
+
+html[data-theme="dark"] .notif-header {
+  border-bottom-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .notif-item {
+  border-bottom-color: rgba(255,255,255,0.06) !important;
+}
+
+html[data-theme="dark"] .notif-item:hover {
+  background: rgba(255,255,255,0.05) !important;
+}
+
+html[data-theme="dark"] .notif-header h3,
+html[data-theme="dark"] .notif-header span,
+html[data-theme="dark"] .greeting,
+html[data-theme="dark"] .header h2 {
+  color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .profile {
+  background: rgba(59,130,246,0.18) !important;
+}
+
+html[data-theme="dark"] .search-box {
+  background: rgba(255,255,255,0.08) !important;
+}
+
+html[data-theme="dark"] .section-header a {
+  color: var(--nav-active-color) !important;
+}
+
+html[data-theme="dark"] .update-card {
+  background: rgba(255,255,255,0.06) !important;
+}
+
+html[data-theme="dark"] .update-card:hover {
+  background: rgba(255,255,255,0.10) !important;
+}
+
+html[data-theme="dark"] .update-text .title,
+html[data-theme="dark"] .update-text span {
+  color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .weather {
+  background: linear-gradient(135deg, #1f3a8a, #0b4aa7) !important;
+}
+
+/* Report page */
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .location-card,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .success-modal-phone {
+  background: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] #loadingState {
+  background: rgba(0,0,0,0.55) !important;
+}
+
+/* My Reports page */
+html[data-theme="dark"] .category-section,
+html[data-theme="dark"] .category-header,
+html[data-theme="dark"] .report-item,
+html[data-theme="dark"] .modal-image-box,
+html[data-theme="dark"] .loader-box {
+  background: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .filter-tabs,
+html[data-theme="dark"] .filter-tab.active,
+html[data-theme="dark"] .submit-new-btn,
+html[data-theme="dark"] .submit-first {
+  border-bottom-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .modal-close,
+html[data-theme="dark"] .modal-label,
+html[data-theme="dark"] .modal-desc,
+html[data-theme="dark"] .modal-timeline-content p,
+html[data-theme="dark"] .report-action,
+html[data-theme="dark"] .report-date {
+  color: var(--muted-text) !important;
+}
+
+/* Tourist spots page */
+html[data-theme="dark"] .search-box,
+html[data-theme="dark"] .filters .pill,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .product,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .spot-drivers-preview,
+html[data-theme="dark"] .drivers span {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .product,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .skeleton-card,
+html[data-theme="dark"] .skeleton-product {
+  background: var(--card-bg) !important;
+}
+
+html[data-theme="dark"] .pill.active {
+  background: rgba(96,165,250,0.2) !important;
+  color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] .container {
+  background: var(--container-bg) !important;
+  color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .header i,
+html[data-theme="dark"] .header h2,
+html[data-theme="dark"] .header p,
+html[data-theme="dark"] .section-header h3,
+html[data-theme="dark"] .section-header span,
+html[data-theme="dark"] .section-header i,
+html[data-theme="dark"] .search-box input,
+html[data-theme="dark"] .card h4,
+html[data-theme="dark"] .card p,
+html[data-theme="dark"] .product h4,
+html[data-theme="dark"] .product p,
+html[data-theme="dark"] .modal-header h2,
+html[data-theme="dark"] .modal-info p,
+html[data-theme="dark"] .modal-info p span,
+html[data-theme="dark"] .modal-drivers-section h4,
+html[data-theme="dark"] .driver-name,
+html[data-theme="dark"] .driver-contact,
+html[data-theme="dark"] .driver-contact a,
+html[data-theme="dark"] .no-drivers-message,
+html[data-theme="dark"] .no-drivers-message p,
+html[data-theme="dark"] .driver-name-preview,
+html[data-theme="dark"] .driver-more,
+html[data-theme="dark"] .spot-drivers-preview,
+html[data-theme="dark"] .drivers span {
+  color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .search-box,
+html[data-theme="dark"] .pill,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .product,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-drivers-section,
+html[data-theme="dark"] .driver-card,
+html[data-theme="dark"] .spot-drivers-preview,
+html[data-theme="dark"] .drivers span {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .search-box {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04) !important;
+}
+
+html[data-theme="dark"] .search-box input::placeholder {
+  color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .pill {
+  background: rgba(255,255,255,0.06) !important;
+  color: var(--text-color) !important;
+}
+
+html[data-theme="dark"] .pill:hover {
+  background: rgba(255,255,255,0.10) !important;
+}
+
+html[data-theme="dark"] .pill.active {
+  background: rgba(96,165,250,0.25) !important;
+  color: #e0f2fe !important;
+}
+
+html[data-theme="dark"] .card p,
+html[data-theme="dark"] .product p,
+html[data-theme="dark"] .modal-info p span,
+html[data-theme="dark"] .driver-contact,
+html[data-theme="dark"] .driver-more,
+html[data-theme="dark"] .no-drivers-message,
+html[data-theme="dark"] .no-drivers-message p,
+html[data-theme="dark"] .driver-name-preview {
+  color: var(--muted-text) !important;
+}
+
+html[data-theme="dark"] .card:hover,
+html[data-theme="dark"] .product:hover,
+html[data-theme="dark"] .driver-card:hover {
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.3) !important;
+  border-color: rgba(96,165,250,0.35) !important;
+}
+
+html[data-theme="dark"] .modal-info p,
+html[data-theme="dark"] .modal-drivers-section,
+html[data-theme="dark"] .modal-header {
+  border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .driver-name-preview {
+  background: rgba(255,255,255,0.05) !important;
+}
+
+html[data-theme="dark"] .spot-drivers-preview {
+  background: rgba(255,255,255,0.03) !important;
+  border-color: var(--border-color) !important;
+}
+
+html[data-theme="dark"] .close-modal {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .close-modal:hover {
+  color: #fca5a5 !important;
+}
+

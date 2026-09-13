@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Isla-Sync Corcuera</title>
+    <link rel="stylesheet" href="../css/login.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Background -->
+    <div class="hero">
+
+        <!-- Overlay -->
+        <div class="overlay">
+
+            <!-- Back Button -->
+            <a href="welcome.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+
+            <!-- Logo -->
+            <img src="../assets/isla-logo.png" class="logo">
+
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to sync with Corcuera</p>
+
+            <form id="loginForm">
+                <!-- Email -->
+                <div class="input-group">
+                    <label>EMAIL OR USERNAME</label>
+                    <div class="input-box">
+                        <i class="fa-regular fa-envelope"></i>
+                    <input type="text" id="emailInput" placeholder="Enter your email" autocomplete="username">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="input-group">
+                    <label>PASSWORD</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="passwordInput" placeholder="Enter your password" autocomplete="current-password">
+                        <i class="fa-regular fa-eye toggle" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <div class="forgot" id="forgotPassword">Forgot Password?</div>
+
+                <!-- Button -->
+                <button type="submit" class="btn" id="loginButton">Log In</button>
+            </form>
+
+            <!-- Divider -->
+            <div class="divider">OR CONTINUE WITH</div>
+
+            <!-- Social -->
+            <div class="social">
+                <div class="social-btn google-btn" data-provider="google" role="button" tabindex="0" aria-label="Continue with Google">
+                    <img class="google-icon" src="../assets/google-icon.png" alt="">
+                    <span>Continue with Google</span>
+                </div>
+            </div>
+
+            <!-- Signup -->
+            <p class="signup">
+                Don’t have an account? <a href="sign-up.html">Sign Up</a>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Load Supabase SDK first -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+<!-- Then load login script -->
+<script src="../js/login.js"></script>
+</body>
+</html>

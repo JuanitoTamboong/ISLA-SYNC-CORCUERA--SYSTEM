@@ -1,0 +1,95 @@
+@import url('shared.css');
+
+/* CONTAINER */
+.container {
+    background: url("../assets/7.jpg") no-repeat center/cover;
+ 
+}
+
+/* DARK OVERLAY */
+.container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.259);
+}
+
+/* CONTENT */
+.content {
+    position: relative;
+    z-index:2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+/* ICON */
+.icon-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    backdrop-filter: blur(6px);
+}
+
+.icon-circle i {
+    font-size: 30px;
+}
+
+/* TEXT */
+h2 {
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+/* BUTTONS */
+.btn {
+    width: 85%;
+    padding: 15px;
+    border-radius: 18px;
+    border: none;
+    font-size: 14px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+/* PRIMARY */
+.primary {
+    background: linear-gradient(135deg, #2f80ed, #1c64d1);
+    color: white;
+}
+
+/* GLASS BUTTON */
+.secondary {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* FOOTER */
+.footer {
+    position: absolute;
+    bottom: 150px;
+    width: 100%;
+    text-align: center;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    z-index: 2;
+}

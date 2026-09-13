@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Isla-Sync Corcuera</title>
+
+<link rel="stylesheet" href="../../css/admin/admin-shared.css">
+<link rel="stylesheet" href="../../css/admin/admin-homepage.css">
+
+<!-- Icons - Using solid and regular icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <div class="greeting-wrapper">
+                <span class="greeting-emoji">👋</span>
+                <div>
+                    <p class="greeting" id="greetingText">Good Morning,</p>
+                    <h2 id="adminName">Admin</h2>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <!-- NOTIFICATION WRAPPER -->
+            <div class="notification-wrapper">
+                <div class="notification-bell" id="notificationBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+                </div>
+                <!-- NOTIFICATION PANEL -->
+                <div class="notification-panel" id="notificationPanel">
+                    <div class="notif-header">
+                        <h3><i class="fas fa-bell"></i> Notifications</h3>
+                        <span onclick="event.stopPropagation(); markAllRead()">Mark all read</span>
+                    </div>
+                    <div class="notif-list" id="notifList">
+                        <div class="notif-empty">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No new notifications</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- PROFILE -->
+            <div class="profile" onclick="goToProfile()" id="profileContainer">
+                <img id="profileImg" class="profile-img" src="" alt="Profile Photo">
+                <span id="profileInitials" class="profile-initials">A</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="totalReports">0</h3>
+                <p>Total Reports</p>
+                <span class="stat-trend positive" id="totalTrend"><i class="fas fa-arrow-up"></i> <span id="totalPercent">0</span>% this month</span>
+            </div>
+        </div>
+        <div class="stat-card pending">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="pendingReports">0</h3>
+                <p>Pending Reports</p>
+                <span class="stat-trend warning"><i class="fas fa-exclamation-triangle"></i> Needs attention</span>
+            </div>
+        </div>
+        <div class="stat-card resolved">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="resolvedReports">0</h3>
+                <p>Resolved Reports</p>
+                <span class="stat-trend positive" id="resolvedTrend"><i class="fas fa-arrow-up"></i> <span id="resolvedPercent">0</span>% this month</span>
+            </div>
+        </div>
+        <div class="stat-card users">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="totalUsers">0</h3>
+                <p>Active Users</p>
+                <span class="stat-trend positive" id="userTrend"><i class="fas fa-arrow-up"></i> <span id="userPercent">0</span>% this month</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="section">
+        <div class="section-header">
+            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            <span class="section-subtitle">Manage your content</span>
+        </div>
+        <div class="actions-grid">
+            <div class="action-card" onclick="goToTouristSpots()">
+                <div class="action-icon spots-icon">
+                    <i class="fas fa-landmark"></i>
+                </div>
+                <div class="action-info">
+                    <p>Tourist Spots</p>
+                    <span>Manage spots & souvenirs</span>
+                </div>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </div>
+            <div class="action-card" onclick="goToNews()">
+                <div class="action-icon news-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <div class="action-info">
+                    <p>Manage News</p>
+                    <span>Create & edit articles</span>
+                </div>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </div>
+            <div class="action-card" onclick="goToAllReports()">
+                <div class="action-icon reports-icon">
+                    <i class="fas fa-list-check"></i>
+                </div>
+                <div class="action-info">
+                    <p>Manage Reports</p>
+                    <span>Review & manage reports</span>
+                </div>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECENT REPORTS -->
+    <div class="section">
+        <div class="section-header">
+            <h3><i class="fas fa-clock"></i> Recent Reports</h3>
+            <a href="admin-map.html">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div id="recentReportsList" class="recent-reports">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading reports...</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="goToHome()">
+
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="goToMap()">
+
+        <i class="fa fa-file-alt"></i>
+        <span>Reports</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="../../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item" onclick="goToNews()">
+
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="goToSettings()">
+
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
+<script src="../../js/admin/admin-homepage.js"></script>
+</body>
+</html>
+
+

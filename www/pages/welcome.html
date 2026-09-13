@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isla-Sync Corcuera Login</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/welcome.css">
+
+    <!-- Font Awesome (Modern Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Top Image -->
+    <div class="hero">
+        <!-- Overlay on image -->
+        <div class="hero-overlay">
+            <!-- Back Button -->
+            <a href="../index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="card">
+
+        <!-- Logo - No background circle, just the logo -->
+        <div class="logo-wrapper">
+            <img src="../assets/isla-logo.png" alt="Logo" class="logo-img">
+        </div>
+
+        <h1>Isla-Sync Corcuera</h1>
+        <p class="subtitle">Your unified island portal</p>
+
+        <p class="select-text">SELECT YOUR USER TYPE</p>
+
+        <!-- Resident -->
+        <div class="option active" onclick="navigateTo('resident')">
+            <div class="icon blue">
+                <i class="fa-solid fa-house"></i>
+            </div>
+            <div class="option-content">
+                <h3>Resident User</h3>
+                <p>Access local services and news</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+        </div>
+
+        <!-- Admin -->
+        <div class="option" onclick="navigateTo('admin')">
+            <div class="icon gray">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div class="option-content">
+                <h3>Admin User</h3>
+                <p>Manage island operations</p>
+            </div>
+            <i class="fa-solid fa-chevron-right arrow-icon"></i>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    function navigateTo(userType) {
+        if (userType === 'resident') {
+            window.location.href = 'login.html';
+        } else if (userType === 'admin') {
+            window.location.href = '../pages/admin/admin-login.html';
+        }
+    }
+</script>
+
+</body>
+</html>

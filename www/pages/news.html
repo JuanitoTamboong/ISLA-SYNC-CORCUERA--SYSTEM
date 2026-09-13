@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Island News</title>
+<link rel="stylesheet" href="../css/shared.css">
+<link rel="stylesheet" href="../css/news.css">
+
+
+
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER - ADDED TO MATCH SETTINGS -->
+    <div class="header">
+        <i class="fa fa-chevron-left" onclick="navigateTo('home')"></i>
+        <h2 class="title">Island News</h2>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search news, advisories...">
+    </div>
+
+    <!-- FILTER -->
+    <div class="filters">
+        <div class="pill active">All</div>
+        <div class="pill">Advisory</div>
+        <div class="pill">Tourism</div>
+        <div class="pill">Events</div>
+        <div class="pill">Community</div>
+    </div>
+
+    <!-- FEATURED (Dynamic) -->
+    <div class="featured" id="featuredContainer" style="display: none;">
+        <!-- Populated by js/news.js -->
+    </div>
+
+    <!-- LATEST -->
+    <h3 class="section-title">Latest Updates</h3>
+
+    <!-- NEWS LIST (Dynamic) -->
+    <div id="newsContainer">
+        <!-- Populated by js/news.js -->
+    </div>
+
+    <!-- SKELETON LOADER (Injected by js/news.js) -->
+    <div id="newsSkeletonContainer" style="display:none"></div>
+
+
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="navigateTo('home')">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('map')">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item active" onclick="navigateTo('notifications')">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('settings')">
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
+
+<script src="../js/news.js"></script>
+<script src="../js/theme/apply-theme.js" defer></script>
+
+</body>
+</html>

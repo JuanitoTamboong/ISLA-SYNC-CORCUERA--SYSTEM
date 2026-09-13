@@ -9,6 +9,10 @@
   },
   "android": {
     "allowMixedContent": true
+  },
+  "plugins": {
+    "GoogleAuth": {
+      "serverClientId": "659865928046-bf6g0ofasnkic8qgrs745e258bfgfgp1.apps.googleusercontent.com"
+    }
   }
 }
-

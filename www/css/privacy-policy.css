@@ -1,0 +1,147 @@
+@import "shared.css";
+
+html,
+body {
+    min-height: 100%;
+    background: var(--container-bg);
+    color: var(--text-color);
+    font-family: var(--font-family);
+}
+
+:root {
+    --hover-bg: #f1f5f9;
+}
+
+:root[data-theme="dark"] {
+    --hover-bg: rgba(255, 255, 255, 0.04);
+}
+
+body {
+    margin: 0;
+}
+
+.policy-page {
+    width: min(100%, 420px);
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 16px 15px 32px;
+    background: var(--container-inner-bg);
+    color: var(--text-color);
+}
+
+.policy-header {
+    padding: 0 0 18px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 18px;
+    border: 0;
+    border-radius: 12px;
+    color: var(--text-color);
+    background: transparent;
+    text-decoration: none;
+}
+
+.policy-content a:hover {
+    color: var(--nav-active-color);
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+    background: var(--hover-bg);
+    color: var(--text-color);
+}
+
+.eyebrow {
+    margin: 0 0 5px;
+    color: var(--nav-active-color);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+h1,
+h2,
+p {
+    margin-top: 0;
+}
+
+h1 {
+    margin-bottom: 5px;
+    color: var(--text-color);
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.updated {
+    margin-bottom: 0;
+    color: var(--muted-text);
+    font-size: 11px;
+}
+
+.policy-content {
+    padding: 18px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--card-bg);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="dark"] .policy-content {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.policy-content > p:first-child {
+    margin-bottom: 20px;
+    padding: 12px 13px;
+    border-radius: 6px;
+    background: var(--hover-bg);
+}
+
+h2 {
+    margin: 25px 0 7px;
+    color: var(--text-color);
+    font-size: 16px;
+    line-height: 1.35;
+}
+
+p,
+li {
+    color: var(--muted-text);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+strong {
+    color: var(--text-color);
+}
+
+ul {
+    margin: 0 0 12px;
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 6px;
+}
+
+.policy-content a {
+    color: var(--nav-active-color);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 360px) {
+    .policy-page {
+        padding: 15px 12px 28px;
+    }
+
+    .policy-content {
+        padding: 16px 13px;
+    }
+}

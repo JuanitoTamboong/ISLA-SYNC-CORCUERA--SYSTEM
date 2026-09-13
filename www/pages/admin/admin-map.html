@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports Map - Admin</title>
+
+<link rel="stylesheet" href="../../css/admin/admin-shared.css">
+<link rel="stylesheet" href="../../css/admin/admin-map.css">
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <button class="header-btn back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">
+            <h2>Reports Map</h2>
+            <span class="header-subtitle">Monitor and manage all user reports</span>
+        </div>
+        <button class="header-btn refresh-btn" onclick="refreshData()">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-number" id="totalReports">0</span>
+            <span class="stat-label">Total Reports</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-number pending-count" id="pendingCount">0</span>
+            <span class="stat-label">Pending</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-number resolved-count" id="resolvedCount">0</span>
+            <span class="stat-label">Resolved</span>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">
+            <i class="fas fa-list"></i> All
+        </button>
+        <button class="filter-tab" data-filter="pending">
+            <i class="fas fa-clock"></i> Pending
+        </button>
+        <button class="filter-tab" data-filter="resolved">
+            <i class="fas fa-check-circle"></i> Resolved
+        </button>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-wrapper">
+        <div id="map"></div>
+    </div>
+
+    <!-- REPORTS LIST -->
+    <div class="reports-section">
+        <div class="section-header">
+            <h3><i class="fas fa-file-alt"></i> Reports</h3>
+        </div>
+        <div id="reportsList" class="reports-list">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading reports...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- REPORT DETAIL MODAL -->
+<div id="reportModal" class="report-modal">
+
+    <div class="modal-overlay" onclick="closeModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <div class="modal-avatar" id="modalAvatar">
+                    <img id="modalAvatarImg" src="" alt="User avatar" style="display:none;">
+                    <span id="modalAvatarInitials" class="avatar-initials">U</span>
+                </div>
+                <div class="modal-user-info">
+                    <h2 id="modalTitle">Report Details</h2>
+                    <div class="modal-user-meta">
+                        <span id="modalReporter">Unknown User</span>
+                        <span class="meta-dot">•</span>
+                        <span id="modalReference">#ISC-2026-0001</span>
+                    </div>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeModal()" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Status & Category Row -->
+            <div class="modal-status-row">
+                <div class="status-item">
+                    <span class="status-label">Status</span>
+                    <span id="modalStatus" class="status-badge status-pending">PENDING</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Category</span>
+                    <span id="modalCategory" class="category-badge">Infrastructure</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Date</span>
+                    <span id="modalDate" class="status-value">-</span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="detail-section full-width">
+                <label><i class="fas fa-align-left"></i> Description</label>
+                <div class="description-box">
+                    <p id="modalDescription">-</p>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="detail-section full-width">
+                <label><i class="fas fa-map-pin"></i> Location</label>
+                <div class="location-box">
+                    <span id="modalLocation">-</span>
+                    <a id="modalMapLink" href="#" target="_blank" class="map-link">
+                        <i class="fas fa-map-marker-alt"></i> View on Google Maps
+                    </a>
+                </div>
+            </div>
+
+            <!-- Image -->
+            <div class="detail-section full-width" id="modalImageSection" style="display: none;">
+                <label><i class="fas fa-image"></i> Photo Evidence</label>
+                <div class="report-image-container">
+                    <img id="modalImage" src="" alt="Report image">
+                    <button class="image-zoom-btn" onclick="openImageFullscreen()">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- COMMENTS SECTION -->
+            <div class="detail-section full-width">
+                <label><i class="fas fa-comment"></i> Comments</label>
+                <div id="modalCommentsContainer" class="comments-container">
+                    <div class="no-comments">
+                        <i class="fas fa-comment"></i>
+                        <p>No comments yet</p>
+                    </div>
+                </div>
+                <div class="admin-comment-input">
+                    <textarea id="adminCommentInput" placeholder="Add a comment as admin..." rows="2"></textarea>
+                    <button id="submitAdminCommentBtn" class="comment-submit-btn" onclick="submitAdminComment()">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="detail-section full-width" id="modalActions">
+                <div class="action-buttons">
+                    <button id="resolveBtn" class="action-btn resolve-btn" onclick="updateReportStatus('resolved')">
+                        <i class="fas fa-check"></i> Mark as Resolved
+                    </button>
+                    <button id="pendingBtn" class="action-btn pending-btn" onclick="updateReportStatus('pending')">
+                        <i class="fas fa-clock"></i> Mark as Pending
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Fullscreen Modal -->
+<div id="imageFullscreenModal" class="image-fullscreen-modal" style="display:none;">
+    <div class="image-fullscreen-overlay" onclick="closeImageFullscreen()"></div>
+    <div class="image-fullscreen-content">
+        <button class="image-fullscreen-close" onclick="closeImageFullscreen()">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="fullscreenImage" src="" alt="Report image fullscreen">
+    </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item" onclick="goToHome()" role="button" aria-label="Home">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+
+    <div class="nav-item active" onclick="goToMap()">
+        <i class="fa fa-file-alt"></i>
+        <span>Reports</span>
+    </div>
+    <div class="nav-item center-logo">
+        <img src="../../assets/isla-logo.png" alt="">
+    </div>
+    <div class="nav-item" onclick="goToNews()">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+    <div class="nav-item" onclick="goToSettings()">
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../../js/admin/admin-map.js"></script>
+
+
+</body>
+</html>

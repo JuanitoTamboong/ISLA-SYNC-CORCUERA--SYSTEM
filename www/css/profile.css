@@ -1,0 +1,433 @@
+@import "shared.css";
+
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.header i {
+    position: absolute;
+    left: 20px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+}
+
+.header i:hover {
+    color: #2d7df6;
+}
+
+.header h2 {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* Profile */
+.profile {
+    text-align: center;
+    padding: 25px 20px;
+}
+
+.avatar {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: auto;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.05);
+}
+
+.avatar::before {
+    content: "👤";
+    font-size: 48px;
+    opacity: 0.9;
+}
+
+.avatar.has-photo::before {
+    display: none;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.edit {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #2d7df6;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(45, 125, 246, 0.3);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.edit:hover {
+    background: #1e5fc4;
+    transform: scale(1.1);
+}
+
+/* Edit Profile Form */
+.edit-profile-form {
+    display: none;
+    padding: 25px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+}
+
+.edit-profile-form.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e8ebf0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    background: white;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #2d7df6;
+    box-shadow: 0 0 0 3px rgba(45, 125, 246, 0.1);
+}
+
+.form-input::placeholder {
+    color: #aaa;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+}
+
+/* Perfectly centered photo upload in edit form */
+.form-group.photo-section {
+    text-align: center;
+}
+
+.photo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.photo-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #f0f2f5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.photo-preview:hover {
+    transform: scale(1.05);
+    border-color: #2d7df6;
+}
+
+#photoPlaceholder {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 4px solid transparent;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#photoPlaceholder:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+#photoPlaceholder i {
+    font-size: 28px;
+    color: white;
+}
+
+#changePhotoBtn {
+    font-size: 13px;
+    padding: 8px 20px;
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #e8ebf0;
+    border-radius: 20px;
+}
+
+#changePhotoBtn:hover {
+    background: #2d7df6;
+    color: white;
+    border-color: #2d7df6;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn:disabled i.fa-spinner {
+    margin-left: 8px;
+}
+
+.btn-primary {
+    background: #2d7df6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1e5fc4;
+}
+
+.btn-secondary {
+    background: #f0f2f5;
+    color: #666;
+}
+
+.btn-secondary:hover {
+    background: #e8ebf0;
+}
+
+.profile h3, .profile p {
+    margin: 12px 0;
+}
+
+/* Profile Completion */
+.completion {
+    margin-top: 20px;
+}
+
+.completion h4 {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #f0f2f5;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2d7df6, #4dabf7);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px rgba(45, 125, 246, 0.3);
+}
+
+.completion-text {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+}
+
+.completion-text.perfect {
+    color: #2e9d5b;
+    font-weight: 600;
+}
+
+/* Edit Profile Button */
+.edit-profile-btn {
+    background: linear-gradient(135deg, #2d7df6, #4dabf7);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 15px;
+    box-shadow: 0 4px 15px rgba(45, 125, 246, 0.3);
+}
+
+.edit-profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 125, 246, 0.4);
+}
+
+/* Section */
+.section {
+    padding: 20px;
+}
+
+.section h4 {
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+/* Cards */
+.cards {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.card {
+    flex: 1;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.card span {
+    font-size: 12px;
+    font-weight: 500;
+    display: block;
+}
+
+.card h2 {
+    margin-top: 5px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Colors */
+.total { background: #e7f0ff; color: #2d7df6; }
+.resolved { background: #e6f6ed; color: #2e9d5b; }
+.pending { background: #fff0e6; color: #f57c00; }
+
+/* Info List - Now non-clickable */
+.info {
+    margin-top: 10px;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.icon {
+    width: 40px;
+    height: 40px;
+    background: #f0f2f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 16px;
+    color: #666;
+    flex-shrink: 0;
+}
+
+.icon.complete {
+    background: linear-gradient(135deg, #2d7df6, #4dabf7);
+    color: white;
+    box-shadow: 0 2px 8px rgba(45, 125, 246, 0.3);
+}
+
+.text small {
+    color: #888;
+    font-size: 12px;
+    display: block;
+}
+
+.text p {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 2px 0 0 0;
+    color: #333;
+}

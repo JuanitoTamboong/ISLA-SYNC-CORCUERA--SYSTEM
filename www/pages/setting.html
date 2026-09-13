@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings</title>
+  <link rel="stylesheet" href="../css/resident-homepage.css">
+  <link rel="stylesheet" href="../css/setting.css">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <i class="fa fa-chevron-left"></i>
+        <h2>Settings</h2>
+        <div style="width: 20px;"></div> </div>
+
+    <p class="section-title">PROFILE</p>
+    <div class="card profile-card">
+        <div class="profile-left">
+            <div class="avatar"><i class="fa-regular fa-user"></i></div>
+            <div>
+                <h4 id="profileName">Loading...</h4>
+                <p id="profileEmail">Loading...</p>
+            </div>
+        </div>
+        <i class="fa fa-chevron-right" onclick="window.location.href='profile.html'"></i>
+    </div>
+
+    <p class="section-title">PREFERENCES</p>
+    <div class="card">
+        <div class="item">
+            <div class="item-left">
+                <div class="icon red"><i class="fa fa-bell"></i></div>
+                <span>Push Notifications</span>
+            </div>
+
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="item" onclick="window.location.href='privacy-policy.html'" style="cursor: pointer;">
+            <div class="item-left">
+                <div class="icon gray"><i class="fa fa-lock"></i></div>
+                <span>Privacy & Security</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+
+
+        <div class="item" onclick="window.location.href='theme/appearance.html'" style="cursor: pointer;">
+            <div class="item-left">
+                <div class="icon purple"><i class="fa fa-moon"></i></div>
+                <span>Appearance</span>
+            </div>
+            <div class="right-text" id="current-theme-label">Light <i class="fa fa-chevron-right"></i></div>
+        </div>
+    </div>
+
+    <p class="section-title">SAFETY</p>
+    <div class="card">
+        <div class="item" onclick="window.location.href='hotlines.html'" style="cursor: pointer;">
+            <div class="item-left">
+                <div class="icon red"><i class="fa fa-asterisk"></i></div>
+                <span>Emergency Hotlines</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+    </div>
+
+    <p class="section-title">INFORMATION</p>
+    <div class="card">
+        <div class="item" onclick="window.location.href='about.html'" style="cursor: pointer;">
+            <div class="item-left">
+                <div class="icon blue"><i class="fa fa-info"></i></div>
+                <span>About Isla Corcuera</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+
+        <div class="item" onclick="window.location.href='help-support.html'" style="cursor: pointer;">
+            <div class="item-left">
+                <div class="icon green"><i class="fa fa-question"></i></div>
+                <span>Help & Support</span>
+            </div>
+            <i class="fa fa-chevron-right"></i>
+        </div>
+    </div>
+
+    <button class="logout">Log Out</button>
+
+</div>
+<script src="../js/setting.js"></script>
+</body>
+</html>

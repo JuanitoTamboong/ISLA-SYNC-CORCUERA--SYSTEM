@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get Directions - Isla-Sync Corcuera</title>
+<link rel="stylesheet" href="../css/shared.css">
+<link rel="stylesheet" href="../css/get-directions.css">
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- TOP CONTROLS -->
+    <div class="top-bar">
+        <div class="back-btn" onclick="window.location.href='map.html'">
+            <i class="fa-solid fa-chevron-left"></i>
+        </div>
+        <div class="title" id="pageTitle">Get Directions</div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search for address or landmark...">
+    </div>
+
+    <!-- MAP -->
+    <div class="map">
+        <!-- REMOVED THE PIN OVERLAY -->
+        
+        <!-- GPS Button -->
+        <div class="gps-btn" id="gpsBtn">
+            <i class="fa-solid fa-location-crosshairs"></i>
+        </div>
+
+        <!-- Map -->
+        <div id="map"></div>
+    </div>
+
+    <!-- LOCATION INFO -->
+    <div class="location-section">
+        <div class="location-info">
+            <div class="icon location-image-wrapper">
+                <img id="locationImage" class="location-image" alt="" hidden>
+                <i id="locationIcon" class="fa-solid fa-location-dot"></i>
+            </div>
+            <div>
+                <p class="label">SELECTED LOCATION</p>
+                <h3 id="locationTitle">San Jose, Corcuera</h3>
+                <span id="locationAddress">Romblon, Philippines</span>
+            </div>
+        </div>
+        <button class="confirm-btn" id="confirmBtn">Confirm Location</button>
+    </div>
+
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/get-directions.js"></script>
+<script src="../js/theme/apply-theme.js" defer></script>
+</body>
+</html>

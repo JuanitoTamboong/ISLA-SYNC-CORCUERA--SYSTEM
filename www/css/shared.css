@@ -1,0 +1,156 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Theme tokens (shared by all pages) */
+:root {
+    --font-family: 'Poppins', sans-serif;
+    --container-bg: #ffffff;
+    --container-inner-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text-color: #0f172a;
+    --muted-text: #6b7280;
+    --border-color: #e5e7eb;
+    --bottom-nav-bg: #ffffff;
+    --nav-item-color: #6b7280;
+    --nav-active-color: #2563eb;
+    --hover-bg: rgba(37, 99, 235, 0.08);
+}
+
+:root[data-theme="dark"] {
+    --container-bg: #020617;
+    --container-inner-bg: #090d16;
+    --card-bg: #111b2d;
+    --text-color: #f1f5f9;
+    --muted-text: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.10);
+    --bottom-nav-bg: #0b1220;
+    --nav-item-color: #94a3b8;
+    --nav-active-color: #60a5fa;
+    --hover-bg: rgba(96, 165, 250, 0.10);
+}
+
+html, body {
+    height: 100vh;
+    overflow-x: hidden;
+    background-color: var(--container-bg);
+    color: var(--text-color);
+    font-family: var(--font-family);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--container-bg);
+}
+
+
+/* UNIFIED CONTAINER - Used by all pages */
+.container {
+    max-width: 420px;
+    margin: auto;
+    background: var(--container-inner-bg);
+    padding: 20px 15px 100px;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    color: var(--text-color);
+}
+
+
+/* UNIFIED BOTTOM NAV */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 420px;
+    margin: auto;
+    height: 70px;
+    background: var(--bottom-nav-bg);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+
+.nav-item {
+    cursor: pointer;
+    text-align: center;
+    font-size: 11px;
+    color: var(--nav-item-color);
+    transition: color 0.2s;
+}
+
+
+.nav-item i {
+    display: block;
+    font-size: 18px;
+}
+
+.nav-item.active {
+    color: var(--nav-active-color); /* Theme active */
+}
+
+
+.nav-item:hover:not(.center-logo) {
+    color: var(--nav-active-color);
+}
+
+
+.center-logo {
+    position: relative;
+    top: -20px;
+}
+
+.center-logo img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    padding: 6px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+
+
+/* Responsive */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px 12px 100px;
+        border-radius: 0;
+        margin: 0;
+        min-height: 100vh;
+    }
+    
+    .map {
+        height: clamp(350px, 45vh, 450px);
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e5e7eb;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2563eb;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
+}
+

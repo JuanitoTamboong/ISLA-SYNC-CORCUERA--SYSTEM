@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Manage Tourist Spots - Admin | Romblon</title>
+<!-- CSS - Separate file structure preserved -->
+<link rel="stylesheet" href="../../css/admin/admin-shared.css">
+<link rel="stylesheet" href="../../css/admin/admin-tourist-spots.css">
+
+<!-- Icons & Fonts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- MAIN PAGE NOTIFICATION CONTAINER -->
+    <div id="mainPageNotification" class="page-notification"></div>
+
+    <!-- HEADER -->
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="goBack()"></i>
+        <h2>Manage Tourist Spots</h2>
+        <i class="fa-solid fa-plus add-btn" onclick="openSpotModal()"></i>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="Beach">Beaches</button>
+        <button class="filter-tab" data-filter="Landmark">Landmarks</button>
+    </div>
+
+    <!-- SPOT LIST -->
+    <div id="spotList" class="spot-list">
+        <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p>Loading tourist spots...</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- SPOT MODAL (Create/Edit) -->
+<div id="spotModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeSpotModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add Tourist Spot</h2>
+            <button class="modal-close" onclick="closeSpotModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- SPOT MODAL NOTIFICATION CONTAINER -->
+            <div id="spotModalNotification" class="modal-notification"></div>
+            
+            <form id="spotForm">
+                <input type="hidden" id="spotId">
+
+                <div class="form-group">
+                    <label>Name <span class="required">*</span></label>
+                    <input type="text" id="spotName" placeholder="Enter spot name" required 
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <small>Letters and spaces only</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Category <span class="required">*</span></label>
+                    <select id="spotCategory" required aria-label="Spot category">
+                        <option value="Beach">Beach</option>
+                        <option value="Landmark">Landmark</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="spotLocation" placeholder="e.g., Corcuera North">
+                </div>
+
+                <div class="form-group">
+                    <label>Image (Optional)</label>
+                    <div class="upload-area" id="spotUploadArea">
+                        <div class="upload-box" id="spotUploadBox" onclick="document.getElementById('spotImageInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Tap to upload image</p>
+                        </div>
+                        <div class="preview" id="spotPreviewDiv" style="display: none;">
+                            <img id="spotPreviewImg" src="" alt="Preview">
+                            <span class="remove" id="spotRemoveImgBtn" onclick="removeSpotImage()">×</span>
+                        </div>
+                    </div>
+                    <input type="file" id="spotImageInput" accept="image/jpeg, image/png, image/jpg" style="display: none;">
+                    <small>Leave empty to use default image</small>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="spotVisible" checked>
+                        <span class="checkmark"></span>
+                        Visible to Residents
+                    </label>
+                </div>
+
+                <!-- LOCAL DRIVERS SECTION IN MODAL -->
+                <div class="drivers-section" id="driversSection" style="display: block;">
+                    <div class="drivers-section-header">
+                        <h4><i class="fa-solid fa-users"></i> Local Drivers</h4>
+                        <span class="drivers-add-btn" onclick="openDriverModal()">
+                            <i class="fa-solid fa-plus"></i> Add Driver
+                        </span>
+                    </div>
+                    <div class="drivers-grid" id="driversGrid"></div>
+                </div>
+
+                <!-- SOUVENIRS SECTION IN MODAL -->
+                <div class="souvenir-section" id="souvenirSection" style="display: block;">
+                    <div class="souvenir-section-header">
+                        <h4><i class="fa-solid fa-gift"></i> Souvenirs</h4>
+                        <span class="souvenir-add-btn" onclick="openSouvenirModal()">
+                            <i class="fa-solid fa-plus"></i> Add Souvenir
+                        </span>
+                    </div>
+                    <div class="souvenir-grid" id="souvenirGrid"></div>
+                </div>
+
+                <div class="dining-section" id="diningSection" style="display: block;">
+                    <div class="dining-section-header">
+                        <h4><i class="fa-solid fa-utensils"></i> Dining</h4>
+                        <span class="dining-add-btn" onclick="openDiningModal()">
+                            <i class="fa-solid fa-plus"></i> Add Dining
+                        </span>
+                    </div>
+                    <div class="dining-grid" id="diningGrid"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeSpotModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Spot
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DINING MODAL -->
+<div id="diningModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDiningModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="diningModalTitle">Add Dining</h2>
+            <button class="modal-close" onclick="closeDiningModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="diningModalNotification" class="modal-notification"></div>
+            <form id="diningForm" novalidate>
+                <input type="hidden" id="diningId">
+                <div class="form-group">
+                    <label>Dining Name <span class="required">*</span></label>
+                    <input type="text" id="diningName" placeholder="Enter dining place name" required
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <small>Letters and spaces only</small>
+                </div>
+                <div class="form-group">
+                    <label>Image (Optional)</label>
+                    <div class="upload-area">
+                        <div class="upload-box" id="diningUploadBox" onclick="document.getElementById('diningImageInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Tap to upload image</p>
+                        </div>
+                        <div class="preview" id="diningPreviewDiv" style="display: none;">
+                            <img id="diningPreviewImg" src="" alt="Dining preview">
+                            <span class="remove" onclick="removeDiningImage()">×</span>
+                        </div>
+                    </div>
+                    <input type="file" id="diningImageInput" accept="image/jpeg, image/png, image/jpg" style="display: none;">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeDiningModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="diningSaveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Dining
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- LOCAL DRIVER MODAL (Add/Edit) -->
+<div id="driverModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDriverModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="driverModalTitle">Add Local Driver</h2>
+            <button class="modal-close" onclick="closeDriverModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- DRIVER MODAL NOTIFICATION CONTAINER -->
+            <div id="driverModalNotification" class="modal-notification"></div>
+            
+            <form id="driverForm" novalidate>
+                <input type="hidden" id="driverId">
+                <input type="hidden" id="driverSpotId">
+
+                <div class="form-group">
+                    <label>Driver Name <span class="required">*</span></label>
+                    <input type="text" id="driverName" placeholder="Enter local driver name" required
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <small>Letters and spaces only</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Number <span class="required">*</span></label>
+                    <input type="tel" id="driverContactNumber" placeholder="e.g., 09123456789" required
+                           maxlength="11" inputmode="numeric" pattern="\d{11}"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
+                    <small>11 digits only (numbers)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Fare <span class="required">*</span></label>
+                    <div class="fare-input-wrap">
+                        <span class="fare-prefix" aria-hidden="true">₱</span>
+                        <input type="text" id="driverFare" placeholder="e.g., 50" required
+                               inputmode="numeric" pattern="[0-9]+"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <small>Numbers only, in Philippine pesos</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeDriverModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="driverSaveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Local Driver
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE DRIVER CONFIRMATION MODAL -->
+<div id="deleteDriverModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDeleteDriverModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete Local Driver?</h3>
+            <p>This action cannot be undone. Are you sure you want to delete this local driver?</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteDriverModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteDriverBtn" onclick="confirmDeleteDriver()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE SOUVENIR CONFIRMATION MODAL -->
+<div id="deleteSouvenirModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDeleteSouvenirModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete Souvenir?</h3>
+            <p>This action cannot be undone. Are you sure you want to delete this souvenir?</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteSouvenirModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteSouvenirBtn" onclick="confirmDeleteSouvenir()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE DINING CONFIRMATION MODAL -->
+<div id="deleteDiningModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDeleteDiningModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete Dining?</h3>
+            <p>This action cannot be undone. Are you sure you want to delete this dining place?</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteDiningModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteDiningBtn" onclick="confirmDeleteDining()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SOUVENIR MODAL -->
+<div id="souvenirModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeSouvenirModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="souvenirModalTitle">Add Souvenir</h2>
+            <button class="modal-close" onclick="closeSouvenirModal()" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- SOUVENIR MODAL NOTIFICATION CONTAINER -->
+            <div id="souvenirModalNotification" class="modal-notification"></div>
+            
+            <form id="souvenirForm" novalidate>
+                <input type="hidden" id="souvenirId">
+                <input type="hidden" id="souvenirSpotId">
+
+                <div class="form-group">
+                    <label>Souvenir Name <span class="required">*</span></label>
+                    <input type="text" id="souvenirName" placeholder="Enter souvenir name" required
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                    <small>Letters and spaces only</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Price (PHP) <span class="required">*</span></label>
+                    <input type="number" id="souvenirPrice" placeholder="0" min="0" step="1" required 
+                           inputmode="numeric" pattern="\d+"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <small>Numbers only (no decimals)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Image (Optional)</label>
+                    <div class="upload-area" id="souvenirUploadArea">
+                        <div class="upload-box" id="souvenirUploadBox" onclick="document.getElementById('souvenirImageInput').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Tap to upload image</p>
+                        </div>
+                        <div class="preview" id="souvenirPreviewDiv" style="display: none;">
+                            <img id="souvenirPreviewImg" src="" alt="Preview">
+                            <span class="remove" id="souvenirRemoveImgBtn" onclick="removeSouvenirImage()">×</span>
+                        </div>
+                    </div>
+                    <input type="file" id="souvenirImageInput" accept="image/jpeg, image/png, image/jpg" style="display: none;">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeSouvenirModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="souvenirSaveBtn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Souvenir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE TOURIST SPOT CONFIRMATION MODAL -->
+<div id="deleteModal" class="spot-modal">
+    <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+    <div class="modal-content delete-content">
+        <div class="modal-body text-center">
+            <div class="delete-icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3>Delete Tourist Spot?</h3>
+            <p>This will also delete all associated souvenirs and local drivers. This action cannot be undone.</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shared BOTTOM NAV -->
+<div data-component="admin-bottom-nav" data-active="map"></div>
+<script src="../../js/admin/admin-tourist-spots.js"></script>
+</body>
+</html>

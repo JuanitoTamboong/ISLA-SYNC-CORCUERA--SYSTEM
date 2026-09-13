@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+
+    <link rel="stylesheet" href="../css/sign-up.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Top Image -->
+    <div class="hero"></div>
+
+    <!-- Form Card -->
+    <div class="card">
+        <h2>Create Your Account</h2>
+        <p class="subtitle">Join the Corcuera community</p>
+
+        <form id="signupForm">
+            <!-- Full Name -->
+            <div class="input-group">
+                <label>Full Name</label>
+                <div class="input-box">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="fullNameInput" placeholder="Enter your full name" autocomplete="name">
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-box">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="emailInput" placeholder="name@example.com" autocomplete="email">
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="passwordInput" placeholder="Create a password" autocomplete="new-password">
+                    <i class="fa-regular fa-eye toggle"></i>
+                </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="confirmPasswordInput" placeholder="Repeat password" autocomplete="new-password">
+                    <i class="fa-regular fa-eye toggle"></i>
+                </div>
+            </div>
+
+            <!-- Button -->
+            <button type="submit" class="btn" id="signupButton">Sign Up</button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">
+            <span>or continue with</span>
+        </div>
+
+        <!-- Social -->
+        <div class="social">
+            <div class="social-btn google-signup-btn" id="googleSignupButton" role="button" tabindex="0" aria-label="Continue with Google" aria-busy="false">
+                <img class="google-icon" src="../assets/google-icon.png" alt="">
+                <span>Continue with Google</span>
+            </div>
+
+        </div>
+
+        <!-- Login -->
+        <p class="login-text">
+            Already have an account? <a href="login.html">Log In</a>
+        </p>
+
+    </div>
+
+</div>
+<!-- Add at the bottom of the body tag, before closing </body> -->
+<script type="module" src="../js/sign-up.js"></script>
+</body>
+</html>

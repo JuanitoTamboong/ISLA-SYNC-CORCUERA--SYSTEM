@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resident Homepage - Isla-Sync Corcuera</title>
+<link rel="stylesheet" href="../css/resident-homepage.css">
+<link rel="stylesheet" href="../css/theme-overrides-resident.css">
+
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+<script src="../js/theme/apply-theme.js" defer></script>
+</head>
+ 
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <p class="greeting" id="greetingText">Good Morning,</p>
+            <h2 id="userName">Loading...</h2>
+        </div>
+
+        <!-- HEADER RIGHT ICONS -->
+        <div class="header-right">
+            <!-- NOTIFICATION WRAPPER -->
+            <div class="notification-wrapper">
+                <div class="notification-bell" id="notificationBell">
+                    <i class="fa fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+                </div>
+                <!-- NOTIFICATION PANEL -->
+                <div class="notification-panel" id="notificationPanel">
+                    <div class="notif-header">
+                        <h3>Notifications</h3>
+                        <span onclick="event.stopPropagation(); markAllRead()">Mark all read</span>
+                    </div>
+                    <div class="notif-list" id="notifList">
+                        <div class="notif-empty">
+                            <i class="fa-regular fa-bell-slash"></i>
+                            <p>No notifications yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE ICON -->
+            <div class="profile" onclick="navigateTo('profile')" id="profileContainer">
+                <img id="profileImg" class="profile-img" src="" alt="Profile Photo">
+                <i id="profileIcon" class="fa fa-user profile-icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH BOX (ADDED) -->
+    <div class="search-box">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search places, news, or reports...">
+    </div>
+
+    <!-- BANNER -->
+    <div class="banner">
+        <img src="../assets/generate background of corquera romblon.jpg" alt="">
+        <div class="banner-text">
+            <h3>Explore Simara Island</h3>
+            <p>Discover the hidden gem of Romblon</p>
+        </div>
+    </div>
+
+    <!-- WEATHER - Will be dynamically updated by weather.js -->
+    <div class="weather">
+        <h1>--°C</h1>
+        <div class="weather-center">
+            <p>Loading...</p>
+            <span>--</span>
+        </div>
+        <i class="fas fa-cloud-sun"></i>
+    </div>
+
+    <!-- QUICK SERVICES -->
+    <div class="section">
+        <div class="section-header">
+            <h3>Quick Services</h3>
+            <a href="#">See All</a>
+        </div>
+
+        <div class="services">
+            <div class="service" onclick="reportIssue()">
+                <div class="icon orange">
+                    <i class="fa fa-triangle-exclamation"></i>
+                </div>
+                <p>Report Issue</p>
+            </div>
+
+            <div class="service" onclick="viewNews()">
+                <div class="icon blue">
+                    <i class="fa fa-newspaper"></i>
+                </div>
+                <p>Latest News</p>
+            </div>
+
+            <div class="service" onclick="viewTouristSpots()">
+                <div class="icon green">
+                    <i class="fa fa-map-location-dot"></i>
+                </div>
+                <p>Tourist Spots</p>
+            </div>
+            <div class="service" onclick="viewMyReports()">
+                <div class="icon purple">
+                    <i class="fa fa-file-alt"></i>
+                </div>
+                <p>View My Reports</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- COMMUNITY UPDATES -->
+    <div class="section">
+        <div class="section-header">
+            <h3>Community Updates</h3>
+            <a href="#">View Feed</a>
+        </div>
+
+        <div class="updates" id="communityUpdates">
+            <div class="update-card">
+                <div class="update-icon">
+                    <i class="fa fa-bullhorn"></i>
+                </div>
+                <div class="update-text">
+                    <p class="title">Official Announcement</p>
+                    <span>New tourism program launching soon.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="navigateTo('home')">
+        <i class="fa fa-home"></i>
+        <span>Home</span>
+    </div>
+
+    <div class="nav-item" onclick="navigateTo('map')">
+        <i class="fa fa-map"></i>
+        <span>Map</span>
+    </div>
+
+    <div class="nav-item center-logo">
+        <img src="../assets/isla-logo.png" alt="">
+    </div>
+
+    <div class="nav-item" onclick="navigateTo('notifications')">
+        <i class="fa fa-newspaper"></i>
+        <span>News</span>
+    </div>
+
+    <div class="nav-item" onclick="navigateTo('settings')">
+        <i class="fa fa-gear"></i>
+        <span>Settings</span>
+    </div>
+</div>
+
+<script src="../js/weather.js"></script>
+<script src="../js/resident-homepage.js"></script>
+
+</body>
+</html>
